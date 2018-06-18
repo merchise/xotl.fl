@@ -6,28 +6,56 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
+'''Basic translator for predicates to Odoo domains.
+
+'''
+
 import ast
 import inspect
 from types import LambdaType
 from collections import namedtuple
 
+from xoutil.future.itertools import continuously_slides as pairs
 
-def filtered(predicate, model=None):
+
+def filtered(predicate):
     '''Takes a predicate over a single record and produces an Odoo domain.
 
-    Support only comparison of attributes with values.  Not even attributes
-    compared to other attributes since this not translatable to Odoo domains.
+    The `predicate` must be a lambda function that accepts a positional
+    argument.  The name of the positional argument is used to know if we must
+    translate an attribute or not:
 
-    Use other functions for more complex predicates.
+       >>> filtered(lambda this: this.age < 10)
+       [('age', '<', 10)]
 
-    If model is not None, it should either the name of the model, a model
-    class definition, or a recordset.  In such case you must call within the
-    context of a valid Odoo DB environment.  We only use to type-check the
-    predicate.
+    The name 'this' is not included in the domain.
+
+    The allowed semantics of `predicate` match the allowed semantics of the
+    Odoo domains.  However, this function allows for certain mismatches in
+    semantics:
+
+       >>> filtered(lambda this: this.debit < this.credit)
+       [('debit', '<', 'credit')]
+
+    Odoo sees ``'credit'`` as literal string instead of the name of an
+    attribute.  Attributes are only allowed on the left operand or a
+    comparison:
+
+       >>> filtered(lambda this: 1 < this.age < 10 == 10)
+       ['&', '&', (1, '<', 'age'), ('age', '<', 10), (10, '=', 10)]
+
+    In this case, the ``(1, '<', 'age')`` is incorrect in a Odoo domain.
+
+    Arbitrary expressions can be either fail or be incorrectly translated:
+
+       >>> filtered(lambda this: this.sum/this.count == average)  # doctest: +ELLIPSIS
+       Traceback (...)
+       ...
+       AssertionError: Not just one item the in stack...
 
     '''
     from xotl.ql.revenge import Uncompyled
-    translator = FilterTranslator(predicate, model=model)
+    translator = FilterTranslator(predicate)
     uncompiler = Uncompyled(predicate, islambda=False)
     qst = uncompiler.qst
     translator.visit(qst)
@@ -46,19 +74,25 @@ class FilterTranslator(ast.NodeVisitor):
     @property
     def domain(self):
         assert len(self.stack) == 1, \
-            f'More than one item the in stack: {self.stack!r}'
+            f'Not just one item the in stack: {self.stack!r}'
         top = self.stack.pop()
         get_domain = getattr(top, 'get_domain', lambda: top)
         return get_domain()
 
     def visit_Compare(self, node):
-        if len(node.comparators) != 1:
-            raise PredicateSyntaxError('Unsupported multiple comparasion')
+        expr = None
         self.visit(node.left)
         left = self.stack.pop()
-        self.visit(node.comparators[0])
-        right = self.stack.pop()
-        self.stack.append(Leaf(left, get_comparator_str(node.ops[0]), right))
+        for op, right in zip(node.ops, node.comparators):
+            self.visit(right)
+            right = self.stack.pop()
+            leaf = Leaf(left, get_comparator_str(op), right)
+            if expr:
+                expr = BinaryNode('&', [expr, leaf])
+            else:
+                expr = leaf
+            left = right
+        self.stack.append(expr)
 
     def visit_UnaryOp(self, node):
         if isinstance(node.op, ast.Not):
@@ -111,6 +145,16 @@ class FilterTranslator(ast.NodeVisitor):
 
     def visit_NameConstant(self, node):
         self.stack.append(node.value)
+
+    def visit_List(self, node):
+        for item in reversed(node.elts):
+            self.visit(item)
+        self.stack.append([self.stack.pop() for _ in range(len(node.elts))])
+
+    def visit_Tuple(self, node):
+        for item in reversed(node.elts):
+            self.visit(item)
+        self.stack.append(tuple(self.stack.pop() for _ in range(len(node.elts))))
 
 
 class SimplePredicate:
@@ -208,6 +252,9 @@ def get_comparator_str(op):
         return 'not in'
     else:
         raise PredicateSyntaxError(f'Unsupported comparison operation {op}')
+
+
+Last = object()
 
 
 class PredicateSyntaxError(SyntaxError):
