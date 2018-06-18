@@ -8,6 +8,8 @@ name = "pypi"
 
 [dev-packages]
 ipython = "*"
+sphinx = "*"
+sphinx-bootstrap-theme = "*"
 
 [requires]
 python_version = "3.6"
