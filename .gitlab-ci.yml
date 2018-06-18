@@ -42,7 +42,7 @@ check code smells:
 run all Odoo 11 tests:
   <<: *run_tests
   variables:
-    PYTHON: python3
+    PYTHON: python3.6
     ODOO_WORKTREE: odoo11
   only:
     - branches
@@ -140,7 +140,7 @@ publish_pypi:
 
 build documentation:
   variables:
-    PYTHON: python3
+    PYTHON: python3.6
     ODOO_WORKTREE: odoo11
   stage: build doc
   script:
