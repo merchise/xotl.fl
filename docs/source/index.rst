@@ -2,9 +2,12 @@ xopgi.ql -- A `xotl.ql`_ translator for Odoo ORM
 ================================================
 
 .. toctree::
+   :glob:
    :maxdepth: 2
    :caption: Contents:
 
+   xopgi.ql/**
+   history
 
 
 Indices and tables

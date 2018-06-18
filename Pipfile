@@ -9,7 +9,8 @@ name = "pypi"
 [dev-packages]
 ipython = "*"
 sphinx = "*"
-sphinx-bootstrap-theme = "*"
+sphinx_rtd_theme = "*"
+ipdb = "*"
 
 [requires]
 python_version = "3.6"

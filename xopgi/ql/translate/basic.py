@@ -19,7 +19,7 @@ from xoutil.future.itertools import continuously_slides as pairs
 
 
 def filtered(predicate):
-    '''Takes a predicate over a single record and produces an Odoo domain.
+    '''Translate a predicate over a single record into an Odoo domain.
 
     The `predicate` must be a lambda function that accepts a positional
     argument.  The name of the positional argument is used to know if we must
