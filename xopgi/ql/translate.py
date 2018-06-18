@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# ---------------------------------------------------------------------
+# Copyright (c) Merchise Autrement [~º/~] and Contributors
+# All rights reserved.
+#
+# This is free software; you can do what the LICENCE file allows you to.
+#
+import ast
+import inspect
+from types import LambdaType
+
+from xoutil.string import cut_prefix
+
+
+def filtered(predicate, model=None):
+    '''Takes a predicate over a single record and produces an Odoo domain.
+
+    Support only comparison of attributes with values.  Not even attributes
+    compared to other attributes since this not translatable to Odoo domains.
+
+    Use other functions for more complex predicates.
+
+    If model is not None, it should either the name of the model, a model
+    class definition, or a recordset.  In such case you must call within the
+    context of a valid Odoo DB environment.  We only use to type-check the
+    predicate.
+
+    '''
+    from xotl.ql.revenge import Uncompyled
+    translator = FilterTranslator(predicate, model=model)
+    uncompiler = Uncompyled(predicate, islambda=False)
+    qst = uncompiler.qst
+    translator.visit(qst)
+    return translator.domain
+
+
+class FilterTranslator(ast.NodeVisitor):
+    def __init__(self, predicate, model=None):
+        # The predicate MUST have at least a positional argument (which is the
+        # subject of the predicate).  We allow for other positional arguments
+        # **with defaults**, or kwonly arguments with defaults.
+        self.model = model
+        self.stack = []
+        self.predicate = SimplePredicate(predicate)
+
+    @property
+    def domain(self):
+        assert len(self.stack) == 1, f'Items left in the stack {self.stack!r}'
+        return self.stack[0]
+
+    def visit_Compare(self, node):
+        exprs = []
+        self.visit(node.left)
+        for expr in node.comparators:
+            self.visit(expr)
+        for op in reversed(node.ops):
+            right = self.stack.pop()
+            left = self.stack.pop()
+            exprs.append((left, op, right))
+        self.stack.extend(exprs)
+        self.stack.extend(['&'] * (len(exprs) - 1))
+
+    def visit_BoolOp(self, node):
+        for expr in node.values:
+            self.visit(expr)
+        values = self.
+        if isinstance(node.op, ast.And):
+            self.stack.extend(['&'] * (len(node.values) - 1))
+        elif isinstance(node.op, ast.Or):
+            self.stack.extend(['|'] * (len(node.values) - 1))
+        else:
+            assert False
+
+    def visit_Name(self, node):
+        self.stack.append(node.id)
+
+    def visit_Attribute(self, node):
+        # We only support attributes from names or other attributes.  We also
+        # avoid a recursive call (``x.y.z``), because we need to make sure to
+        # strip the 'this' of the predicate, but only at the top-level.
+        val = node.value
+        attrs = [node.attr]
+        while isinstance(val, ast.Attribute):
+            attrs.append(val.attr)
+            val = val.value
+        if isinstance(val, ast.Name):
+            if val.id != self.predicate.this:
+                attrs.append(val.id)
+        else:
+            raise RuntimeError(
+                'Unsupported syntax.  Predicate: %r' % self.predicate.source
+            )
+        self.stack.append('.'.join(reversed(attrs)))
+
+    def visit_Num(self, node):
+        self.stack.append(node.n)
+
+    def visit_Str(self, node):
+        self.stack.append(node.s)
+
+    def visit_NameConstant(self, node):
+        self.stack.append(node.value)
+
+
+class SimplePredicate:
+    '''A simple predicate over a subject.
+
+    `predicate` must be a lamdba function.  It must accept a positional
+    argument.  It may have other arguments so long as we can call it passing a
+    single positional argument: ``predicate(obj)`` MUST not raise a TypeError.
+
+    '''
+    def __init__(self, predicate):
+        assert isinstance(predicate, LambdaType)
+        spec = inspect.getfullargspec(predicate)
+        self.spec = self.validate_spec(spec)
+        self.predicate = predicate
+
+    @classmethod
+    def validate_spec(cls, spec):
+        args_count = len(spec.args or [])
+        defaults_count = len(spec.defaults or [])
+        if args_count - 1 != defaults_count:
+            raise RuntimeError('Invalid predicate')
+        kwonly_count = len(spec.kwonlyargs or [])
+        kwonlydefauls_count = len(spec.kwonlydefaults or [])
+        if kwonly_count != kwonlydefauls_count:
+            raise RuntimeError('Invalid predicate')
+        return spec
+
+    @property
+    def this(self):
+        return self.spec.args[0]
+
+    @property
+    def source(self):
+        try:
+            return inspect.getsource(self.predicate)
+        except OSError:
+            return '<error ocurred looking for predicate source>'
