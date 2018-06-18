@@ -15,8 +15,6 @@ import inspect
 from types import LambdaType
 from collections import namedtuple
 
-from xoutil.future.itertools import continuously_slides as pairs
-
 
 def filtered(predicate):
     '''Translate a predicate over a single record into an Odoo domain.
@@ -252,9 +250,6 @@ def get_comparator_str(op):
         return 'not in'
     else:
         raise PredicateSyntaxError(f'Unsupported comparison operation {op}')
-
-
-Last = object()
 
 
 class PredicateSyntaxError(SyntaxError):
