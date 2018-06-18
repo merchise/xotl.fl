@@ -6,12 +6,8 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-
-from __future__ import (division as _py3_division,
-                        print_function as _py3_print)
-                        # XXX: Don't put absolute imports in setup.py
-
-import os, sys
+import os
+import sys
 from setuptools import setup, find_packages
 
 # Import the version from the release module

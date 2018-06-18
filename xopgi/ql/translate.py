@@ -51,7 +51,6 @@ class FilterTranslator(ast.NodeVisitor):
         get_domain = getattr(top, 'get_domain', lambda: top)
         return get_domain()
 
-
     def visit_Compare(self, node):
         if len(node.comparators) != 1:
             raise RuntimeError('Unsupported multiple comparasion')
