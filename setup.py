@@ -44,7 +44,7 @@ setup(
     install_requires=[
         'xoutil>=1.9.4',
         'xoeuf>=0.40',
-        'xotl.ql>=0.6.0.dev20180517',
+        'xotl.ql>=0.6.0',
     ],
     entry_points='''
     [xoeuf.addons]
