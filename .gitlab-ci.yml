@@ -55,7 +55,7 @@ run all Odoo 11 tests:
     - cd ~/src/$ODOO_WORKTREE
     - git pull
     - cd $CWD
-    - tox -e 3.6-$ODOO_WORKTREE-unit
+    - tox -e system-$ODOO_WORKTREE-unit
   tags:
     - tox
     - xoeuf-tester
