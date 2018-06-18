@@ -1,28 +1,69 @@
 ---
 stages:
-  - test
+  - pre-check
+  - unit-test
+  - integration-test
   - check
   - build
   - publish
-  - tweet
+  - build doc
+  - publish doc
 
-lint:
-  stage: test
-  script:
-    - merchise_lint3
+check code smells:
+  script: merchise_lint3
+  stage: pre-check
   tags:
-    - merchise-lint3
+    - merchise-lint
   only:
     - branches
 
-run all tests (if needed):
-  stage: test
+.run_tests: &run_tests
+  stage: integration-test
   script:
-    - if git show --oneline --name-only $CI_COMMIT_SHA | grep \.py$; then tox -e3.6-unit; fi
+    - export CWD=`pwd`
+    - cd ~/src/$ODOO_WORKTREE
+    - git pull
+    - mkdir -p ~/virtualenvs
+    - rm -rf ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE || true
+    - virtualenv -p `which $PYTHON` ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE
+    - source ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE/bin/activate
+    - pip install -r requirements.txt
+    - pip install -U "six>=1.9.0" "decorator>=4.0,<4.2" "hypothesis>=3.24"
+    - pip install -e .
+    - cd $CWD
+    - pip install -e .
+    - export ADDONS=`ls xopgi/ql/tests/ | grep ^test_ | xargs | tr " " ","`
+    - cd ~/src/$ODOO_WORKTREE
+    - runtests-odoo.sh -i $ADDONS
   tags:
-    - python3.6
     - virtualenv
+    - xoeuf-tester
+
+run all Odoo 11 tests:
+  <<: *run_tests
+  variables:
+    PYTHON: python3
+    ODOO_WORKTREE: odoo11
+  only:
+    - branches
+
+.run_tox_tests: &run_tox_tests
+  stage: unit-test
+  script:
+    - export CWD=`pwd`
+    - export ODOO_URI=file://$HOME/src/$ODOO_WORKTREE
+    - cd ~/src/$ODOO_WORKTREE
+    - git pull
+    - cd $CWD
+    - tox -e 3.6-$ODOO_WORKTREE-unit
+  tags:
     - tox
+    - xoeuf-tester
+
+run tox Odoo 11 tests:
+  <<: *run_tox_tests
+  variables:
+    ODOO_WORKTREE: odoo11
   only:
     - branches
 
@@ -44,7 +85,6 @@ build source distribution:
   tags:
     - python
   artifacts:
-    expire_in: 4 hours
     paths:
       - dist/
   only:
@@ -58,15 +98,12 @@ build binary distribution:
   tags:
     - wheel
   artifacts:
-    expire_in: 4 hours
     paths:
       - dist/
   only:
     - tags
 
 publish_locally:
-  variables:
-    GIT_STRATEGY: none
   stage: publish
   script:
     - ssh manu@gestion.lahavane.com "mkdir -p Repos/$CI_PROJECT_NAME"
@@ -75,18 +112,16 @@ publish_locally:
     - repo.lahavane.com
   only:
     - tags
+  environment:
+    name: repo.lahavane.com
+    url: http://repo.lahavane.com/pypi/$CI_PROJECT_NAME
   dependencies:
     - check signature of tag
     - build source distribution
     - build binary distribution
-  environment:
-    name: repo.lahavane.com
-    url: http://repo.lahavane.com/pypi/$CI_PROJECT_NAME
 
 
-publish in pypi:
-  variables:
-    GIT_STRATEGY: none
+publish_pypi:
   stage: publish
   script:
     - twine upload dist/*
@@ -102,14 +137,26 @@ publish in pypi:
     name: pypi
     url: https://pypi.python.org/pypi/$CI_PROJECT_NAME
 
+
 build documentation:
-  stage: build
+  variables:
+    PYTHON: python3
+    ODOO_WORKTREE: odoo11
+  stage: build doc
   script:
-    - mkdir -p envs
-    - virtualenv -p `which python3` envs/$CI_COMMIT_SHA
-    - source envs/$CI_COMMIT_SHA/bin/activate
-    - pip install sphinx sphinx-rtd-theme
+    - export CWD=`pwd`
+    - cd ~/src/$ODOO_WORKTREE
+    - git pull
+    - mkdir -p ~/virtualenvs
+    - rm -rf ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE || true
+    - virtualenv -p `which $PYTHON` ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE
+    - source ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE/bin/activate
+    - pip install -r requirements.txt
+    - pip install -U "six>=1.9.0" "decorator>=4.0,<4.2" "hypothesis>=3.24"
     - pip install -e .
+    - cd $CWD
+    - pip install -e .
+    - pip install sphinx sphinx-rtd-theme
     - make -C docs/ html
     - cd docs/build/html
     - tar -cjf ../../../$CI_PROJECT_NAME-$CI_COMMIT_SHA.tar.bz2 ./
@@ -119,14 +166,15 @@ build documentation:
     expire_in: 4 days
   tags:
     - virtualenv
+    - xoeuf-tester
   only:
-    - tags
     - master
+    - tags
 
 publish in our rtd:
   variables:
     GIT_STRATEGY: none
-  stage: publish
+  stage: publish doc
   script:
     - scp $CI_PROJECT_NAME-$CI_COMMIT_SHA.tar.bz2 rtd@docs.lahavane.com:.
     - ssh rtd@docs.lahavane.com mkdir -p $CI_PROJECT_NAME/.$CI_COMMIT_SHA
