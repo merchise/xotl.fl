@@ -9,6 +9,7 @@
 import ast
 import inspect
 from types import LambdaType
+from collections import namedtuple
 
 
 def filtered(predicate, model=None):
@@ -44,28 +45,31 @@ class FilterTranslator(ast.NodeVisitor):
 
     @property
     def domain(self):
-        return list(reversed(self.stack))
+        assert len(self.stack) == 1, \
+            f'More than one item the in stack: {self.stack!r}'
+        top = self.stack.pop()
+        get_domain = getattr(top, 'get_domain', lambda: top)
+        return get_domain()
+
 
     def visit_Compare(self, node):
-        exprs = []
+        if len(node.comparators) != 1:
+            raise RuntimeError('Unsupported multiple comparasion')
         self.visit(node.left)
-        for expr in node.comparators:
-            self.visit(expr)
-        for op in reversed(node.ops):
-            right = self.stack.pop()
-            left = self.stack.pop()
-            exprs.append((left, get_comparator_str(op), right))
-        self.stack.extend(exprs)
-        self.stack.extend(['&'] * (len(exprs) - 1))
+        left = self.stack.pop()
+        self.visit(node.comparators[0])
+        right = self.stack.pop()
+        self.stack.append(Leaf(left, get_comparator_str(node.ops[0]), right))
 
     def visit_BoolOp(self, node):
         for expr in node.values:
             self.visit(expr)
-        self.stack[-len(node.values):] = list(reversed(self.stack[-len(node.values):]))
+        operators = self.stack[-len(node.values):]
+        del self.stack[-len(node.values):]
         if isinstance(node.op, ast.And):
-            self.stack.extend(['&'] * (len(node.values) - 1))
+            self.stack.append(Node('&', operators))
         elif isinstance(node.op, ast.Or):
-            self.stack.extend(['|'] * (len(node.values) - 1))
+            self.stack.append(Node('|', operators))
         else:
             assert False
 
@@ -136,6 +140,30 @@ class SimplePredicate:
             return inspect.getsource(self.predicate)
         except OSError:
             return '<error ocurred looking for predicate source>'
+
+
+_Leaf = namedtuple('Leaf', ('column', 'operator', 'value'))
+
+
+class Leaf(_Leaf):
+    def get_domain(self):
+        return [tuple(self)]
+
+
+class Node:
+    def __init__(self, type, operands):
+        assert len(operands) >= 2
+        assert all(isinstance(op, (Node, Leaf)) for op in operands)
+        self.type = type
+        self.operands = operands
+
+    def get_domain(self):
+        others = [
+            item
+            for op in self.operands
+            for item in op.get_domain()
+        ]
+        return [self.type] * (len(self.operands) - 1) + others
 
 
 def get_comparator_str(op):
