@@ -7,7 +7,7 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 
-from xopgi.ql.translate import filtered
+from xopgi.ql.translate.basic import filtered
 
 
 def test_simplest_and_invalid_predicates():
