@@ -12,15 +12,17 @@ from xopgi.ql.translate import filtered
 
 def test_simplest_and_invalid_predicates():
     assert filtered(lambda r: r.name == '1') == [('name', '=', '1')]
+    assert filtered(lambda r: not (r.name == '1')) == ['!', ('name', '=', '1')]
+    assert filtered(lambda r: not (not (r.name == '1'))) == ['!', '!', ('name', '=', '1')]
     assert filtered(lambda r: r.name == '1' and r.age < 1) == [
         '&', ('name', '=', '1'), ('age', '<', 1)
     ]
     assert filtered(lambda r: r.age < r.parent.age) == [
         ('age', '<', 'parent.age')
     ]
-    assert filtered(lambda r: (r.name == '1' and r.age < 1) or (r.name != '1' and r.age > 1)) == [
+    assert filtered(lambda r: (not(r.name == '1') and r.age < 1) or (r.name != '1' and r.age > 1)) == [
         '|',
-        '&', ('name', '=', '1'), ('age', '<', 1),
+        '&', '!', ('name', '=', '1'), ('age', '<', 1),
         '&', ('name', '!=', '1'), ('age', '>', 1)
     ]
     assert filtered(lambda r: (r.name == '1' and r.age < 1) or (r.name != '1' and r.age > 1) or r.name == 'power') == [

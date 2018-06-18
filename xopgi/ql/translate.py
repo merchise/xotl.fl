@@ -53,12 +53,22 @@ class FilterTranslator(ast.NodeVisitor):
 
     def visit_Compare(self, node):
         if len(node.comparators) != 1:
-            raise RuntimeError('Unsupported multiple comparasion')
+            raise PredicateSyntaxError('Unsupported multiple comparasion')
         self.visit(node.left)
         left = self.stack.pop()
         self.visit(node.comparators[0])
         right = self.stack.pop()
         self.stack.append(Leaf(left, get_comparator_str(node.ops[0]), right))
+
+    def visit_UnaryOp(self, node):
+        if isinstance(node.op, ast.Not):
+            self.visit(node.operand)
+            operand = self.stack.pop()
+            self.stack.append(UnaryNode('!', operand))
+        else:
+            raise PredicateSyntaxError(
+                f'Unsupported unary operator {node.op!r}'
+            )
 
     def visit_BoolOp(self, node):
         for expr in node.values:
@@ -66,9 +76,9 @@ class FilterTranslator(ast.NodeVisitor):
         operators = self.stack[-len(node.values):]
         del self.stack[-len(node.values):]
         if isinstance(node.op, ast.And):
-            self.stack.append(Node('&', operators))
+            self.stack.append(BinaryNode('&', operators))
         elif isinstance(node.op, ast.Or):
-            self.stack.append(Node('|', operators))
+            self.stack.append(BinaryNode('|', operators))
         else:
             assert False
 
@@ -88,8 +98,8 @@ class FilterTranslator(ast.NodeVisitor):
             if val.id != self.predicate.this:
                 attrs.append(val.id)
         else:
-            raise RuntimeError(
-                'Unsupported syntax.  Predicate: %r' % self.predicate.source
+            raise PredicateSyntaxError(
+                f'Unsupported syntax. Predicate: {self.predicate.source!r}'
             )
         self.stack.append('.'.join(reversed(attrs)))
 
@@ -122,11 +132,11 @@ class SimplePredicate:
         args_count = len(spec.args or [])
         defaults_count = len(spec.defaults or [])
         if args_count - 1 != defaults_count:
-            raise RuntimeError('Invalid predicate')
+            raise PredicateSyntaxError('Invalid predicate')
         kwonly_count = len(spec.kwonlyargs or [])
         kwonlydefauls_count = len(spec.kwonlydefaults or [])
         if kwonly_count != kwonlydefauls_count:
-            raise RuntimeError('Invalid predicate')
+            raise PredicateSyntaxError('Invalid predicate')
         return spec
 
     @property
@@ -150,6 +160,10 @@ class Leaf(_Leaf):
 
 
 class Node:
+    pass
+
+
+class BinaryNode(Node):
     def __init__(self, type, operands):
         assert len(operands) >= 2
         assert all(isinstance(op, (Node, Leaf)) for op in operands)
@@ -163,6 +177,16 @@ class Node:
             for item in op.get_domain()
         ]
         return [self.type] * (len(self.operands) - 1) + others
+
+
+class UnaryNode(Node):
+    def __init__(self, type, operand):
+        assert isinstance(operand, (Node, Leaf))
+        self.type = type
+        self.operand = operand
+
+    def get_domain(self):
+        return [self.type] + self.operand.get_domain()
 
 
 def get_comparator_str(op):
@@ -183,4 +207,8 @@ def get_comparator_str(op):
     elif isinstance(op, ast.NotIn):
         return 'not in'
     else:
-        raise RuntimeError(f'Unsupported comparison operation {op}')
+        raise PredicateSyntaxError(f'Unsupported comparison operation {op}')
+
+
+class PredicateSyntaxError(SyntaxError):
+    pass
