@@ -10,8 +10,6 @@ import ast
 import inspect
 from types import LambdaType
 
-from xoutil.string import cut_prefix
-
 
 def filtered(predicate, model=None):
     '''Takes a predicate over a single record and produces an Odoo domain.
@@ -46,8 +44,7 @@ class FilterTranslator(ast.NodeVisitor):
 
     @property
     def domain(self):
-        assert len(self.stack) == 1, f'Items left in the stack {self.stack!r}'
-        return self.stack[0]
+        return list(reversed(self.stack))
 
     def visit_Compare(self, node):
         exprs = []
@@ -57,14 +54,14 @@ class FilterTranslator(ast.NodeVisitor):
         for op in reversed(node.ops):
             right = self.stack.pop()
             left = self.stack.pop()
-            exprs.append((left, op, right))
+            exprs.append((left, get_comparator_str(op), right))
         self.stack.extend(exprs)
         self.stack.extend(['&'] * (len(exprs) - 1))
 
     def visit_BoolOp(self, node):
         for expr in node.values:
             self.visit(expr)
-        values = self.
+        self.stack[-len(node.values):] = list(reversed(self.stack[-len(node.values):]))
         if isinstance(node.op, ast.And):
             self.stack.extend(['&'] * (len(node.values) - 1))
         elif isinstance(node.op, ast.Or):
@@ -139,3 +136,24 @@ class SimplePredicate:
             return inspect.getsource(self.predicate)
         except OSError:
             return '<error ocurred looking for predicate source>'
+
+
+def get_comparator_str(op):
+    if isinstance(op, ast.Eq):
+        return '='
+    elif isinstance(op, ast.NotEq):
+        return '!='
+    elif isinstance(op, ast.Lt):
+        return '<'
+    elif isinstance(op, ast.LtE):
+        return '<='
+    elif isinstance(op, ast.Gt):
+        return '>'
+    elif isinstance(op, ast.GtE):
+        return '>='
+    elif isinstance(op, ast.In):
+        return 'in'
+    elif isinstance(op, ast.NotIn):
+        return 'not in'
+    else:
+        raise RuntimeError(f'Unsupported comparison operation {op}')
