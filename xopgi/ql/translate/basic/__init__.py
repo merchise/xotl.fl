@@ -9,11 +9,10 @@
 '''Basic translator for predicates to Odoo domains.
 
 '''
-
 import ast
 import inspect
 from types import LambdaType
-from collections import namedtuple
+from .dast import Leaf, BinaryNode, UnaryNode
 
 
 def filtered(predicate):
@@ -191,44 +190,6 @@ class SimplePredicate:
             return inspect.getsource(self.predicate)
         except OSError:
             return '<error ocurred looking for predicate source>'
-
-
-_Leaf = namedtuple('Leaf', ('column', 'operator', 'value'))
-
-
-class Leaf(_Leaf):
-    def get_domain(self):
-        return [tuple(self)]
-
-
-class Node:
-    pass
-
-
-class BinaryNode(Node):
-    def __init__(self, type, operands):
-        assert len(operands) >= 2
-        assert all(isinstance(op, (Node, Leaf)) for op in operands)
-        self.type = type
-        self.operands = operands
-
-    def get_domain(self):
-        others = [
-            item
-            for op in self.operands
-            for item in op.get_domain()
-        ]
-        return [self.type] * (len(self.operands) - 1) + others
-
-
-class UnaryNode(Node):
-    def __init__(self, type, operand):
-        assert isinstance(operand, (Node, Leaf))
-        self.type = type
-        self.operand = operand
-
-    def get_domain(self):
-        return [self.type] + self.operand.get_domain()
 
 
 def get_comparator_str(op):
