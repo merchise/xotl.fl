@@ -22,7 +22,7 @@ from xopgi.ql.unification.parser.exceptions import ParserError
 
 def test_tokenizer():
     # Notice tokenizer does not do grammar sense
-    assert list(tokenize('f(+x_ - y ( $z _y.is_ok)')) == [
+    assert list(tokenize('f(+x_ - y ( $z _y:is.ok)')) == [
         get_identifier('f'),
         LEFT_PAREN,
         PLUS_SIGN,
@@ -33,11 +33,11 @@ def test_tokenizer():
         DOLLAR_SIGN,
         get_identifier('z'),
         UNDERSCORE,
-        get_identifier('y.is_ok'),
+        get_identifier('y:is.ok'),
         RIGHT_PAREN,
     ]
 
 
 def test_tokenizer_invalid_token():
     with pytest.raises(ParserError):
-        list(tokenize(':'))
+        list(tokenize(';'))

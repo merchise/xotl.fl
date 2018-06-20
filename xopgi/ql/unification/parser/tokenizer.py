@@ -12,7 +12,7 @@ from typing import Iterator
 from .exceptions import ParserError
 
 
-IDENTIFIER = re.compile(r'^[a-zA-Z0-9_][a-zA-Z0-9_\.]*$', re.ASCII)
+IDENTIFIER = re.compile(r'^[a-zA-Z0-9_][a-zA-Z0-9_\.:]*$', re.ASCII)
 WHITESPACES = re.compile(r'\s+', re.M)
 # NOTE: The UNDERSCORE is in the IDENTIFIER and we divide it when matching
 # over it.
