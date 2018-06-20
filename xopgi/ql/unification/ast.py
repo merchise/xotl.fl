@@ -65,6 +65,9 @@ class Variable(Term):
         else:
             return f'{self.name}'
 
+    def __repr__(self):
+        return f'<Var({str(self)!r})>'
+
 
 Var = Variable
 
@@ -89,6 +92,9 @@ class Literal(Term):
     def __hash__(self):
         return hash(self.payload)
 
+    def __repr__(self):
+        return f'<Literal({self.payload!r})>'
+
 
 class Function(Term):
     '''A function call pattern.
@@ -112,7 +118,11 @@ class Function(Term):
     def __init__(self, name: str, args: List[Term]) -> None:
         assert all(isinstance(arg, Term) for arg in args)
         self.name = name
-        self.arity = len(args)
+        self.args = args
+
+    @property
+    def arity(self):
+        return len(self.args)
 
     def __eq__(self, other: Term):
         # functions with the same name and arity are the same, the arguments
@@ -124,3 +134,9 @@ class Function(Term):
 
     def __hash__(self):
         return hash((self.name, self.arity))
+
+    def __repr__(self):
+        if self.arity > 0:
+            return f'<Function({self.name!r}, {self.args!r})>'
+        else:
+            return f'<Function({self.name!r})>'
