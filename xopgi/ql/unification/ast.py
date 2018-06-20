@@ -6,7 +6,7 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Option, List
+from typing import Optional as Option, List
 
 
 class Term:
