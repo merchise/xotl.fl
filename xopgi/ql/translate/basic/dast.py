@@ -8,8 +8,8 @@
 #
 '''Odoo Domain Abstract Syntax Tree.
 
-The Python AST we get from the predicate, it's in our view a more Concrete
-Syntax Tree.  The Odoo Domain AST, can only represent expression which are
+The Python AST we get from the predicate is, in our view, a more Concrete
+Syntax Tree.  The Odoo Domain AST can only represent expression which are
 translatable to Odoo Domain.
 
 '''
