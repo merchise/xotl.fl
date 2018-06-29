@@ -13,10 +13,10 @@ from .exceptions import ParserError
 
 
 IDENTIFIER = re.compile(r'^[a-zA-Z0-9_][a-zA-Z0-9_\.:]*$', re.ASCII)
-WHITESPACES = re.compile(r'\s+', re.M)
+WHITESPACES = re.compile(r'[ \t]+')
 # NOTE: The UNDERSCORE is in the IDENTIFIER and we divide it when matching
 # over it.
-SIGNS = re.compile(r'(<=|<|>=|>|==|!=|\+|-|\*|/|\(|\)|\$)')
+SIGNS = re.compile(r'(<=|<|>=|>|==|!=|\+|-|\*|/|\(|\)|\$|\n)')
 
 
 class Token:
@@ -56,7 +56,9 @@ MINUS_SIGN = Token('MINUS_SIGN')
 MUL_SIGN = Token('MUL_SIGN')
 DIV_SIGN = Token('DIV_SIGN')
 DOLLAR_SIGN = Token('DOLLAR_SIGN')
+NEW_LINE = Token('\n')
 TOKENS_MAP = {
+    '\n': NEW_LINE,
     '<': LT_SIGN,
     '<=': LE_SIGN,
     '>': GT_SIGN,
