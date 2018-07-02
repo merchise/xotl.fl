@@ -80,6 +80,14 @@ def get_identifier(name):
     return Token('identifier', name)
 
 
+def _identifier(name):
+    if name.startswith('_'):
+        yield UNDERSCORE
+        name = name[1:]
+    if name:
+        yield get_identifier(name)
+
+
 def tokenize(source: str) -> Iterator[Token]:
     '''Tokenize the `source` code.'''
     # TODO: This is quite inefficient because we use a regular expressions for
@@ -93,11 +101,7 @@ def tokenize(source: str) -> Iterator[Token]:
         if tk is not None:
             yield tk
         elif IDENTIFIER.match(chunk):
-            if chunk.startswith('_'):
-                yield UNDERSCORE
-                chunk = chunk[1:]
-            if chunk:
-                yield get_identifier(chunk)
+            yield from _identifier(chunk)
         else:
             # At this point, we may have non-spaced program like 'f()' or
             # 'x+y'.  Splitting by SIGNS must yield identifiers and signs...
@@ -107,11 +111,7 @@ def tokenize(source: str) -> Iterator[Token]:
             for sign in SIGNS.finditer(chunk):
                 word = chunk[pos1:sign.start()]
                 if word and IDENTIFIER.match(word):
-                    if word.startswith('_'):
-                        yield UNDERSCORE
-                        word = word[1:]
-                    if word:
-                        yield get_identifier(word)
+                    yield from _identifier(word)
                 elif word:
                     raise ParserError(
                         f'Expected identifier, found {word!r} at {pos + pos1}'
@@ -120,7 +120,7 @@ def tokenize(source: str) -> Iterator[Token]:
                 pos1 = sign.end()
             word = chunk[pos1:]
             if word and IDENTIFIER.match(word):
-                yield get_identifier(word)
+                yield from _identifier(word)
             elif word:
                 raise ParserError(
                     f'Expected identifier, found {word!r} at {pos + pos1}'

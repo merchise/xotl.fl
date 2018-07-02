@@ -23,6 +23,12 @@ from xopgi.ql.unification.parser.exceptions import ParserError
 
 def test_tokenizer():
     # Notice tokenizer does not do grammar sense
+    assert list(tokenize('x+_y')) == [
+        get_identifier('x'),
+        PLUS_SIGN,
+        UNDERSCORE,
+        get_identifier('y')
+    ]
     assert list(tokenize('f(+x_ - \ny\n ( $z _y:\nis.ok)')) == [
         get_identifier('f'),
         LEFT_PAREN,
