@@ -23,7 +23,7 @@ Anonymous variables can be unnamed::
 
     f(_)
 
-Literals are just strings non-space ASCII letters and digits.
+Literals are just strings of non-space ASCII letters and digits.
 
 Function calls are a name (literal-like) followed by ``(`` and zero or more
 terms separated by commas, and a ``)``.

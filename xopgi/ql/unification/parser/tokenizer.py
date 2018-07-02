@@ -99,9 +99,10 @@ def tokenize(source: str) -> Iterator[Token]:
             if chunk:
                 yield get_identifier(chunk)
         else:
-            # We can a non-spaced program like 'f()' or 'x+y'.  Splitting by
-            # SIGNS must yield identifiers and signs...  The simplest case (an
-            # identifier) 'f' is done after attempting to find signs.
+            # At this point, we may have non-spaced program like 'f()' or
+            # 'x+y'.  Splitting by SIGNS must yield identifiers and signs...
+            # The simplest case (an identifier) 'f' is done after attempting
+            # to find signs.
             pos1 = 0
             for sign in SIGNS.finditer(chunk):
                 word = chunk[pos1:sign.start()]

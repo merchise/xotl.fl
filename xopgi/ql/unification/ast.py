@@ -19,7 +19,7 @@ class Variable(Term):
     '''A variable in the AST.
 
     The two kinds of variables: named and anonymous.  Anonymous variables
-    ignore the name (you SHOULD pass None, but drop it):
+    ignore the name::
 
        >>> Variable('x', anon=True).name is None
        True
