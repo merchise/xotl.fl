@@ -14,7 +14,7 @@ chapter 9 of 'The Implementation of Functional Programming Languages'.
 '''
 from typing import Mapping, Any
 
-from .. import Type
+from .base import Type
 
 
 class AST:
