@@ -11,24 +11,28 @@ import pytest
 from functools import partial
 from xoutil.fp.tools import compose
 
+
 from xopgi.ql.lang.types import (
     TypeVariable as T,
     FunctionType as F,
     ConsType as C,
 )
 from xopgi.ql.lang.types import scompose, subtype, delta, sidentity
-from xopgi.ql.lang.types.base import unify, UnificationError
+from xopgi.ql.lang.types.base import unify, UnificationError, parse
 from xopgi.ql.lang.types.typecheck import genvars
 
 
 # The id function type
-I = F(T('a'), T('a'))
+I = parse('a -> a')
+assert I == F(T('a'), T('a'))
 
 
 # The K combinator: a -> b -> a
-K = F(T('a'), F(T('b'), T('a')))
+K = parse('a -> b -> a')
+assert K == F(T('a'), F(T('b'), T('a')))
 
 
+# parse doesn't support this type
 # The S combinator: Lx Ly Lz. x z (y z)
 # (a -> b -> c) -> (a -> b) -> b -> c
 bc = F(T('b'), T('c'))
@@ -68,7 +72,7 @@ def test_unify_basic_vars():
 
 def test_unify_vars_with_cons():
     t1 = T('a')
-    t2 = F(T('x'), T('y'))
+    t2 = parse('x -> y')
     unification = unify(sidentity, (t1, t2))
     assert subtype(unification, t1) == subtype(unification, t2)
     unification = unify(sidentity, (t2, t1))
@@ -76,8 +80,8 @@ def test_unify_vars_with_cons():
 
 
 def test_unify_cons():
-    t1 = F(T('a'), F(T('b'), T('c')))
-    t2 = F(T('x'), T('y'))
+    t1 = parse('a -> b -> c')
+    t2 = parse('x -> y')
     unification = unify(sidentity, (t1, t2))
     assert subtype(unification, t1) == subtype(unification, t2)
     # TODO: dig in the result, 'unification' must make a = x, and (b -> c) = y
@@ -85,9 +89,12 @@ def test_unify_cons():
     with pytest.raises(UnificationError):
         unify(sidentity, (C('Int'), C('Num')))
 
-    aa = F(T('a'), T('a'))
-    ab = F(T('a'), T('b'))
-    ba = F(T('b'), T('a'))
+    aa = I
+    ab = parse('a -> b')
+    ba = parse('b -> a')
+    # 'b -> a' and 'a -> b' unify because we can do a = b.  Also 'a -> a' and
+    # 'b -> a' for the same reason; notice that 'b -> a' does not imply
+    # they must be different.
     unification = unify(sidentity, (ab, ba))
     assert subtype(unification, ab) == subtype(unification, ba)
 
