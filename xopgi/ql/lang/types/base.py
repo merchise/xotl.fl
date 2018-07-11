@@ -142,8 +142,8 @@ def sidentity(s: str) -> Type:
     return T(s)
 
 
-def delta(vname: str, const, *args) -> Substitution:
-    '''Create a `delta substitution` from a variable name `vname`.
+class delta:  # type: Substitution
+    '''A `delta substitution` from a variable name `vname`.
 
     To avoid reusing instances of the same type expression, this function
     takes the constructor and it's arguments.  If you do want to use the same
@@ -163,10 +163,18 @@ def delta(vname: str, const, *args) -> Substitution:
 
        >>> f('b') is f('b')
        False
-
-
     '''
-    return lambda s: const(*args) if s == vname else TVar(s)
+    def __init__(self, vname: str, const, *args):
+        self.vname = vname
+        self.const = const
+        self.args = args
+
+    def __call__(self, s: str) -> Type:
+        return self.result if s == self.vname else TVar(s)
+
+    @property
+    def result(self):
+        return self.const(*self.args)
 
 
 def genvars(prefix='a', *, limit=None):
