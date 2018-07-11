@@ -85,5 +85,18 @@ def test_unify_cons():
     with pytest.raises(UnificationError):
         unify(sidentity, (C('Int'), C('Num')))
 
-    unify(sidentity, (F(T('a'), T('b')), F(T('b'), T('a'))))
-    unify(sidentity, (F(T('a'), T('a')), F(T('b'), T('a'))))
+    aa = F(T('a'), T('a'))
+    ab = F(T('a'), T('b'))
+    ba = F(T('b'), T('a'))
+    unification = unify(sidentity, (ab, ba))
+    assert subtype(unification, ab) == subtype(unification, ba)
+
+    unification = unify(sidentity, (aa, ba))
+    assert subtype(unification, aa) == subtype(unification, ba)
+
+    # We can't unify 'Int -> b' with 'b -> Num', because b can't be both Int
+    # and Num...
+    with pytest.raises(UnificationError):
+        unify(sidentity, (F(C('Int'), T('b')), F(T('b'), C('Num'))))
+    # But we can unify 'Int -> b' with 'b -> a'...
+    unify(sidentity, (F(C('Int'), T('b')), F(T('b'), T('a'))))
