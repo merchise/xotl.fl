@@ -6,11 +6,18 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
+import pytest
+
 from functools import partial
 from xoutil.fp.tools import compose
 
-from xopgi.ql.lang.types import TypeVariable as T, FunctionType as F
-from xopgi.ql.lang.types import scompose, subtype, delta
+from xopgi.ql.lang.types import (
+    TypeVariable as T,
+    FunctionType as F,
+    ConsType as C,
+)
+from xopgi.ql.lang.types import scompose, subtype, delta, sidentity
+from xopgi.ql.lang.types.base import unify, UnificationError
 from xopgi.ql.lang.types.typecheck import genvars
 
 
@@ -44,3 +51,39 @@ def test_scompose_property():
 
 def test_genvars():
     assert list(genvars(limit=2)) == [T('.a0', check=False), T('.a1', check=False)]
+
+
+def test_unify_basic_vars():
+    t1 = T('a')
+    t2 = T('b')
+    unification = unify(sidentity, (t1, t2))
+    assert subtype(unification, t1) == subtype(unification, t2)
+
+    assert unification(t1.name) == t2
+    assert unification(t2.name) != t1
+
+    unification = unify(sidentity, (t2, t1))
+    assert unification(t1.name) == unification(t2.name)
+
+
+def test_unify_vars_with_cons():
+    t1 = T('a')
+    t2 = F(T('x'), T('y'))
+    unification = unify(sidentity, (t1, t2))
+    assert subtype(unification, t1) == subtype(unification, t2)
+    unification = unify(sidentity, (t2, t1))
+    assert subtype(unification, t1) == subtype(unification, t2)
+
+
+def test_unify_cons():
+    t1 = F(T('a'), F(T('b'), T('c')))
+    t2 = F(T('x'), T('y'))
+    unification = unify(sidentity, (t1, t2))
+    assert subtype(unification, t1) == subtype(unification, t2)
+    # TODO: dig in the result, 'unification' must make a = x, and (b -> c) = y
+
+    with pytest.raises(UnificationError):
+        unify(sidentity, (C('Int'), C('Num')))
+
+    unify(sidentity, (F(T('a'), T('b')), F(T('b'), T('a'))))
+    unify(sidentity, (F(T('a'), T('a')), F(T('b'), T('a'))))

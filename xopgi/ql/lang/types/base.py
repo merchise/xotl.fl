@@ -15,7 +15,7 @@ Implementation of Functional Programming Languages'.
           appropriate.
 
 '''
-from typing import List, Callable
+from typing import List, Callable, Tuple
 from itertools import zip_longest
 
 
@@ -30,8 +30,8 @@ class TypeVariable(Type):
     def __init__(self, name: str, *, check=True):
         # `check` is only here to avoid the check when generating internal
         # names (which start with a dot)
-        assert not check or name.isidentifier()
         self.name = name
+        assert not check or name.isidentifier()
 
     def __str__(self):
         return f'{self.name}'
@@ -58,10 +58,10 @@ T = TVar = TypeVariable
 
 
 class ConsType(Type):
-    def __init__(self, constructor: str, subtypes: List[Type], *, binary=False):
-        assert all(isinstance(t, Type) for t in subtypes)
+    def __init__(self, constructor: str, subtypes: List[Type] = None, *, binary=False):
+        assert not subtypes or all(isinstance(t, Type) for t in subtypes)
         self.cons = constructor
-        self.subtypes = subtypes
+        self.subtypes = subtypes or []
         self.binary = binary
 
     def __str__(self):
@@ -175,3 +175,43 @@ class delta:  # type: Substitution
     @property
     def result(self):
         return self.const(*self.args)
+
+
+class UnificationError(SyntaxError):
+    pass
+
+
+def unify(phi: Substitution, exps: Tuple[Type, Type]) -> Substitution:
+
+    def extend(phi: Substitution, name: str, t: Type) -> Substitution:
+        if isinstance(t, TVar) and name == t.name:
+            return phi
+        elif name in find_tvars(t):
+            raise UnificationError(f'Cannot unify {name} with {t}')
+        else:
+            # TODO: Make the result *descriptible*
+            return scompose(delta(name, lambda: t), phi)
+
+    def unify_with_tvar(tvar, t):
+        phitvn = phi(tvar.name)
+        if phitvn == tvar:
+            return extend(phi, tvar.name, subtype(phi, t))
+        else:
+            return unify(phi, (phitvn, subtype(phi, t)))
+
+    def unify_subtypes(p: Substitution, types: List[Tuple[Type, Type]]) -> Substitution:
+        for eqn in types:
+            p = unify(p, eqn)
+        return p
+
+    t1, t2 = exps
+    if isinstance(t1, TVar):
+        return unify_with_tvar(t1, t2)
+    elif isinstance(t2, TVar):
+        return unify_with_tvar(t2, t1)
+    else:
+        assert isinstance(t1, ConsType) and isinstance(t2, ConsType)
+        if t1.cons == t2.cons:
+            return unify_subtypes(phi, zip(t1.subtypes, t2.subtypes))
+        else:
+            raise UnificationError(f'Cannot unify {t1} with {t2}')
