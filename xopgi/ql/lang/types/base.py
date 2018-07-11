@@ -124,7 +124,7 @@ def subtype(phi: Substitution, t: Type) -> Type:
         )
 
 
-def scompose(f: Substitution, g: Substitution) -> Substitution:
+class scompose:
     '''Compose two substitutions.
 
     The crucial property of scompose is that::
@@ -132,14 +132,27 @@ def scompose(f: Substitution, g: Substitution) -> Substitution:
        subtype (scompose f g) = (subtype f) . (subtype g)
 
     '''
-    def result(s: str) -> Type:
-        return subtype(f, g(s))
-    return result
+    def __init__(self, f: Substitution, g: Substitution):
+        self.f = f
+        self.g = g
+
+    def __call__(self, s: str) -> Type:
+        return subtype(self.f, self.g(s))
+
+    def __repr__(self):
+        return f'scompose({self.f!r}, {self.g!r})'
 
 
-def sidentity(s: str) -> Type:
+class Identity:
     'The identity substitution.'
-    return T(s)
+    def __call__(self, s: str) -> Type:
+        return T(s)
+
+    def __repr__(self):
+        return f'Indentity()'
+
+
+sidentity = Identity()
 
 
 class delta:  # type: Substitution
@@ -175,6 +188,9 @@ class delta:  # type: Substitution
     @property
     def result(self):
         return self.const(*self.args)
+
+    def __repr__(self):
+        return f'delta({self.vname!r}, {self.result!r})'
 
 
 class UnificationError(SyntaxError):
