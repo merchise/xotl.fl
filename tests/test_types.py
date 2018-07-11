@@ -10,7 +10,8 @@ from functools import partial
 from xoutil.fp.tools import compose
 
 from xopgi.ql.lang.types import TypeVariable as T, FunctionType as F
-from xopgi.ql.lang.types import scompose, subtype, genvars, delta
+from xopgi.ql.lang.types import scompose, subtype, delta
+from xopgi.ql.lang.types.typecheck import genvars
 
 
 # The id function type
