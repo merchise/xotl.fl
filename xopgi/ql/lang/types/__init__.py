@@ -24,6 +24,4 @@ from .base import (   # noqa: reexport
 
     ListType, TupleType,
     IntType,
-
-    scompose, delta, subtype, sidentity,
 )

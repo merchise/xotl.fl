@@ -17,8 +17,8 @@ from xopgi.ql.lang.types import (
     FunctionType as F,
     ConsType as C,
 )
-from xopgi.ql.lang.types import scompose, subtype, delta, sidentity
-from xopgi.ql.lang.types.base import unify, UnificationError, parse
+from xopgi.ql.lang.types.unification import scompose, subtype, delta, sidentity
+from xopgi.ql.lang.types.unification import unify, UnificationError, parse
 from xopgi.ql.lang.types.typecheck import genvars
 
 
