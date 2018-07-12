@@ -21,7 +21,7 @@ from .unification import subtype, find_tvars, Substitution
 class TypeScheme:
     def __init__(self, names: List[str], t: Type) -> None:
         self.names = names
-        self.t = names
+        self.t = t
 
     @property
     def unknowns(self) -> List[str]:
