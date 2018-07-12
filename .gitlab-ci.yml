@@ -60,8 +60,31 @@ run all Odoo 11 tests:
     - tox
     - xoeuf-tester
 
+
+.run_tox_staticcheck: &run_tox_staticcheck
+  stage: pre-check
+  allow_failure: true
+  script:
+    - export CWD=`pwd`
+    - export ODOO_URI=file://$HOME/src/$ODOO_WORKTREE
+    - cd ~/src/$ODOO_WORKTREE
+    - git pull
+    - cd $CWD
+    - tox -e system-$ODOO_WORKTREE-staticcheck
+  tags:
+    - tox
+    - xoeuf-tester
+
+
 run tox Odoo 11 tests:
   <<: *run_tox_tests
+  variables:
+    ODOO_WORKTREE: odoo11
+  only:
+    - branches
+
+run static checks (Odoo 11):
+  <<: *run_tox_staticcheck
   variables:
     ODOO_WORKTREE: odoo11
   only:
