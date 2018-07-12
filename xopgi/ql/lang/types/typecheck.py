@@ -12,9 +12,26 @@ An experimental Python implementation of the same type-checker implemented in
 chapter 9 of 'The Implementation of Functional Programming Languages'.
 
 '''
-from typing import Mapping, Any
+from typing import Mapping, Any, List
 
 from .base import Type, TVar
+from .unification import subtype, find_tvars, Substitution
+
+
+class TypeScheme:
+    def __init__(self, names: List[str], t: Type):
+        self.names = names
+        self.t = names
+
+    @property
+    def unknowns(self) -> List[str]:
+        return [name for name in find_tvars(self.t) if name not in self.names]
+
+
+def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
+    '''Apply a substitution to a type scheme.'''
+    exclude = lambda s: phi(s) if s not in ts.names else TVar(s)
+    return TypeScheme(ts.names, subtype(exclude, ts.t))
 
 
 def genvars(prefix='a', *, limit=None):
