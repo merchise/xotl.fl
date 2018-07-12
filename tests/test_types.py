@@ -104,6 +104,6 @@ def test_unify_cons():
     # We can't unify 'Int -> b' with 'b -> Num', because b can't be both Int
     # and Num...
     with pytest.raises(UnificationError):
-        unify(sidentity, (F(C('Int'), T('b')), F(T('b'), C('Num'))))
+        unify(sidentity, (parse('Int -> b'), parse('b -> Num')))
     # But we can unify 'Int -> b' with 'b -> a'...
-    unify(sidentity, (F(C('Int'), T('b')), F(T('b'), T('a'))))
+    unify(sidentity, (parse('Int -> b'), ba))

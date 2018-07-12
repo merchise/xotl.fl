@@ -150,9 +150,8 @@ def parse(code):
     def take():
         tk = tokens.pop()
         if tk.isidentifier():
-            if tk[0].upper() == tk[0]:
-                what = C(tk, stack[:])
-                stack[:] = [what]
+            if tk[0].isupper():
+                stack[:] = [C(tk, stack[:])]
             else:
                 stack.append(T(tk))
         return tk
@@ -162,10 +161,9 @@ def parse(code):
     while tokens:
         tk = take()
         if tk == '->':
-            take()  # take the previous before '->' to create the Function
-            assert len(stack) == 2
-            f = stack.pop()
             g = stack.pop()
+            take()  # take the previous before '->' to create the Function
+            f = stack.pop()
             stack.append(F(f, g))
     assert len(stack) == 1
     return stack[0]
