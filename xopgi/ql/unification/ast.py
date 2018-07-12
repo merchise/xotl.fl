@@ -47,7 +47,7 @@ class Variable(Term):
         self.name = name if not anon else id(self)
         self.anon = anon
 
-    def __eq__(self, other: Term):
+    def __eq__(self, other):
         if isinstance(other, Variable):
             if self.anon or other.anon:
                 return self is other
@@ -83,7 +83,7 @@ class Literal(Term):
     def __init__(self, payload):
         self.payload = payload
 
-    def __eq__(self, other: Term):
+    def __eq__(self, other):
         if isinstance(other, Literal):
             return self.payload == other.payload
         else:
@@ -124,7 +124,7 @@ class Function(Term):
     def arity(self):
         return len(self.args)
 
-    def __eq__(self, other: Term):
+    def __eq__(self, other):
         # functions with the same name and arity are the same, the arguments
         # must be unified.
         if isinstance(other, Function):
