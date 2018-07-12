@@ -27,7 +27,7 @@ class TypeVariable(Type):
     '''A type variable, which may stand for any type.
 
     '''
-    def __init__(self, name: str, *, check=True):
+    def __init__(self, name: str, *, check=True) -> None:
         # `check` is only here to avoid the check when generating internal
         # names (which start with a dot)
         self.name = name
@@ -58,7 +58,8 @@ T = TVar = TypeVariable
 
 
 class ConsType(Type):
-    def __init__(self, constructor: str, subtypes: List[Type] = None, *, binary=False):
+    def __init__(self, constructor: str, subtypes: List[Type] = None,
+                 *, binary=False) -> None:
         assert not subtypes or all(isinstance(t, Type) for t in subtypes)
         self.cons = constructor
         self.subtypes = subtypes or []

@@ -19,7 +19,7 @@ from .unification import subtype, find_tvars, Substitution
 
 
 class TypeScheme:
-    def __init__(self, names: List[str], t: Type):
+    def __init__(self, names: List[str], t: Type) -> None:
         self.names = names
         self.t = names
 
@@ -58,32 +58,32 @@ class AST:
 
 
 class Variable(AST):
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self.name = name
 
 
 class Literal(AST):
     # An extension to the algorithm.  Literals are allowed, but have a
     # definite type: the most specific type possible.
-    def __init__(self, value: Any, type_: Type):
+    def __init__(self, value: Any, type_: Type) -> None:
         self.value = value
         self.type = type_
 
 
 class LambdaAbs(AST):
-    def __init__(self, varname: str, body: AST):
+    def __init__(self, varname: str, body: AST) -> None:
         self.varname = varname
         self.body = body
 
 
 class Application(AST):
-    def __init__(self, e1: AST, e2: AST):
+    def __init__(self, e1: AST, e2: AST) -> None:
         self.e1 = e1
         self.e2 = e2
 
 
 class _LetExpr(AST):
-    def __init__(self, bindings: Mapping[str, AST], body: AST):
+    def __init__(self, bindings: Mapping[str, AST], body: AST) -> None:
         self.bindings = bindings
         self.body = body
 

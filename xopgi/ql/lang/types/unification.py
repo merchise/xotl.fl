@@ -6,7 +6,7 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Iterator
 from collections import deque
 
 from .base import C, F, Type, TVar, T
@@ -20,6 +20,7 @@ def find_tvars(t: Type) -> List[str]:
     if isinstance(t, TVar):
         return [t.name]
     else:
+        assert isinstance(t, C)
         return [tv for subt in t.subtypes for tv in find_tvars(subt)]
 
 
@@ -27,6 +28,7 @@ def subtype(phi: Substitution, t: Type) -> Type:
     if isinstance(t, TVar):
         return phi(t.name)
     else:
+        assert isinstance(t, C)
         return C(
             t.cons,
             [subtype(phi, subt) for subt in t.subtypes],
@@ -42,7 +44,7 @@ class scompose:
        subtype (scompose f g) = (subtype f) . (subtype g)
 
     '''
-    def __init__(self, f: Substitution, g: Substitution):
+    def __init__(self, f: Substitution, g: Substitution) -> None:
         self.f = f
         self.g = g
 
@@ -65,7 +67,7 @@ class Identity:
 sidentity = Identity()
 
 
-class delta:  # type: Substitution
+class delta:
     '''A `delta substitution` from a variable name `vname`.
 
     To avoid reusing instances of the same type expression, this function
@@ -87,7 +89,7 @@ class delta:  # type: Substitution
        >>> f('b') is f('b')
        False
     '''
-    def __init__(self, vname: str, const, *args):
+    def __init__(self, vname: str, const, *args) -> None:
         self.vname = vname
         self.const = const
         self.args = args
@@ -96,7 +98,7 @@ class delta:  # type: Substitution
         return self.result if s == self.vname else TVar(s)
 
     @property
-    def result(self):
+    def result(self) -> Type:
         return self.const(*self.args)
 
     def __repr__(self):
@@ -125,7 +127,8 @@ def unify(phi: Substitution, exps: Tuple[Type, Type]) -> Substitution:
         else:
             return unify(phi, (phitvn, subtype(phi, t)))
 
-    def unify_subtypes(p: Substitution, types: List[Tuple[Type, Type]]) -> Substitution:
+    def unify_subtypes(p: Substitution,
+                       types: Iterator[Tuple[Type, Type]]) -> Substitution:
         for eqn in types:
             p = unify(p, eqn)
         return p
