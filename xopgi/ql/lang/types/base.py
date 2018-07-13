@@ -17,6 +17,7 @@ Implementation of Functional Programming Languages'.
 '''
 from typing import List
 from itertools import zip_longest
+from collections import deque
 
 
 class Type:
@@ -103,3 +104,29 @@ C = ConsType
 TupleType = lambda *ts: ConsType('tuple', list(ts))
 ListType = lambda t: ConsType('list', [t])
 IntType = ConsType('int', [])
+
+
+def parse(code):
+    '''Parse the simplest type expressions.
+
+    '''
+    def take():
+        tk = tokens.pop()
+        if tk.isidentifier():
+            if tk[0].isupper():
+                stack[:] = [C(tk, stack[:])]
+            else:
+                stack.append(T(tk))
+        return tk
+
+    tokens = deque(code.split())
+    stack = []
+    while tokens:
+        tk = take()
+        if tk == '->':
+            g = stack.pop()
+            take()  # take the previous before '->' to create the Function
+            f = stack.pop()
+            stack.append(F(f, g))
+    assert len(stack) == 1
+    return stack[0]

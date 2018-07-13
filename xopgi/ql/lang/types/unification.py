@@ -7,9 +7,8 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 from typing import Callable, List, Tuple, Iterator
-from collections import deque
 
-from .base import C, F, Type, TVar, T
+from .base import C, Type, TVar, T
 
 
 Substitution = Callable[[str], Type]
@@ -144,29 +143,3 @@ def unify(phi: Substitution, exps: Tuple[Type, Type]) -> Substitution:
             return unify_subtypes(phi, zip(t1.subtypes, t2.subtypes))
         else:
             raise UnificationError(f'Cannot unify {t1} with {t2}')
-
-
-def parse(code):
-    '''Parse the simplest type expressions.
-
-    '''
-    def take():
-        tk = tokens.pop()
-        if tk.isidentifier():
-            if tk[0].isupper():
-                stack[:] = [C(tk, stack[:])]
-            else:
-                stack.append(T(tk))
-        return tk
-
-    tokens = deque(code.split())
-    stack = []
-    while tokens:
-        tk = take()
-        if tk == '->':
-            g = stack.pop()
-            take()  # take the previous before '->' to create the Function
-            f = stack.pop()
-            stack.append(F(f, g))
-    assert len(stack) == 1
-    return stack[0]
