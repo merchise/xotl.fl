@@ -19,19 +19,25 @@ from .unification import subtype, find_tvars, Substitution
 
 
 class TypeScheme:
-    def __init__(self, names: List[str], t: Type) -> None:
-        self.names = names
+    # I choose the word 'generic' instead of schematic (and thus non-generic
+    # instead of unknown), because that's probably more widespread.
+    def __init__(self, generics: List[str], t: Type) -> None:
+        self.generics = generics
         self.t = t
 
     @property
-    def unknowns(self) -> List[str]:
-        return [name for name in find_tvars(self.t) if name not in self.names]
+    def nongenerics(self) -> List[str]:
+        return [
+            name
+            for name in find_tvars(self.t)
+            if name not in self.generics
+        ]
 
 
 def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
     '''Apply a substitution to a type scheme.'''
-    exclude = lambda s: phi(s) if s not in ts.names else TVar(s)
-    return TypeScheme(ts.names, subtype(exclude, ts.t))
+    exclude: Substitution = lambda s: phi(s) if s not in ts.generics else TVar(s)
+    return TypeScheme(ts.generics, subtype(exclude, ts.t))
 
 
 def genvars(prefix='a', *, limit=None):
