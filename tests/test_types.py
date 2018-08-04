@@ -20,7 +20,7 @@ from xopgi.ql.lang.types import (
 from xopgi.ql.lang.types.base import parse
 from xopgi.ql.lang.types.unification import scompose, subtype, delta, sidentity
 from xopgi.ql.lang.types.unification import unify, UnificationError
-from xopgi.ql.lang.types.typecheck import genvars
+from xopgi.ql.lang.types.typecheck import namesupply
 
 
 # The id function type
@@ -54,8 +54,8 @@ def test_scompose_property():
     assert fog1(S) == fog2(S), f'{fog1(S)} != {fog2(S)}'
 
 
-def test_genvars():
-    assert list(genvars(limit=2)) == [T('.a0', check=False), T('.a1', check=False)]
+def test_namesupply():
+    assert list(namesupply(limit=2, exclude='.a0')) == [T('.a1', check=False), T('.a2', check=False)]
 
 
 def test_unify_basic_vars():

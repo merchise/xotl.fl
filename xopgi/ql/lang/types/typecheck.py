@@ -40,8 +40,8 @@ def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
     return TypeScheme(ts.generics, subtype(exclude, ts.t))
 
 
-def genvars(prefix='a', *, limit=None):
-    '''An stream of type variables.
+class namesupply:
+    '''A names supply.
 
     Each variable will be name '.{prefix}{index}'; where the index starts at 0
     and increases by one at each new name.
@@ -49,14 +49,33 @@ def genvars(prefix='a', *, limit=None):
     If `limit` is None (or 0), return a unending stream; otherwise yield as
     many items as `limit`:
 
-       >>> list(genvars(limit=2))
+       >>> list(namesupply(limit=2))
        [TypeVariable('.a0'), TypeVariable('.a1')]
 
     '''
-    i = 0
-    while not limit or i < limit:
-        yield TVar(f'.{prefix}{i}', check=False)
-        i += 1
+    def __init__(self, prefix='a', exclude: List[str] = None,
+                 *, limit: int = None) -> None:
+        self.prefix = prefix
+        self.exclude = exclude
+        self.limit = limit
+        self.current_index = 0
+        self.count = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> TVar:
+        if not self.limit or self.count < self.limit:
+            result = None
+            while not result:
+                name = f'.{self.prefix}{self.current_index}'
+                if not self.exclude or name not in self.exclude:
+                    result = name
+                self.current_index += 1
+            self.count += 1
+            return TVar(result, check=False)
+        else:
+            raise StopIteration
 
 
 class AST:
