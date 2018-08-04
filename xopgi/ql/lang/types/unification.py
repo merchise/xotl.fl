@@ -87,6 +87,7 @@ class delta:
 
        >>> f('b') is f('b')
        False
+
     '''
     def __init__(self, vname: str, const, *args) -> None:
         self.vname = vname

@@ -58,7 +58,7 @@ class TypeVariable(Type):
 T = TVar = TypeVariable
 
 
-class ConsType(Type):
+class TypeCons(Type):
     def __init__(self, constructor: str, subtypes: List[Type] = None,
                  *, binary=False) -> None:
         assert not subtypes or all(isinstance(t, Type) for t in subtypes)
@@ -79,10 +79,10 @@ class ConsType(Type):
             return self.cons
 
     def __repr__(self):
-        return f'ConsType({self.cons!r}, {self.subtypes!r})'
+        return f'TypeCons({self.cons!r}, {self.subtypes!r})'
 
     def __eq__(self, other):
-        if isinstance(other, ConsType):
+        if isinstance(other, TypeCons):
             return self.cons == other.cons and all(
                 t1 == t2
                 for t1, t2 in zip_longest(self.subtypes, other.subtypes)
@@ -99,16 +99,15 @@ class ConsType(Type):
         return 1 + sum(len(st) for st in self.subtypes)
 
 
-F = FunctionType = lambda a, b: ConsType('->', [a, b], binary=True)
-C = ConsType
-TupleType = lambda *ts: ConsType('tuple', list(ts))
-ListType = lambda t: ConsType('list', [t])
-IntType = ConsType('int', [])
+F = FunctionType = lambda a, b: TypeCons('->', [a, b], binary=True)
+C = TCons = TypeCons
+TupleType = lambda *ts: C('tuple', list(ts))
+ListType = lambda t: C('list', [t])
+IntType = C('int', [])
 
 
 def parse(code):
     '''Parse the simplest type expressions.
-
     '''
     def take():
         tk = tokens.pop()

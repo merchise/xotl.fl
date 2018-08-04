@@ -18,7 +18,7 @@ Implementation of Functional Programming Languages'.
 from .base import (   # noqa: reexport
     TypeVariable, TVar, T,
 
-    ConsType,
+    TypeCons, TCons, C,
 
     FunctionType, F,
 

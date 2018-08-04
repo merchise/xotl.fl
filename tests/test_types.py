@@ -15,7 +15,7 @@ from xoutil.fp.tools import compose
 from xopgi.ql.lang.types import (
     TypeVariable as T,
     FunctionType as F,
-    ConsType as C,
+    TypeCons as C,
 )
 from xopgi.ql.lang.types.base import parse
 from xopgi.ql.lang.types.unification import scompose, subtype, delta, sidentity
