@@ -41,6 +41,7 @@ setup(
         'xoutil>=1.9.4',
         'xoeuf>=0.40',
         'xotl.ql>=0.6.0',
+        'ply',
     ],
     entry_points='''
     [xoeuf.addons]
