@@ -64,7 +64,7 @@ class namesupply:
     def __iter__(self):
         return self
 
-    def __next__(self) -> TVar:
+    def __next__(self) -> TypeVariable:
         if not self.limit or self.count < self.limit:
             result = None
             while not result:
