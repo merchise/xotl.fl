@@ -1,0 +1,10 @@
+include *.txt
+include *.py
+include *.ini
+include *.rst
+
+recursive-include docs *.rst *.txt Makefile *.py
+recursive-include xopgi.ql *.py *.txt *.rst *.out
+
+prune .tox
+prune docs/build

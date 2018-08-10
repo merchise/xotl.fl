@@ -55,13 +55,14 @@ class TypeVariable(Type):
         return 0   # So that 'Int' has a bigger size than 'a'.
 
 
-T = TVar = TypeVariable
+T = TVar = TypeVar = TypeVariable
 
 
 class TypeCons(Type):
     def __init__(self, constructor: str, subtypes: List[Type] = None,
                  *, binary=False) -> None:
-        assert not subtypes or all(isinstance(t, Type) for t in subtypes)
+        assert not subtypes or all(isinstance(t, Type) for t in subtypes), \
+            f'Invalid subtypes: {subtypes!r}'
         self.cons = constructor
         self.subtypes = subtypes or []
         self.binary = binary
@@ -107,25 +108,5 @@ IntType = C('int', [])
 
 
 def parse(code):
-    '''Parse the simplest type expressions.
-    '''
-    def take():
-        tk = tokens.pop()
-        if tk.isidentifier():
-            if tk[0].isupper():
-                stack[:] = [C(tk, stack[:])]
-            else:
-                stack.append(T(tk))
-        return tk
-
-    tokens = deque(code.split())
-    stack = []
-    while tokens:
-        tk = take()
-        if tk == '->':
-            g = stack.pop()
-            take()  # take the previous before '->' to create the Function
-            f = stack.pop()
-            stack.append(F(f, g))
-    assert len(stack) == 1
-    return stack[0]
+    from .parser import parser
+    return parser.parse(code)

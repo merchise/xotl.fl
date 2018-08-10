@@ -31,13 +31,13 @@ assert I == F(T('a'), T('a'))
 # The K combinator: a -> b -> a
 K = parse('a -> b -> a')
 assert K == F(T('a'), F(T('b'), T('a')))
+assert K == parse('a -> (b -> a)')
 
 
-# parse doesn't support this type
 # The S combinator: Lx Ly Lz. x z (y z)
-# (a -> b -> c) -> (a -> b) -> b -> c
+S = parse('(a -> b -> c) -> (a -> b) -> b -> c')
 bc = F(T('b'), T('c'))
-S = F(
+assert S == F(
     F(T('a'), bc),
     F(F(T('a'), T('b')), bc)
 )
@@ -86,7 +86,6 @@ def test_unify_cons():
     unification = unify(sidentity, (t1, t2))
     assert subtype(unification, t1) == subtype(unification, t2)
     # TODO: dig in the result, 'unification' must make a = x, and (b -> c) = y
-
     with pytest.raises(UnificationError):
         unify(sidentity, (C('Int'), C('Num')))
 
