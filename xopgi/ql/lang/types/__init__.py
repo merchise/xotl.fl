@@ -25,3 +25,6 @@ from .base import (   # noqa: reexport
     ListType, TupleType,
     IntType,
 )
+
+from .base import parse  # noqa
+from .typecheck import TypeScheme  # noqa

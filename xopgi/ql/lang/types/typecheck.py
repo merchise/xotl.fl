@@ -19,6 +19,18 @@ from .unification import subtype, find_tvars, Substitution
 
 
 class TypeScheme:
+    '''A type scheme with generic (schematics) type variables.
+
+    Example:
+
+      >>> from xopgi.ql.lang.types.parser import parse
+      >>> map_type = TypeScheme(['a', 'b'],
+      ...                       parse('(a -> b) -> List a -> List b'))
+
+      >>> map_type
+      <TypeScheme: forall a b. (a -> b) -> ((List a) -> (List b))>
+
+    '''
     # I choose the word 'generic' instead of schematic (and thus non-generic
     # instead of unknown), because that's probably more widespread.
     def __init__(self, generics: List[str], t: Type) -> None:
@@ -32,6 +44,16 @@ class TypeScheme:
             for name in find_tvars(self.t)
             if name not in self.generics
         ]
+
+    @property
+    def names(self):
+        return ' '.join(self.generics)
+
+    def __str__(self):
+        return f'forall {self.names!s}. {self.t!s}'
+
+    def __repr__(self):
+        return f'<TypeScheme: {self!s}>'
 
 
 def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
