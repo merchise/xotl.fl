@@ -11,6 +11,11 @@ from typing import Callable, List, Tuple, Iterator
 from .base import C, Type, TVar, T
 
 
+# `Substitution` is a type; `scompose`:class: is a substitution by
+# composition, `delta`:class: creates the simplest non-empty substitution.
+#
+# TODO: We could modify the algorithm so that we can *inspect* which variables
+# are being substituted; but that's not essential to the Substitution Type.
 Substitution = Callable[[str], Type]
 
 
@@ -110,7 +115,11 @@ class UnificationError(SyntaxError):
 
 
 def unify(phi: Substitution, exps: Tuple[Type, Type]) -> Substitution:
+    '''Extend `phi` so that it unifies all expressions.
 
+    '''
+    # This a combination of the function unifyl and unify in the Book.  I
+    # don't see any value in following the Book exactly.
     def extend(phi: Substitution, name: str, t: Type) -> Substitution:
         if isinstance(t, TVar) and name == t.name:
             return phi
