@@ -35,11 +35,10 @@ assert K == parse('a -> (b -> a)')
 
 
 # The S combinator: Lx Ly Lz. x z (y z)
-S = parse('(a -> b -> c) -> (a -> b) -> b -> c')
-bc = F(T('b'), T('c'))
+S = parse('(a -> b -> c) -> (a -> b) -> a -> c')
 assert S == F(
-    F(T('a'), bc),
-    F(F(T('a'), T('b')), bc)
+    F(T('a'), parse('b -> c')),
+    F(F(T('a'), T('b')), parse('a -> c'))
 )
 
 
