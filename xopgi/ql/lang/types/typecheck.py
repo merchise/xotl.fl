@@ -14,7 +14,7 @@ chapter 9 of 'The Implementation of Functional Programming Languages'.
 '''
 from typing import Mapping, Any, List
 
-from .base import Type, TVar
+from .base import Type, TVar, TypeVariable
 from .unification import subtype, find_tvars, Substitution
 
 

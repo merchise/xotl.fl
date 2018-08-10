@@ -17,7 +17,6 @@ Implementation of Functional Programming Languages'.
 '''
 from typing import List
 from itertools import zip_longest
-from collections import deque
 
 
 class Type:
