@@ -9,8 +9,8 @@
 import pytest
 
 from functools import partial
+from ply import lex
 from xoutil.fp.tools import compose
-
 
 from xopgi.ql.lang.types import (
     TypeVariable as T,
@@ -109,4 +109,14 @@ def test_unify_cons():
 
 
 def test_parse_with_newlines():
+    # I'm not sure if I should allow for newlines at any point.  This test
+    # that we should not break before the arrow, but are allowed to break
+    # after.  If you want to break before the arrow you must use parenthesis.
+    with pytest.raises(lex.LexError):
+        parse('a \n -> b')  # You can't just break the arrow like that!
+
+    assert parse('a -> \n b') == parse('(a) \n -> b')
     assert parse('(a -> \n b -> c) \n -> (\n a -> b\n) -> \n a -> c') == S
+
+    with pytest.raises(lex.LexError):
+        parse('a \n b')  # You can't break application.

@@ -26,8 +26,10 @@ tokens = (
     'SPACE',
 )
 
-t_SPACE = r'[\s\t]+'
-t_ARROW = r'[\s\t]*->[\s\t]*'
+t_SPACE = r'[ \t]+'
+
+t_ARROW = r'[ \t]*->[\s\t]*'   # Don't recognize a \n before the arrow.
+
 t_LPAREN = r'[\s\t]*\([\s\t]*'
 t_RPAREN = r'[\s\t]*\)[\s\t]*'
 
