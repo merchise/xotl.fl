@@ -35,4 +35,3 @@ from .base import (   # noqa: reexport
 )
 
 from .base import parse  # noqa
-from .typecheck import TypeScheme  # noqa

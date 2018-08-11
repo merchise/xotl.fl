@@ -20,7 +20,7 @@ from xopgi.ql.lang.types import (
 from xopgi.ql.lang.types.base import parse
 from xopgi.ql.lang.types.unification import scompose, subtype, delta, sidentity
 from xopgi.ql.lang.types.unification import unify, UnificationError
-from xopgi.ql.lang.types.typecheck import namesupply
+from xopgi.ql.lang.expressions.typecheck import namesupply
 
 
 # The id function type

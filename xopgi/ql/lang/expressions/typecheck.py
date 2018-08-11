@@ -6,10 +6,12 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Mapping, Any, List, Tuple, Iterator
+from typing import Any, List, Tuple, Iterator
 
-from .base import Type, TypeVariable as TypeVar
-from .unification import subtype, find_tvars, Substitution
+from ..types.base import Type, TypeVariable as TypeVar
+from ..types.unification import subtype, find_tvars, Substitution
+
+from .base import AST
 
 
 class TypeScheme:
@@ -56,6 +58,46 @@ def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
     return TypeScheme(ts.generics, subtype(exclude, ts.t))
 
 
+AssocList = List[Tuple[Any, Any]]
+
+
+def dom(al: AssocList) -> List[Any]:
+    return [k for k, _ in al]
+
+
+def val(al: AssocList, key: Any) -> List[Any]:
+    return [v for k, v in al if k == key]
+
+
+def rng(al: AssocList) -> List[Any]:
+    # The provided implementation in the Book (``map (val al) (dom al)``) is
+    # rather inefficient (O(n^2), because for each key it takes all its
+    # values).
+    return [v for _, v in al]
+
+
+def install_al(al: AssocList, key: Any, val: Any) -> AssocList:
+    # This is inefficient!!!
+    return [(key, val)] + al
+
+
+def insert_al(al: AssocList, key: Any, val: Any) -> AssocList:
+    al.insert(0, (key, val))
+    return al
+
+
+#: A subtype of AssocList from names to TypeSchemes.
+TypeEnvironment = List[Tuple[str, TypeScheme]]
+
+
+def get_typeenv_unknowns(te: TypeEnvironment) -> List[str]:
+    return sum((t.nongenerics for _, t in te), [])
+
+
+def sub_typeenv(phi: Substitution, te: TypeEnvironment) -> TypeEnvironment:
+    return [(x, subscheme(phi, st)) for x, st in te]
+
+
 class namesupply:
     '''A names supply.
 
@@ -94,44 +136,17 @@ class namesupply:
             raise StopIteration
 
 
-class AST:
-    pass
+class TypeChecker:
+    def __init__(self, env: TypeEnvironment, ns: Iterator[TypeVar]) -> None:
+        self.env = env
+        self.ns = ns
+
+    def __call__(self, exp: AST) -> None:
+        typecheck(self.env, self.ns, exp)
 
 
-class Variable(AST):
-    def __init__(self, name: str) -> None:
-        self.name = name
+def typecheck(env: TypeEnvironment, ns: Iterator[TypeVar], exp: AST):
+    '''Check the type of `exp` in a given type environment.
 
-
-class Literal(AST):
-    # An extension to the algorithm.  Literals are allowed, but have a
-    # definite type: the most specific type possible.
-    def __init__(self, value: Any, type_: Type) -> None:
-        self.value = value
-        self.type = type_
-
-
-class LambdaAbs(AST):
-    def __init__(self, varname: str, body: AST) -> None:
-        self.varname = varname
-        self.body = body
-
-
-class Application(AST):
-    def __init__(self, e1: AST, e2: AST) -> None:
-        self.e1 = e1
-        self.e2 = e2
-
-
-class _LetExpr(AST):
-    def __init__(self, bindings: Mapping[str, AST], body: AST) -> None:
-        self.bindings = bindings
-        self.body = body
-
-
-class LetExpression(_LetExpr):
-    pass
-
-
-class LetrecExpression(_LetExpr):
+    '''
     pass
