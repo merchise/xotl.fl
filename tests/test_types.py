@@ -106,3 +106,7 @@ def test_unify_cons():
         unify(sidentity, (parse('Int -> b'), parse('b -> Num')))
     # But we can unify 'Int -> b' with 'b -> a'...
     unify(sidentity, (parse('Int -> b'), ba))
+
+
+def test_parse_with_newlines():
+    assert parse('(a -> \n b -> c) \n -> (\n a -> b\n) -> \n a -> c') == S
