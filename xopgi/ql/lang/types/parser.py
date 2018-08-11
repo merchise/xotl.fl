@@ -10,8 +10,9 @@
 
 '''
 from ply import lex, yacc
-from .base import Type, TypeCons, TypeVar
+from .base import Type, TypeCons, TypeVariable as TypeVar
 
+# WARNING: We're using TypeVariable as syntactic-level construct.
 
 class ParserError(SyntaxError):
     pass

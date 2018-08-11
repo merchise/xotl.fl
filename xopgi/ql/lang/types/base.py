@@ -54,9 +54,6 @@ class TypeVariable(Type):
         return 0   # So that 'Int' has a bigger size than 'a'.
 
 
-T = TVar = TypeVar = TypeVariable
-
-
 class TypeCons(Type):
     def __init__(self, constructor: str, subtypes: List[Type] = None,
                  *, binary=False) -> None:
@@ -99,11 +96,12 @@ class TypeCons(Type):
         return 1 + sum(len(st) for st in self.subtypes)
 
 
-F = FunctionType = lambda a, b: TypeCons('->', [a, b], binary=True)
-C = TCons = TypeCons
-TupleType = lambda *ts: C('tuple', list(ts))
-ListType = lambda t: C('list', [t])
-IntType = C('int', [])
+FunctionTypeCons = lambda a, b: TypeCons('->', [a, b], binary=True)
+TupleTypeCons = lambda *ts: TypeCons('tuple', list(ts))
+ListTypeCons = lambda t: TypeCons('list', [t])
+
+
+IntType = TypeCons('int', [])
 
 
 def parse(code):

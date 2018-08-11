@@ -53,7 +53,6 @@ def test_tokenizer():
     ]
 
 
-
 def test_tokenizer_invalid_token():
     with pytest.raises(ParserError):
         list(tokenize(';'))

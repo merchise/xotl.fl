@@ -14,7 +14,7 @@ from xoutil.fp.tools import compose
 
 from xopgi.ql.lang.types import (
     TypeVariable as T,
-    FunctionType as F,
+    FunctionTypeCons as F,
     TypeCons as C,
 )
 from xopgi.ql.lang.types.base import parse

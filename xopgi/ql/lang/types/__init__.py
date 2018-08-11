@@ -8,8 +8,9 @@
 #
 '''A type-expression language.
 
-Implements the type checker/inference of Chapter 9 of Book 'The Implementation
-of Functional Programming Languages' -- Peyton Jones, S et al.; Prentice Hall.
+Implements the type checker/inference of chapters 8 and 9 of Book 'The
+Implementation of Functional Programming Languages' -- Peyton Jones, S et al.;
+Prentice Hall.
 
 Other notable sources:
 
@@ -25,13 +26,11 @@ Other notable sources:
 
 '''
 from .base import (   # noqa: reexport
-    TypeVariable, TVar, T,
-
-    TypeCons, TCons, C,
-
-    FunctionType, F,
-
-    ListType, TupleType,
+    TypeVariable,
+    TypeCons,
+    FunctionTypeCons,
+    ListTypeCons,
+    TupleTypeCons,
     IntType,
 )
 

@@ -6,15 +6,9 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''A naive type-checking algorithm for the enriched lambda calculus.
+from typing import Mapping, Any, List, Tuple, Iterator
 
-An experimental Python implementation of the same type-checker implemented in
-chapter 9 of 'The Implementation of Functional Programming Languages'.
-
-'''
-from typing import Mapping, Any, List
-
-from .base import Type, TVar, TypeVariable
+from .base import Type, TypeVariable as TypeVar
 from .unification import subtype, find_tvars, Substitution
 
 
@@ -58,7 +52,7 @@ class TypeScheme:
 
 def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
     '''Apply a substitution to a type scheme.'''
-    exclude: Substitution = lambda s: phi(s) if s not in ts.generics else TVar(s)
+    exclude: Substitution = lambda s: phi(s) if s not in ts.generics else TypeVar(s)
     return TypeScheme(ts.generics, subtype(exclude, ts.t))
 
 
@@ -86,7 +80,7 @@ class namesupply:
     def __iter__(self):
         return self
 
-    def __next__(self) -> TypeVariable:
+    def __next__(self) -> TypeVar:
         if not self.limit or self.count < self.limit:
             result = None
             while not result:
@@ -95,7 +89,7 @@ class namesupply:
                     result = name
                 self.current_index += 1
             self.count += 1
-            return TVar(result, check=False)
+            return TypeVar(result, check=False)
         else:
             raise StopIteration
 

@@ -8,7 +8,11 @@
 #
 from typing import Callable, List, Tuple, Iterator
 
-from .base import C, Type, TVar, T
+from .base import (
+    Type,
+    TypeCons as C,
+    TypeVariable as TVar,
+)
 
 
 # `Substitution` is a type; `scompose`:class: is a substitution by
@@ -62,7 +66,7 @@ class scompose:
 class Identity:
     'The identity substitution.'
     def __call__(self, s: str) -> Type:
-        return T(s)
+        return TVar(s)
 
     def __repr__(self):
         return f'Indentity()'
