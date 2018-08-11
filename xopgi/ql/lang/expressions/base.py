@@ -19,9 +19,9 @@ class Variable(AST):
         self.name = name
 
 
+# An extension to the algorithm.  Literals are allowed, but have a definite
+# type: the most specific type possible.
 class Literal(AST):
-    # An extension to the algorithm.  Literals are allowed, but have a
-    # definite type: the most specific type possible.
     def __init__(self, value: Any, type_: Type) -> None:
         self.value = value
         self.type = type_
@@ -40,17 +40,16 @@ class Application(AST):
 
 
 # We assume (as the Book does) that there are no "translation" errors; i.e
-# that you haven't put a LetExpression where you needed a LetrecExpression.
-#
+# that you haven't put a Let where you needed a Letrec.
 class _LetExpr(AST):
     def __init__(self, bindings: Mapping[str, AST], body: AST) -> None:
         self.bindings = bindings
         self.body = body
 
 
-class LetExpression(_LetExpr):
+class Let(_LetExpr):
     pass
 
 
-class LetrecExpression(_LetExpr):
+class Letrec(_LetExpr):
     pass

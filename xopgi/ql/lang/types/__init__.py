@@ -31,7 +31,6 @@ from .base import (   # noqa: reexport
     FunctionTypeCons,
     ListTypeCons,
     TupleTypeCons,
-    IntType,
 )
 
 from .base import parse  # noqa

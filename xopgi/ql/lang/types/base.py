@@ -97,11 +97,8 @@ class TypeCons(Type):
 
 
 FunctionTypeCons = lambda a, b: TypeCons('->', [a, b], binary=True)
-TupleTypeCons = lambda *ts: TypeCons('tuple', list(ts))
-ListTypeCons = lambda t: TypeCons('list', [t])
-
-
-IntType = TypeCons('int', [])
+TupleTypeCons = lambda *ts: TypeCons('Tuple', list(ts))
+ListTypeCons = lambda t: TypeCons('List', [t])
 
 
 def parse(code):
