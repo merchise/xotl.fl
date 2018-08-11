@@ -12,7 +12,6 @@
 from ply import lex, yacc
 from .base import Type, TypeCons, TypeVariable as TypeVar
 
-# WARNING: We're using TypeVariable as syntactic-level construct.
 
 class ParserError(SyntaxError):
     pass
@@ -47,18 +46,18 @@ precedence = (
 )
 
 
-def p_expression_tvar(p):
-    'expr : TYPEVAR'
+def p_tvar(p):
+    'type_expr : TYPEVAR'
     p[0] = TypeVar(p[1])
 
 
-def p_expression_cons(p):
-    'expr : CONS'
+def p_cons(p):
+    'type_expr : CONS'
     p[0] = TypeCons(p[1])
 
 
-def p_expression_application(p):
-    'expr : expr SPACE expr'
+def p_application(p):
+    'type_expr : type_expr SPACE type_expr'
     e1, e2 = p[1], p[3]
     if isinstance(e1, TypeVar):
         # I have to promote to a TypeCons
@@ -71,13 +70,13 @@ def p_expression_application(p):
     p[0] = f
 
 
-def p_expression_paren(p):
-    'expr : LPAREN expr RPAREN'
+def p_paren(p):
+    'type_expr : LPAREN type_expr RPAREN'
     p[0] = p[2]
 
 
 def p_expression_fntype(p):
-    'expr : expr ARROW expr'
+    'type_expr : type_expr ARROW type_expr'
     p[0] = TypeCons('->', [p[1], p[3]], binary=True)
 
 
@@ -85,7 +84,7 @@ def p_error(p):
     raise ParserError(f'Invalid input {p!r}')
 
 
-parser = yacc.yacc(debug=False, start='expr')
+parser = yacc.yacc(debug=True, start='type_expr')
 
 
 if __name__ == '__main__':

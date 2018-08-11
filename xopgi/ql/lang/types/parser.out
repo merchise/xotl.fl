@@ -2,12 +2,12 @@ Created by PLY version 3.11 (http://www.dabeaz.com/ply)
 
 Grammar
 
-Rule 0     S' -> expr
-Rule 1     expr -> TYPEVAR
-Rule 2     expr -> CONS
-Rule 3     expr -> expr SPACE expr
-Rule 4     expr -> LPAREN expr RPAREN
-Rule 5     expr -> expr ARROW expr
+Rule 0     S' -> type_expr
+Rule 1     type_expr -> TYPEVAR
+Rule 2     type_expr -> CONS
+Rule 3     type_expr -> type_expr SPACE type_expr
+Rule 4     type_expr -> LPAREN type_expr RPAREN
+Rule 5     type_expr -> type_expr ARROW type_expr
 
 Terminals, with rules where they appear
 
@@ -21,30 +21,30 @@ error                :
 
 Nonterminals, with rules where they appear
 
-expr                 : 3 3 4 5 5 0
+type_expr            : 3 3 4 5 5 0
 
 Parsing method: LALR
 
 state 0
 
-    (0) S' -> . expr
-    (1) expr -> . TYPEVAR
-    (2) expr -> . CONS
-    (3) expr -> . expr SPACE expr
-    (4) expr -> . LPAREN expr RPAREN
-    (5) expr -> . expr ARROW expr
+    (0) S' -> . type_expr
+    (1) type_expr -> . TYPEVAR
+    (2) type_expr -> . CONS
+    (3) type_expr -> . type_expr SPACE type_expr
+    (4) type_expr -> . LPAREN type_expr RPAREN
+    (5) type_expr -> . type_expr ARROW type_expr
 
     TYPEVAR         shift and go to state 2
     CONS            shift and go to state 3
     LPAREN          shift and go to state 4
 
-    expr                           shift and go to state 1
+    type_expr                      shift and go to state 1
 
 state 1
 
-    (0) S' -> expr .
-    (3) expr -> expr . SPACE expr
-    (5) expr -> expr . ARROW expr
+    (0) S' -> type_expr .
+    (3) type_expr -> type_expr . SPACE type_expr
+    (5) type_expr -> type_expr . ARROW type_expr
 
     SPACE           shift and go to state 5
     ARROW           shift and go to state 6
@@ -52,74 +52,74 @@ state 1
 
 state 2
 
-    (1) expr -> TYPEVAR .
+    (1) type_expr -> TYPEVAR .
 
-    SPACE           reduce using rule 1 (expr -> TYPEVAR .)
-    ARROW           reduce using rule 1 (expr -> TYPEVAR .)
-    $end            reduce using rule 1 (expr -> TYPEVAR .)
-    RPAREN          reduce using rule 1 (expr -> TYPEVAR .)
+    SPACE           reduce using rule 1 (type_expr -> TYPEVAR .)
+    ARROW           reduce using rule 1 (type_expr -> TYPEVAR .)
+    $end            reduce using rule 1 (type_expr -> TYPEVAR .)
+    RPAREN          reduce using rule 1 (type_expr -> TYPEVAR .)
 
 
 state 3
 
-    (2) expr -> CONS .
+    (2) type_expr -> CONS .
 
-    SPACE           reduce using rule 2 (expr -> CONS .)
-    ARROW           reduce using rule 2 (expr -> CONS .)
-    $end            reduce using rule 2 (expr -> CONS .)
-    RPAREN          reduce using rule 2 (expr -> CONS .)
+    SPACE           reduce using rule 2 (type_expr -> CONS .)
+    ARROW           reduce using rule 2 (type_expr -> CONS .)
+    $end            reduce using rule 2 (type_expr -> CONS .)
+    RPAREN          reduce using rule 2 (type_expr -> CONS .)
 
 
 state 4
 
-    (4) expr -> LPAREN . expr RPAREN
-    (1) expr -> . TYPEVAR
-    (2) expr -> . CONS
-    (3) expr -> . expr SPACE expr
-    (4) expr -> . LPAREN expr RPAREN
-    (5) expr -> . expr ARROW expr
+    (4) type_expr -> LPAREN . type_expr RPAREN
+    (1) type_expr -> . TYPEVAR
+    (2) type_expr -> . CONS
+    (3) type_expr -> . type_expr SPACE type_expr
+    (4) type_expr -> . LPAREN type_expr RPAREN
+    (5) type_expr -> . type_expr ARROW type_expr
 
     TYPEVAR         shift and go to state 2
     CONS            shift and go to state 3
     LPAREN          shift and go to state 4
 
-    expr                           shift and go to state 7
+    type_expr                      shift and go to state 7
 
 state 5
 
-    (3) expr -> expr SPACE . expr
-    (1) expr -> . TYPEVAR
-    (2) expr -> . CONS
-    (3) expr -> . expr SPACE expr
-    (4) expr -> . LPAREN expr RPAREN
-    (5) expr -> . expr ARROW expr
+    (3) type_expr -> type_expr SPACE . type_expr
+    (1) type_expr -> . TYPEVAR
+    (2) type_expr -> . CONS
+    (3) type_expr -> . type_expr SPACE type_expr
+    (4) type_expr -> . LPAREN type_expr RPAREN
+    (5) type_expr -> . type_expr ARROW type_expr
 
     TYPEVAR         shift and go to state 2
     CONS            shift and go to state 3
     LPAREN          shift and go to state 4
 
-    expr                           shift and go to state 8
+    type_expr                      shift and go to state 8
 
 state 6
 
-    (5) expr -> expr ARROW . expr
-    (1) expr -> . TYPEVAR
-    (2) expr -> . CONS
-    (3) expr -> . expr SPACE expr
-    (4) expr -> . LPAREN expr RPAREN
-    (5) expr -> . expr ARROW expr
+    (5) type_expr -> type_expr ARROW . type_expr
+    (1) type_expr -> . TYPEVAR
+    (2) type_expr -> . CONS
+    (3) type_expr -> . type_expr SPACE type_expr
+    (4) type_expr -> . LPAREN type_expr RPAREN
+    (5) type_expr -> . type_expr ARROW type_expr
 
     TYPEVAR         shift and go to state 2
     CONS            shift and go to state 3
     LPAREN          shift and go to state 4
 
-    expr                           shift and go to state 9
+    type_expr                      shift and go to state 9
 
 state 7
 
-    (4) expr -> LPAREN expr . RPAREN
-    (3) expr -> expr . SPACE expr
-    (5) expr -> expr . ARROW expr
+    (4) type_expr -> LPAREN type_expr . RPAREN
+    (3) type_expr -> type_expr . SPACE type_expr
+    (5) type_expr -> type_expr . ARROW type_expr
 
     RPAREN          shift and go to state 10
     SPACE           shift and go to state 5
@@ -128,14 +128,14 @@ state 7
 
 state 8
 
-    (3) expr -> expr SPACE expr .
-    (3) expr -> expr . SPACE expr
-    (5) expr -> expr . ARROW expr
+    (3) type_expr -> type_expr SPACE type_expr .
+    (3) type_expr -> type_expr . SPACE type_expr
+    (5) type_expr -> type_expr . ARROW type_expr
 
-    SPACE           reduce using rule 3 (expr -> expr SPACE expr .)
-    ARROW           reduce using rule 3 (expr -> expr SPACE expr .)
-    $end            reduce using rule 3 (expr -> expr SPACE expr .)
-    RPAREN          reduce using rule 3 (expr -> expr SPACE expr .)
+    SPACE           reduce using rule 3 (type_expr -> type_expr SPACE type_expr .)
+    ARROW           reduce using rule 3 (type_expr -> type_expr SPACE type_expr .)
+    $end            reduce using rule 3 (type_expr -> type_expr SPACE type_expr .)
+    RPAREN          reduce using rule 3 (type_expr -> type_expr SPACE type_expr .)
 
   ! SPACE           [ shift and go to state 5 ]
   ! ARROW           [ shift and go to state 6 ]
@@ -143,25 +143,25 @@ state 8
 
 state 9
 
-    (5) expr -> expr ARROW expr .
-    (3) expr -> expr . SPACE expr
-    (5) expr -> expr . ARROW expr
+    (5) type_expr -> type_expr ARROW type_expr .
+    (3) type_expr -> type_expr . SPACE type_expr
+    (5) type_expr -> type_expr . ARROW type_expr
 
-    $end            reduce using rule 5 (expr -> expr ARROW expr .)
-    RPAREN          reduce using rule 5 (expr -> expr ARROW expr .)
+    $end            reduce using rule 5 (type_expr -> type_expr ARROW type_expr .)
+    RPAREN          reduce using rule 5 (type_expr -> type_expr ARROW type_expr .)
     SPACE           shift and go to state 5
     ARROW           shift and go to state 6
 
-  ! SPACE           [ reduce using rule 5 (expr -> expr ARROW expr .) ]
-  ! ARROW           [ reduce using rule 5 (expr -> expr ARROW expr .) ]
+  ! SPACE           [ reduce using rule 5 (type_expr -> type_expr ARROW type_expr .) ]
+  ! ARROW           [ reduce using rule 5 (type_expr -> type_expr ARROW type_expr .) ]
 
 
 state 10
 
-    (4) expr -> LPAREN expr RPAREN .
+    (4) type_expr -> LPAREN type_expr RPAREN .
 
-    SPACE           reduce using rule 4 (expr -> LPAREN expr RPAREN .)
-    ARROW           reduce using rule 4 (expr -> LPAREN expr RPAREN .)
-    $end            reduce using rule 4 (expr -> LPAREN expr RPAREN .)
-    RPAREN          reduce using rule 4 (expr -> LPAREN expr RPAREN .)
+    SPACE           reduce using rule 4 (type_expr -> LPAREN type_expr RPAREN .)
+    ARROW           reduce using rule 4 (type_expr -> LPAREN type_expr RPAREN .)
+    $end            reduce using rule 4 (type_expr -> LPAREN type_expr RPAREN .)
+    RPAREN          reduce using rule 4 (type_expr -> LPAREN type_expr RPAREN .)
 
