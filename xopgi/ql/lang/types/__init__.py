@@ -33,4 +33,7 @@ from .base import (   # noqa: reexport
     TupleTypeCons,
 )
 
-from .base import parse  # noqa
+
+def parse(code):
+    from .parser import parser, lexer
+    return parser.parse(code, lexer=lexer)

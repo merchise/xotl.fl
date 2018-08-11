@@ -87,23 +87,3 @@ def p_error(p):
 
 
 parser = yacc.yacc(debug=True, start='type_expr')
-
-
-if __name__ == '__main__':
-    # Allow python -m xopgi.ql.lang.types.parser
-    terminate = False
-    while not terminate:
-        try:
-            source = input('> ')
-            if source.startswith('? '):
-                line = source[2:]
-                lexer.input(line)
-                result = [tok for tok in lexer]
-            else:
-                result = parser.parse(source)
-            print(type(result), result)
-        except (AssertionError, SyntaxError, lex.LexError):
-            import traceback
-            traceback.print_exc()
-        except (EOFError, KeyboardInterrupt):
-            terminate = True
