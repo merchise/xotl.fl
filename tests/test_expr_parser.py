@@ -6,13 +6,15 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
+import pytest
 
 from xopgi.ql.lang.expressions import parse
 
 
-def test_malformed_trivial():
-    parse('')
 
+def test_trivially_malformed():
+    with pytest.raises(SyntaxError):
+        parse('')
 
 def test_wellformed_basic_expressions():
     assert parse('a') == parse('   a   ')

@@ -21,6 +21,10 @@ from .base import (
 from ..builtins import StringType, CharType, NumberType
 
 
+class ParserError(SyntaxError):
+    pass
+
+
 tokens = [
     'IDENTIFIER',
     'BASE16_INTEGER',
@@ -467,6 +471,10 @@ def p_let_expr(prod):
     letrecexpr  : KEYWORD_LETREC equations KEYWORD_IN expr
     '''
     pass
+
+
+def p_error(prod):
+    raise ParserError('Invalid expression')
 
 
 parser = yacc.yacc(debug=True, tabmodule='_exprtab', start='expr')
