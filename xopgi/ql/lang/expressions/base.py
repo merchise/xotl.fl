@@ -91,6 +91,12 @@ class _LetExpr(AST):
         self.bindings = bindings
         self.body = body
 
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return self.bindings == other.bindings and self.body == self.body
+        else:
+            return NotImplemented
+
 
 class Let(_LetExpr):
     def __repr__(self):

@@ -272,6 +272,7 @@ lexer = lex.lex(debug=False)
 
 precedence = (
     ('right', 'ARROW', ),
+
     ('left', 'KEYWORD_LET', ),
     ('left', 'KEYWORD_IN', ),
 
@@ -570,7 +571,7 @@ def p_equation_set3(prod):
 
 def p_let_expr(prod):
     '''
-    letexpr     : KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
+    letexpr     : KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
     '''
     # We need to decide if we issue a Let or a Letrec.
     #

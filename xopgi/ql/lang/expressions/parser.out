@@ -58,7 +58,7 @@ Rule 48    equation -> pattern EQ expr
 Rule 49    equations -> equation _equation_set
 Rule 50    _equation_set -> PADDING equation _equation_set
 Rule 51    _equation_set -> empty
-Rule 52    letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
+Rule 52    letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
 Terminals, with rules where they appear
 
@@ -103,14 +103,14 @@ empty                : 46 51
 enclosed_expr        : 10 18 19
 equation             : 49 50
 equations            : 52
-expr                 : 1 2 3 4 15 16 16 17 17 18 19 20 20 23 23 43 48 52
+expr                 : 1 2 3 4 15 16 16 17 17 18 19 20 20 23 23 43 48
 identifier           : 9 41
 letexpr              : 11
 number               : 5 36 37 39 40 41
 operator             : 22 23
 parameters           : 43 47
 pattern              : 48
-st_expr              : 0
+st_expr              : 52 0
 string               : 7 39
 
 Parsing method: LALR
@@ -152,7 +152,7 @@ state 0
     (15) enclosed_expr -> . LPAREN expr RPAREN
     (21) enclosed_expr -> . LPAREN DOT_OPERATOR RPAREN
     (22) enclosed_expr -> . LPAREN operator RPAREN
-    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
+    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
     PADDING         shift and go to state 3
     BACKSLASH       shift and go to state 11
@@ -206,7 +206,23 @@ state 2
     (30) operator -> . ARROW
     (31) operator -> . OPERATOR
 
+  ! shift/reduce conflict for EOF resolved as shift
+  ! shift/reduce conflict for TICK_OPERATOR resolved as shift
+  ! shift/reduce conflict for SPACE resolved as shift
+  ! shift/reduce conflict for DOT_OPERATOR resolved as shift
+  ! shift/reduce conflict for LPAREN resolved as shift
+  ! shift/reduce conflict for PLUS resolved as shift
+  ! shift/reduce conflict for MINUS resolved as shift
+  ! shift/reduce conflict for STAR resolved as shift
+  ! shift/reduce conflict for SLASH resolved as shift
+  ! shift/reduce conflict for DOUBLESLASH resolved as shift
+  ! shift/reduce conflict for PERCENT resolved as shift
+  ! shift/reduce conflict for ARROW resolved as shift
+  ! shift/reduce conflict for OPERATOR resolved as shift
     $end            reduce using rule 1 (st_expr -> expr .)
+    RPAREN          reduce using rule 1 (st_expr -> expr .)
+    PADDING         reduce using rule 1 (st_expr -> expr .)
+    KEYWORD_IN      reduce using rule 1 (st_expr -> expr .)
     EOF             shift and go to state 24
     TICK_OPERATOR   shift and go to state 25
     SPACE           shift and go to state 26
@@ -220,6 +236,20 @@ state 2
     PERCENT         shift and go to state 35
     ARROW           shift and go to state 36
     OPERATOR        shift and go to state 37
+
+  ! EOF             [ reduce using rule 1 (st_expr -> expr .) ]
+  ! TICK_OPERATOR   [ reduce using rule 1 (st_expr -> expr .) ]
+  ! SPACE           [ reduce using rule 1 (st_expr -> expr .) ]
+  ! DOT_OPERATOR    [ reduce using rule 1 (st_expr -> expr .) ]
+  ! LPAREN          [ reduce using rule 1 (st_expr -> expr .) ]
+  ! PLUS            [ reduce using rule 1 (st_expr -> expr .) ]
+  ! MINUS           [ reduce using rule 1 (st_expr -> expr .) ]
+  ! STAR            [ reduce using rule 1 (st_expr -> expr .) ]
+  ! SLASH           [ reduce using rule 1 (st_expr -> expr .) ]
+  ! DOUBLESLASH     [ reduce using rule 1 (st_expr -> expr .) ]
+  ! PERCENT         [ reduce using rule 1 (st_expr -> expr .) ]
+  ! ARROW           [ reduce using rule 1 (st_expr -> expr .) ]
+  ! OPERATOR        [ reduce using rule 1 (st_expr -> expr .) ]
 
     enclosed_expr                  shift and go to state 27
     operator                       shift and go to state 29
@@ -258,7 +288,7 @@ state 3
     (15) enclosed_expr -> . LPAREN expr RPAREN
     (21) enclosed_expr -> . LPAREN DOT_OPERATOR RPAREN
     (22) enclosed_expr -> . LPAREN operator RPAREN
-    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
+    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
     BACKSLASH       shift and go to state 11
     BASE10_INTEGER  shift and go to state 12
@@ -436,7 +466,7 @@ state 9
     (15) enclosed_expr -> . LPAREN expr RPAREN
     (21) enclosed_expr -> . LPAREN DOT_OPERATOR RPAREN
     (22) enclosed_expr -> . LPAREN operator RPAREN
-    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
+    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
   ! shift/reduce conflict for PLUS resolved as shift
   ! shift/reduce conflict for MINUS resolved as shift
@@ -788,7 +818,7 @@ state 22
     (15) enclosed_expr -> . LPAREN expr RPAREN
     (21) enclosed_expr -> . LPAREN DOT_OPERATOR RPAREN
     (22) enclosed_expr -> . LPAREN operator RPAREN
-    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
+    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
     DOT_OPERATOR    shift and go to state 46
     BACKSLASH       shift and go to state 11
@@ -823,7 +853,7 @@ state 22
 
 state 23
 
-    (52) letexpr -> KEYWORD_LET . SPACE equations KEYWORD_IN SPACE expr
+    (52) letexpr -> KEYWORD_LET . SPACE equations KEYWORD_IN SPACE st_expr
 
     SPACE           shift and go to state 50
 
@@ -833,6 +863,22 @@ state 24
     (3) st_expr -> expr EOF .
 
     $end            reduce using rule 3 (st_expr -> expr EOF .)
+    EOF             reduce using rule 3 (st_expr -> expr EOF .)
+    TICK_OPERATOR   reduce using rule 3 (st_expr -> expr EOF .)
+    SPACE           reduce using rule 3 (st_expr -> expr EOF .)
+    DOT_OPERATOR    reduce using rule 3 (st_expr -> expr EOF .)
+    LPAREN          reduce using rule 3 (st_expr -> expr EOF .)
+    PLUS            reduce using rule 3 (st_expr -> expr EOF .)
+    MINUS           reduce using rule 3 (st_expr -> expr EOF .)
+    STAR            reduce using rule 3 (st_expr -> expr EOF .)
+    SLASH           reduce using rule 3 (st_expr -> expr EOF .)
+    DOUBLESLASH     reduce using rule 3 (st_expr -> expr EOF .)
+    PERCENT         reduce using rule 3 (st_expr -> expr EOF .)
+    ARROW           reduce using rule 3 (st_expr -> expr EOF .)
+    OPERATOR        reduce using rule 3 (st_expr -> expr EOF .)
+    RPAREN          reduce using rule 3 (st_expr -> expr EOF .)
+    PADDING         reduce using rule 3 (st_expr -> expr EOF .)
+    KEYWORD_IN      reduce using rule 3 (st_expr -> expr EOF .)
 
 
 state 25
@@ -868,7 +914,7 @@ state 25
     (15) enclosed_expr -> . LPAREN expr RPAREN
     (21) enclosed_expr -> . LPAREN DOT_OPERATOR RPAREN
     (22) enclosed_expr -> . LPAREN operator RPAREN
-    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
+    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
     BACKSLASH       shift and go to state 11
     BASE10_INTEGER  shift and go to state 12
@@ -926,7 +972,7 @@ state 26
     (15) enclosed_expr -> . LPAREN expr RPAREN
     (21) enclosed_expr -> . LPAREN DOT_OPERATOR RPAREN
     (22) enclosed_expr -> . LPAREN operator RPAREN
-    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
+    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
     BACKSLASH       shift and go to state 11
     BASE10_INTEGER  shift and go to state 12
@@ -1007,7 +1053,7 @@ state 28
     (15) enclosed_expr -> . LPAREN expr RPAREN
     (21) enclosed_expr -> . LPAREN DOT_OPERATOR RPAREN
     (22) enclosed_expr -> . LPAREN operator RPAREN
-    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
+    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
     BACKSLASH       shift and go to state 11
     BASE10_INTEGER  shift and go to state 12
@@ -1065,7 +1111,7 @@ state 29
     (15) enclosed_expr -> . LPAREN expr RPAREN
     (21) enclosed_expr -> . LPAREN DOT_OPERATOR RPAREN
     (22) enclosed_expr -> . LPAREN operator RPAREN
-    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
+    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
     BACKSLASH       shift and go to state 11
     BASE10_INTEGER  shift and go to state 12
@@ -1269,7 +1315,23 @@ state 38
     (30) operator -> . ARROW
     (31) operator -> . OPERATOR
 
+  ! shift/reduce conflict for EOF resolved as shift
+  ! shift/reduce conflict for TICK_OPERATOR resolved as shift
+  ! shift/reduce conflict for SPACE resolved as shift
+  ! shift/reduce conflict for DOT_OPERATOR resolved as shift
+  ! shift/reduce conflict for LPAREN resolved as shift
+  ! shift/reduce conflict for PLUS resolved as shift
+  ! shift/reduce conflict for MINUS resolved as shift
+  ! shift/reduce conflict for STAR resolved as shift
+  ! shift/reduce conflict for SLASH resolved as shift
+  ! shift/reduce conflict for DOUBLESLASH resolved as shift
+  ! shift/reduce conflict for PERCENT resolved as shift
+  ! shift/reduce conflict for ARROW resolved as shift
+  ! shift/reduce conflict for OPERATOR resolved as shift
     $end            reduce using rule 2 (st_expr -> PADDING expr .)
+    RPAREN          reduce using rule 2 (st_expr -> PADDING expr .)
+    PADDING         reduce using rule 2 (st_expr -> PADDING expr .)
+    KEYWORD_IN      reduce using rule 2 (st_expr -> PADDING expr .)
     EOF             shift and go to state 55
     TICK_OPERATOR   shift and go to state 25
     SPACE           shift and go to state 26
@@ -1283,6 +1345,20 @@ state 38
     PERCENT         shift and go to state 35
     ARROW           shift and go to state 36
     OPERATOR        shift and go to state 37
+
+  ! EOF             [ reduce using rule 2 (st_expr -> PADDING expr .) ]
+  ! TICK_OPERATOR   [ reduce using rule 2 (st_expr -> PADDING expr .) ]
+  ! SPACE           [ reduce using rule 2 (st_expr -> PADDING expr .) ]
+  ! DOT_OPERATOR    [ reduce using rule 2 (st_expr -> PADDING expr .) ]
+  ! LPAREN          [ reduce using rule 2 (st_expr -> PADDING expr .) ]
+  ! PLUS            [ reduce using rule 2 (st_expr -> PADDING expr .) ]
+  ! MINUS           [ reduce using rule 2 (st_expr -> PADDING expr .) ]
+  ! STAR            [ reduce using rule 2 (st_expr -> PADDING expr .) ]
+  ! SLASH           [ reduce using rule 2 (st_expr -> PADDING expr .) ]
+  ! DOUBLESLASH     [ reduce using rule 2 (st_expr -> PADDING expr .) ]
+  ! PERCENT         [ reduce using rule 2 (st_expr -> PADDING expr .) ]
+  ! ARROW           [ reduce using rule 2 (st_expr -> PADDING expr .) ]
+  ! OPERATOR        [ reduce using rule 2 (st_expr -> PADDING expr .) ]
 
     enclosed_expr                  shift and go to state 27
     operator                       shift and go to state 29
@@ -1538,7 +1614,7 @@ state 49
 
 state 50
 
-    (52) letexpr -> KEYWORD_LET SPACE . equations KEYWORD_IN SPACE expr
+    (52) letexpr -> KEYWORD_LET SPACE . equations KEYWORD_IN SPACE st_expr
     (49) equations -> . equation _equation_set
     (48) equation -> . pattern EQ expr
     (47) pattern -> . parameters
@@ -1784,6 +1860,22 @@ state 55
     (4) st_expr -> PADDING expr EOF .
 
     $end            reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    EOF             reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    TICK_OPERATOR   reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    SPACE           reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    DOT_OPERATOR    reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    LPAREN          reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    PLUS            reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    MINUS           reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    STAR            reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    SLASH           reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    DOUBLESLASH     reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    PERCENT         reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    ARROW           reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    OPERATOR        reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    RPAREN          reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    PADDING         reduce using rule 4 (st_expr -> PADDING expr EOF .)
+    KEYWORD_IN      reduce using rule 4 (st_expr -> PADDING expr EOF .)
 
 
 state 56
@@ -1888,7 +1980,7 @@ state 59
     (15) enclosed_expr -> . LPAREN expr RPAREN
     (21) enclosed_expr -> . LPAREN DOT_OPERATOR RPAREN
     (22) enclosed_expr -> . LPAREN operator RPAREN
-    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
+    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
     BACKSLASH       shift and go to state 11
     BASE10_INTEGER  shift and go to state 12
@@ -2037,7 +2129,7 @@ state 65
 
 state 66
 
-    (52) letexpr -> KEYWORD_LET SPACE equations . KEYWORD_IN SPACE expr
+    (52) letexpr -> KEYWORD_LET SPACE equations . KEYWORD_IN SPACE st_expr
 
     KEYWORD_IN      shift and go to state 72
 
@@ -2139,7 +2231,7 @@ state 71
 
 state 72
 
-    (52) letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN . SPACE expr
+    (52) letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN . SPACE st_expr
 
     SPACE           shift and go to state 78
 
@@ -2204,7 +2296,7 @@ state 76
     (15) enclosed_expr -> . LPAREN expr RPAREN
     (21) enclosed_expr -> . LPAREN DOT_OPERATOR RPAREN
     (22) enclosed_expr -> . LPAREN operator RPAREN
-    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
+    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
     BACKSLASH       shift and go to state 11
     BASE10_INTEGER  shift and go to state 12
@@ -2239,7 +2331,11 @@ state 77
 
 state 78
 
-    (52) letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE . expr
+    (52) letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE . st_expr
+    (1) st_expr -> . expr
+    (2) st_expr -> . PADDING expr
+    (3) st_expr -> . expr EOF
+    (4) st_expr -> . PADDING expr EOF
     (5) expr -> . number
     (6) expr -> . concrete_number
     (7) expr -> . string
@@ -2270,8 +2366,9 @@ state 78
     (15) enclosed_expr -> . LPAREN expr RPAREN
     (21) enclosed_expr -> . LPAREN DOT_OPERATOR RPAREN
     (22) enclosed_expr -> . LPAREN operator RPAREN
-    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
+    (52) letexpr -> . KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
+    PADDING         shift and go to state 3
     BACKSLASH       shift and go to state 11
     BASE10_INTEGER  shift and go to state 12
     BASE16_INTEGER  shift and go to state 13
@@ -2286,7 +2383,8 @@ state 78
     LPAREN          shift and go to state 22
     KEYWORD_LET     shift and go to state 23
 
-    expr                           shift and go to state 81
+    st_expr                        shift and go to state 81
+    expr                           shift and go to state 2
     number                         shift and go to state 4
     concrete_number                shift and go to state 5
     string                         shift and go to state 6
@@ -2348,57 +2446,26 @@ state 80
 
 state 81
 
-    (52) letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .
-    (16) expr -> expr . TICK_OPERATOR expr
-    (17) expr -> expr . SPACE expr
-    (19) expr -> expr . enclosed_expr
-    (20) expr -> expr . DOT_OPERATOR expr
-    (23) expr -> expr . operator expr
-    (15) enclosed_expr -> . LPAREN expr RPAREN
-    (21) enclosed_expr -> . LPAREN DOT_OPERATOR RPAREN
-    (22) enclosed_expr -> . LPAREN operator RPAREN
-    (24) operator -> . PLUS
-    (25) operator -> . MINUS
-    (26) operator -> . STAR
-    (27) operator -> . SLASH
-    (28) operator -> . DOUBLESLASH
-    (29) operator -> . PERCENT
-    (30) operator -> . ARROW
-    (31) operator -> . OPERATOR
+    (52) letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .
 
-    EOF             reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    TICK_OPERATOR   reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    SPACE           reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    DOT_OPERATOR    reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    LPAREN          reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    PLUS            reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    MINUS           reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    STAR            reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    SLASH           reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    DOUBLESLASH     reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    PERCENT         reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    ARROW           reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    OPERATOR        reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    $end            reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    RPAREN          reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    PADDING         reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
-    KEYWORD_IN      reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr .)
+    EOF             reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    TICK_OPERATOR   reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    SPACE           reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    DOT_OPERATOR    reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    LPAREN          reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    PLUS            reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    MINUS           reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    STAR            reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    SLASH           reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    DOUBLESLASH     reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    PERCENT         reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    ARROW           reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    OPERATOR        reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    $end            reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    RPAREN          reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    PADDING         reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    KEYWORD_IN      reduce using rule 52 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
 
-  ! TICK_OPERATOR   [ shift and go to state 25 ]
-  ! SPACE           [ shift and go to state 26 ]
-  ! DOT_OPERATOR    [ shift and go to state 28 ]
-  ! LPAREN          [ shift and go to state 22 ]
-  ! PLUS            [ shift and go to state 30 ]
-  ! MINUS           [ shift and go to state 31 ]
-  ! STAR            [ shift and go to state 32 ]
-  ! SLASH           [ shift and go to state 33 ]
-  ! DOUBLESLASH     [ shift and go to state 34 ]
-  ! PERCENT         [ shift and go to state 35 ]
-  ! ARROW           [ shift and go to state 36 ]
-  ! OPERATOR        [ shift and go to state 37 ]
-
-    enclosed_expr                  shift and go to state 27
-    operator                       shift and go to state 29
 
 state 82
 
@@ -2409,9 +2476,35 @@ state 82
 WARNING: 
 WARNING: Conflicts:
 WARNING: 
+WARNING: shift/reduce conflict for EOF in state 2 resolved as shift
+WARNING: shift/reduce conflict for TICK_OPERATOR in state 2 resolved as shift
+WARNING: shift/reduce conflict for SPACE in state 2 resolved as shift
+WARNING: shift/reduce conflict for DOT_OPERATOR in state 2 resolved as shift
+WARNING: shift/reduce conflict for LPAREN in state 2 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 2 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 2 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 2 resolved as shift
+WARNING: shift/reduce conflict for SLASH in state 2 resolved as shift
+WARNING: shift/reduce conflict for DOUBLESLASH in state 2 resolved as shift
+WARNING: shift/reduce conflict for PERCENT in state 2 resolved as shift
+WARNING: shift/reduce conflict for ARROW in state 2 resolved as shift
+WARNING: shift/reduce conflict for OPERATOR in state 2 resolved as shift
 WARNING: shift/reduce conflict for PLUS in state 9 resolved as shift
 WARNING: shift/reduce conflict for MINUS in state 9 resolved as shift
 WARNING: shift/reduce conflict for LPAREN in state 9 resolved as shift
+WARNING: shift/reduce conflict for EOF in state 38 resolved as shift
+WARNING: shift/reduce conflict for TICK_OPERATOR in state 38 resolved as shift
+WARNING: shift/reduce conflict for SPACE in state 38 resolved as shift
+WARNING: shift/reduce conflict for DOT_OPERATOR in state 38 resolved as shift
+WARNING: shift/reduce conflict for LPAREN in state 38 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 38 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 38 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 38 resolved as shift
+WARNING: shift/reduce conflict for SLASH in state 38 resolved as shift
+WARNING: shift/reduce conflict for DOUBLESLASH in state 38 resolved as shift
+WARNING: shift/reduce conflict for PERCENT in state 38 resolved as shift
+WARNING: shift/reduce conflict for ARROW in state 38 resolved as shift
+WARNING: shift/reduce conflict for OPERATOR in state 38 resolved as shift
 WARNING: shift/reduce conflict for TICK_OPERATOR in state 40 resolved as shift
 WARNING: shift/reduce conflict for SPACE in state 40 resolved as shift
 WARNING: shift/reduce conflict for DOT_OPERATOR in state 40 resolved as shift

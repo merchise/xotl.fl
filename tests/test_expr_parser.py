@@ -165,20 +165,17 @@ def test_lambda_definition():
     assert P(r'\a b -> a') == Lambda('a', Lambda('b', Identifier('a')))
 
 
-@pytest.mark.xfail(reason='programming error')
 def test_incorrect_lepexpr_assoc():
     P = parse
     with pytest.raises(AssertionError):
         assert P('let id x = x in map id xs') == P('(let id x = x in map) id xs')
 
 
-@pytest.mark.xfail(reason='programming error')
 def test_letbasic_letexpr():
     P = parse
     assert P('let id x = x in map id xs') == P('let id x = x in (map id xs)')
 
 
-@pytest.mark.xfail(reason='programming error')
 def test_find_free_names():
     P = parse
     res = find_free_names(P('let id x = x in map id xs'))
