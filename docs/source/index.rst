@@ -6,7 +6,10 @@ xopgi.ql -- A `xotl.ql`_ translator for Odoo ORM
    :maxdepth: 2
    :caption: Contents:
 
-   xopgi.ql/**
+   xopgi.ql/translate/**
+   xopgi.ql/lang/index.rst
+   xopgi.ql/lang/expressions.rst
+   xopgi.ql/lang/types.rst
    history
 
 
