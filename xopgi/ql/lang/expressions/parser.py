@@ -46,7 +46,7 @@ tokens = [
     'DOUBLESLASH',
     'PERCENT',
     'OPERATOR',
-    'TICK',
+    'TICK_OPERATOR',
     'ANNOTATION',
     'FLOAT',
     'EQ',
@@ -79,7 +79,6 @@ t_BASE8_INTEGER = '0[oO][0-7][0-7_]*'
 t_BASE2_INTEGER = '0[bB][01][01_]*'
 
 t_COLON = r':'
-t_TICK = '`'
 
 
 def t_STRING(t):
@@ -210,6 +209,12 @@ def t_DOT_OPERATOR(t):
     return t
 
 
+def t_TICK_OPERATOR(t):
+    r'`[A-Za-z]\w*`'
+    t.value = t.value[1:-1]
+    return t
+
+
 t_ANNOTATION = '@'
 
 
@@ -222,10 +227,13 @@ lexer = lex.lex(debug=False)
 
 
 precedence = (
+    ('left', 'TICK_OPERATOR', ),
+    ('left', 'OPERATOR', ),
+
     ('left', 'PLUS', 'MINUS'),
     ('left', 'STAR', 'SLASH', 'DOUBLESLASH', 'PERCENT'),
 
-    ('right', 'DOT_OPERATOR'),
+    ('right', 'DOT_OPERATOR', ),
 
     # Application has the highest priority, and is left associative:
     # 'a b c' means '(a b) c'.
@@ -265,8 +273,8 @@ def p_paren_expr(prod):
 
 
 def p_infix_application(prod):
-    'expr : expr TICK IDENTIFIER TICK expr'
-    prod[0] = Application(Application(Identifier(prod[3]), prod[1]), prod[5])
+    'expr : expr TICK_OPERATOR expr'
+    prod[0] = Application(Application(Identifier(prod[2]), prod[1]), prod[3])
 
 
 def p_application(prod):
@@ -301,9 +309,7 @@ def p_user_operator_expr(prod):
     r'''expr : expr operator expr
 
     '''
-    count = len(prod)
-    e1, e2 = prod[1], prod[count - 1]
-    operator = next(p for p in prod[2:count - 2] if p.strip(' '))
+    e1, operator, e2 = prod[1], prod[2], prod[3]
     prod[0] = Application(Application(Identifier(operator), e1), e2)
 
 

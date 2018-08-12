@@ -119,3 +119,15 @@ def test_wfe_composition():
 
 def test_wfe_infix_func():
     assert parse('a `f` b') == parse('f a b')
+    assert parse('a `add` b `mul` c') == parse('mul (add a b) c')
+
+    assert parse('a . b `f` c') == parse('(a . b) `f` c')
+
+
+@pytest.mark.xfail(reason='programming error')
+def test_wfe_infix_func_precedence():
+    # The actual result is '(++) a (f b c)' which is kind of weird since
+    # 'a ++' is not a well formed expression.  Investigate.
+    assert parse('a ++ b `f` c') == parse('(a ++ b) `f` c')
+
+    assert parse('a + b `f` c') == parse('(a + b) `f` c')
