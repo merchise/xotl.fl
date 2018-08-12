@@ -10,6 +10,7 @@ from xoutil.objects import setdefaultattr
 from ply import lex, yacc
 
 from .base import (
+    AST,
     Identifier,
     Literal,
     Lambda,
@@ -50,6 +51,7 @@ tokens = [
     'ANNOTATION',
     'FLOAT',
     'EQ',
+    'EOF',
 ]
 
 reserved = [
@@ -132,7 +134,10 @@ def t_CHAR(t):
 def t_SPACE(t):
     r'[ \t\n]+'
     if '\n' in t.value:
-        t.type = 'PADDING'
+        if t.lexpos + len(t.value) == len(t.lexer.lexdata):
+            t.type = 'EOF'
+        else:
+            t.type = 'PADDING'
         t.lexer.lineno += t.value.count('\n')
         return t
     elif not t.lexpos or t.lexpos + len(t.value) == len(t.lexer.lexdata):
@@ -253,6 +258,22 @@ precedence = (
     # 'a b c' means '(a b) c'.
     ('left', 'SPACE', ),
 )
+
+
+def p_standalone_expr(prod):
+    '''st_expr : expr
+               | PADDING expr
+               | expr EOF
+               | PADDING expr EOF
+    '''
+    count = len(prod)
+    if count == 2:
+        prod[0] = prod[1]
+    elif count == 4:
+        prod[0] = prod[2]
+    else:
+        assert count == 3
+        prod[0] = next(tk for tk in prod[1:] if isinstance(tk, AST))
 
 
 def p_literals_and_basic(prod):
@@ -395,24 +416,12 @@ def p_concrete_number(prod):
     prod[0] = number
 
 
-def p_remove_leftspaces(prod):
-    '''expr : PADDING expr
-    '''
-    prod[0] = prod[2]
-
-
-def p_remove_rightspaces(prod):
-    '''expr : expr PADDING
-    '''
-    prod[0] = prod[1]
-
-
 def p_empty(prod):
     '''empty : '''
     pass
 
 
-class Pattern:
+class Pattern(AST):
     def __init__(self, cons, params):
         self.cons = cons
         self.params = params
@@ -453,7 +462,7 @@ def p_empty_pattern_param(prod):
     prod[0] = []
 
 
-class Equation:
+class Equation(AST):
     def __init__(self, pattern, body):
         self.pattern = pattern
         self.body = body
@@ -508,4 +517,4 @@ def p_error(prod):
     raise ParserError('Invalid expression')
 
 
-parser = yacc.yacc(debug=True, tabmodule='_exprtab', start='expr')
+parser = yacc.yacc(debug=True, tabmodule='_exprtab', start='st_expr')
