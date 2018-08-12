@@ -98,6 +98,8 @@ def test_wfe_float_literals(n):
 def test_wfe_application():
     assert parse('a b') == Application(Identifier('a'), Identifier('b'))
     assert parse('a b c') == parse('(a b) c')
+    assert parse('(a)(b)') == parse('(a)b') == parse('a(b)') == parse('a b')
+    assert parse('a b') == parse('(a b)')
 
 
 def test_wfe_composition():
@@ -109,7 +111,7 @@ def test_wfe_composition():
 
     # yay! partial application
     assert parse('((.) a) b') == parse('a . b')
-    assert parse('(.) a') == Application(Identifier('.'), Identifier('a'))
+    assert parse('(.)a') == Application(Identifier('.'), Identifier('a'))
 
     # Application is stronger than composition
     assert parse('a . b c') == parse('a . (b c)')

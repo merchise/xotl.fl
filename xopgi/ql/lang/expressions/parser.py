@@ -233,12 +233,13 @@ precedence = (
 )
 
 
-def p_literals(prod):
+def p_literals_and_basic(prod):
     '''expr :  number
              | concrete_number
              | string
              | char
              | identifier
+             | enclosed_expr
     '''
     prod[0] = prod[1]
 
@@ -254,23 +255,30 @@ def p_string(prod):
 
 
 def p_variable(prod):
-    r'identifier : IDENTIFIER'
+    'identifier : IDENTIFIER'
     prod[0] = Identifier(prod[1])
 
 
 def p_paren_expr(prod):
-    '''expr : LPAREN expr RPAREN'''
+    'enclosed_expr : LPAREN expr RPAREN'
     prod[0] = prod[2]
 
 
 def p_infix_application(prod):
-    r"expr : expr TICK IDENTIFIER TICK expr"
+    'expr : expr TICK IDENTIFIER TICK expr'
     prod[0] = Application(Application(prod[2], prod[1]), prod[3])
 
 
 def p_application(prod):
-    r"expr : expr SPACE expr"
+    'expr : expr SPACE expr'
     prod[0] = Application(prod[1], prod[3])
+
+
+def p_application_after_paren(prod):
+    '''expr : enclosed_expr expr
+            | expr enclosed_expr
+    '''
+    prod[0] = Application(prod[1], prod[2])
 
 
 def p_compose(prod):
@@ -282,8 +290,8 @@ def p_compose(prod):
 
 
 def p_operators_as_expressios(prod):
-    '''expr : LPAREN DOT_OPERATOR RPAREN
-            | LPAREN operator RPAREN
+    '''enclosed_expr : LPAREN DOT_OPERATOR RPAREN
+                     | LPAREN operator RPAREN
     '''
     operator = prod[2]
     prod[0] = Identifier(operator)
