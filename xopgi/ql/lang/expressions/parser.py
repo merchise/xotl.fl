@@ -496,10 +496,15 @@ def p_empty__parameters(prod):
 #         lenght (x:xs) = 1 + length xs
 #     in  ...
 #
-# For now, we allows only the SIMPLEST of all definitions (we don't have a
+# For now, we allow only the SIMPLEST of all definitions (we don't have a
 # 'case' keyword to implement pattern matching.)  But, in any case, having the
 # names of productions be 'pattern' and 'equations' is fit.
 #
+#
+# The Pattern and Equation definitions are purposely not part of the AST, but
+# more concrete syntactical object in the source code.  In the final AST, the
+# let expressions shown above are indistinguishable.
+
 
 class Pattern:
     def __init__(self, cons, params=None):
@@ -570,13 +575,13 @@ def p_equation_set3(prod):
 
 
 def p_let_expr(prod):
+    '''letexpr : KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
+
     '''
-    letexpr     : KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
-    '''
-    # We need to decide if we issue a Let or a Letrec.
     #
-    # Rule of thumb, if in the body of any of the equations appear the cons of
-    # one of the patterns; we must issue a Letrec, otherwise issue a Let.
+    # We need to decide if we issue a Let or a Letrec: if any of declared
+    # names appear in the any of the bodies we must issue a Letrec, otherwise
+    # issue a Let.
     #
     # Also we need to convert function-patterns into Lambda abstractions:
     #
