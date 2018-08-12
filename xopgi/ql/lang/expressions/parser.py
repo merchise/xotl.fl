@@ -150,7 +150,7 @@ def t_SPACE(t):
         #
         before = t.lexer.lexdata[t.lexpos - 1]
         after = t.lexer.lexdata[t.lexpos + len(t.value)]
-        common = ',:+-%@!$*^/'
+        common = '.,:+-%@!$*^/'
         if before in common + '(' or after in common + ')':
             return  # This removes the token entirely.
         else:
@@ -208,20 +208,6 @@ def t_EQ(t):
 def t_DOT_OPERATOR(t):
     r'\.(?![\.\-\+\*<>\$%\^&!@\#=\|])'
     return t
-
-
-OPERATOR_APPLY = Identifier('apply')
-OPERATOR_FUNCS = {
-    '+': Identifier('add'),
-    '-': Identifier('sub'),
-    '*': Identifier('mul'),
-    '/': Identifier('div'),
-    '//': Identifier('floordiv'),
-    '%': Identifier('mod'),
-
-    # This is for user-defined operators.
-    '?': OPERATOR_APPLY,
-}
 
 
 t_ANNOTATION = '@'
@@ -291,8 +277,16 @@ def p_compose(prod):
     r'''
     expr : expr DOT_OPERATOR expr
     '''
-    count = len(prod)
-    prod[0] = Application(Application(Identifier('.'), prod[1]), prod[count - 1])
+    e1, e2 = prod[1], prod[3]
+    prod[0] = Application(Application(Identifier('.'), e1), e2)
+
+
+def p_operators_as_expressios(prod):
+    '''expr : LPAREN DOT_OPERATOR RPAREN
+            | LPAREN operator RPAREN
+    '''
+    operator = prod[2]
+    prod[0] = Identifier(operator)
 
 
 def p_user_operator_expr(prod):
@@ -302,14 +296,7 @@ def p_user_operator_expr(prod):
     count = len(prod)
     e1, e2 = prod[1], prod[count - 1]
     operator = next(p for p in prod[2:count - 2] if p.strip(' '))
-    op = OPERATOR_FUNCS.get(operator, None)
-    if op is not None:
-        prod[0] = Application(Application(op, e1), e2)
-    else:
-        prod[0] = Application(
-            Application(Application(OPERATOR_APPLY, operator), e1),
-            e2
-        )
+    prod[0] = Application(Application(Identifier(operator), e1), e2)
 
 
 def p_operator(prod):

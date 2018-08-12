@@ -106,3 +106,10 @@ def test_wfe_composition():
         Identifier('b')
     )
     assert parse('a . b . c') == parse('a . (b . c)')
+
+    # yay! partial application
+    assert parse('((.) a) b') == parse('a . b')
+    assert parse('(.) a') == Application(Identifier('.'), Identifier('a'))
+
+    # Application is stronger than composition
+    assert parse('a . b c') == parse('a . (b c)')

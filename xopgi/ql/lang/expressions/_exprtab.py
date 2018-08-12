@@ -7,9 +7,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'exprleftPLUSMINUSleftSTARSLASHDOUBLESLASHPERCENTrightDOT_OPERATORleftSPACEANNOTATION BASE10_INTEGER BASE16_INTEGER BASE2_INTEGER BASE8_INTEGER CHAR COLON DOT_OPERATOR DOUBLESLASH EQ FLOAT IDENTIFIER KEYWORD_IN KEYWORD_LET KEYWORD_LETREC LPAREN MINUS OPERATOR PADDING PERCENT PLUS RPAREN SLASH SPACE STAR STRING TICKexpr :  number\n             | concrete_number\n             | string\n             | char\n             | identifier\n    char : CHARstring : STRINGidentifier : IDENTIFIERexpr : LPAREN expr RPARENexpr : expr TICK IDENTIFIER TICK exprexpr : expr SPACE expr\n    expr : expr DOT_OPERATOR expr\n    expr : expr operator expr\n\n    \n    operator :  PLUS\n              | MINUS\n              | STAR\n              | SLASH\n              | DOUBLESLASH\n              | PERCENT\n              | OPERATOR\n\n    number : BASE10_INTEGER\n              | BASE16_INTEGER\n              | BASE8_INTEGER\n              | BASE2_INTEGER\n    number : PLUS numbernumber : MINUS numbernumber : FLOATconcrete_number :  number ANNOTATION string\n                        | number ANNOTATION char\n                        | number ANNOTATION identifier\n    expr : PADDING expr\n    expr : expr PADDING\n    empty : pattern : IDENTIFIER _pattern_params\n    _pattern_params : SPACE IDENTIFIER _pattern_params\n    \n    _pattern_params : empty\n    _pattern_params : SPACE\n    equation : pattern EQ expr\n    equations : equation _equation_set\n    \n    _equation_set : PADDING equation _equation_set\n    \n    _equation_set : empty\n    \n    letexpr     : KEYWORD_LET equations KEYWORD_IN expr\n    letrecexpr  : KEYWORD_LETREC equations KEYWORD_IN expr\n    '
+_lr_signature = 'exprleftPLUSMINUSleftSTARSLASHDOUBLESLASHPERCENTrightDOT_OPERATORleftSPACEANNOTATION BASE10_INTEGER BASE16_INTEGER BASE2_INTEGER BASE8_INTEGER CHAR COLON DOT_OPERATOR DOUBLESLASH EQ FLOAT IDENTIFIER KEYWORD_IN KEYWORD_LET KEYWORD_LETREC LPAREN MINUS OPERATOR PADDING PERCENT PLUS RPAREN SLASH SPACE STAR STRING TICKexpr :  number\n             | concrete_number\n             | string\n             | char\n             | identifier\n    char : CHARstring : STRINGidentifier : IDENTIFIERexpr : LPAREN expr RPARENexpr : expr TICK IDENTIFIER TICK exprexpr : expr SPACE expr\n    expr : expr DOT_OPERATOR expr\n    expr : LPAREN DOT_OPERATOR RPAREN\n            | LPAREN operator RPAREN\n    expr : expr operator expr\n\n    \n    operator :  PLUS\n              | MINUS\n              | STAR\n              | SLASH\n              | DOUBLESLASH\n              | PERCENT\n              | OPERATOR\n\n    number : BASE10_INTEGER\n              | BASE16_INTEGER\n              | BASE8_INTEGER\n              | BASE2_INTEGER\n    number : PLUS numbernumber : MINUS numbernumber : FLOATconcrete_number :  number ANNOTATION string\n                        | number ANNOTATION char\n                        | number ANNOTATION identifier\n    expr : PADDING expr\n    expr : expr PADDING\n    empty : pattern : IDENTIFIER _pattern_params\n    _pattern_params : SPACE IDENTIFIER _pattern_params\n    \n    _pattern_params : empty\n    _pattern_params : SPACE\n    equation : pattern EQ expr\n    equations : equation _equation_set\n    \n    _equation_set : PADDING equation _equation_set\n    \n    _equation_set : empty\n    \n    letexpr     : KEYWORD_LET equations KEYWORD_IN expr\n    letrecexpr  : KEYWORD_LETREC equations KEYWORD_IN expr\n    '
     
-_lr_action_items = {'LPAREN':([0,7,9,20,21,22,24,25,26,27,28,29,30,44,],[7,7,7,7,7,7,-14,-15,-16,-17,-18,-19,-20,7,]),'PADDING':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,16,17,18,20,21,22,23,24,25,26,27,28,29,30,32,33,34,35,37,38,39,40,41,42,43,44,45,],[9,23,-1,-2,-3,-4,-5,9,-8,9,-21,-22,-23,-24,-27,-7,-6,9,9,9,-32,-14,-15,-16,-17,-18,-19,-20,23,23,-25,-26,-11,-12,23,-28,-29,-30,-9,9,23,]),'BASE10_INTEGER':([0,7,9,14,15,20,21,22,24,25,26,27,28,29,30,44,],[10,10,10,10,10,10,10,10,-14,-15,-16,-17,-18,-19,-20,10,]),'BASE16_INTEGER':([0,7,9,14,15,20,21,22,24,25,26,27,28,29,30,44,],[11,11,11,11,11,11,11,11,-14,-15,-16,-17,-18,-19,-20,11,]),'BASE8_INTEGER':([0,7,9,14,15,20,21,22,24,25,26,27,28,29,30,44,],[12,12,12,12,12,12,12,12,-14,-15,-16,-17,-18,-19,-20,12,]),'BASE2_INTEGER':([0,7,9,14,15,20,21,22,24,25,26,27,28,29,30,44,],[13,13,13,13,13,13,13,13,-14,-15,-16,-17,-18,-19,-20,13,]),'PLUS':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,20,21,22,23,24,25,26,27,28,29,30,32,33,34,35,37,38,39,40,41,42,43,44,45,],[14,24,-1,-2,-3,-4,-5,14,-8,14,-21,-22,-23,-24,14,14,-27,-7,-6,14,14,14,-32,-14,-15,-16,-17,-18,-19,-20,24,24,-25,-26,-11,-12,24,-28,-29,-30,-9,14,24,]),'MINUS':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,20,21,22,23,24,25,26,27,28,29,30,32,33,34,35,37,38,39,40,41,42,43,44,45,],[15,25,-1,-2,-3,-4,-5,15,-8,15,-21,-22,-23,-24,15,15,-27,-7,-6,15,15,15,-32,-14,-15,-16,-17,-18,-19,-20,25,25,-25,-26,-11,-12,25,-28,-29,-30,-9,15,25,]),'FLOAT':([0,7,9,14,15,20,21,22,24,25,26,27,28,29,30,44,],[16,16,16,16,16,16,16,16,-14,-15,-16,-17,-18,-19,-20,16,]),'STRING':([0,7,9,20,21,22,24,25,26,27,28,29,30,31,44,],[17,17,17,17,17,17,-14,-15,-16,-17,-18,-19,-20,17,17,]),'CHAR':([0,7,9,20,21,22,24,25,26,27,28,29,30,31,44,],[18,18,18,18,18,18,-14,-15,-16,-17,-18,-19,-20,18,18,]),'IDENTIFIER':([0,7,9,19,20,21,22,24,25,26,27,28,29,30,31,44,],[8,8,8,36,8,8,8,-14,-15,-16,-17,-18,-19,-20,8,8,]),'$end':([1,2,3,4,5,6,8,10,11,12,13,16,17,18,23,33,34,35,37,38,39,40,41,42,43,45,],[0,-1,-2,-3,-4,-5,-8,-21,-22,-23,-24,-27,-7,-6,-32,-31,-25,-26,-11,-12,-13,-28,-29,-30,-9,-10,]),'TICK':([1,2,3,4,5,6,8,10,11,12,13,16,17,18,23,32,33,34,35,36,37,38,39,40,41,42,43,45,],[19,-1,-2,-3,-4,-5,-8,-21,-22,-23,-24,-27,-7,-6,-32,19,19,-25,-26,44,-11,-12,19,-28,-29,-30,-9,19,]),'SPACE':([1,2,3,4,5,6,8,10,11,12,13,16,17,18,23,32,33,34,35,37,38,39,40,41,42,43,45,],[20,-1,-2,-3,-4,-5,-8,-21,-22,-23,-24,-27,-7,-6,-32,20,20,-25,-26,-11,20,20,-28,-29,-30,-9,20,]),'DOT_OPERATOR':([1,2,3,4,5,6,8,10,11,12,13,16,17,18,23,32,33,34,35,37,38,39,40,41,42,43,45,],[21,-1,-2,-3,-4,-5,-8,-21,-22,-23,-24,-27,-7,-6,-32,21,21,-25,-26,-11,21,21,-28,-29,-30,-9,21,]),'STAR':([1,2,3,4,5,6,8,10,11,12,13,16,17,18,23,32,33,34,35,37,38,39,40,41,42,43,45,],[26,-1,-2,-3,-4,-5,-8,-21,-22,-23,-24,-27,-7,-6,-32,26,26,-25,-26,-11,-12,26,-28,-29,-30,-9,26,]),'SLASH':([1,2,3,4,5,6,8,10,11,12,13,16,17,18,23,32,33,34,35,37,38,39,40,41,42,43,45,],[27,-1,-2,-3,-4,-5,-8,-21,-22,-23,-24,-27,-7,-6,-32,27,27,-25,-26,-11,-12,27,-28,-29,-30,-9,27,]),'DOUBLESLASH':([1,2,3,4,5,6,8,10,11,12,13,16,17,18,23,32,33,34,35,37,38,39,40,41,42,43,45,],[28,-1,-2,-3,-4,-5,-8,-21,-22,-23,-24,-27,-7,-6,-32,28,28,-25,-26,-11,-12,28,-28,-29,-30,-9,28,]),'PERCENT':([1,2,3,4,5,6,8,10,11,12,13,16,17,18,23,32,33,34,35,37,38,39,40,41,42,43,45,],[29,-1,-2,-3,-4,-5,-8,-21,-22,-23,-24,-27,-7,-6,-32,29,29,-25,-26,-11,-12,29,-28,-29,-30,-9,29,]),'OPERATOR':([1,2,3,4,5,6,8,10,11,12,13,16,17,18,23,32,33,34,35,37,38,39,40,41,42,43,45,],[30,-1,-2,-3,-4,-5,-8,-21,-22,-23,-24,-27,-7,-6,-32,30,30,-25,-26,-11,-12,30,-28,-29,-30,-9,30,]),'RPAREN':([2,3,4,5,6,8,10,11,12,13,16,17,18,23,32,33,34,35,37,38,39,40,41,42,43,45,],[-1,-2,-3,-4,-5,-8,-21,-22,-23,-24,-27,-7,-6,-32,43,-31,-25,-26,-11,-12,-13,-28,-29,-30,-9,-10,]),'ANNOTATION':([2,10,11,12,13,16,34,35,],[31,-21,-22,-23,-24,-27,-25,-26,]),}
+_lr_action_items = {'LPAREN':([0,7,9,20,21,22,24,25,26,27,28,29,30,50,],[7,7,7,7,7,7,-16,-17,-18,-19,-20,-21,-22,7,]),'PADDING':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,16,17,18,20,21,22,23,24,25,26,27,28,29,30,32,37,38,39,41,42,43,44,45,46,47,48,49,50,51,],[9,23,-1,-2,-3,-4,-5,9,-8,9,-23,-24,-25,-26,-29,-7,-6,9,9,9,-34,-16,-17,-18,-19,-20,-21,-22,23,23,-27,-28,-11,-12,23,-30,-31,-32,-9,-13,-14,9,23,]),'BASE10_INTEGER':([0,7,9,14,15,20,21,22,24,25,26,27,28,29,30,35,36,50,],[10,10,10,10,10,10,10,10,-16,-17,-18,-19,-20,-21,-22,10,10,10,]),'BASE16_INTEGER':([0,7,9,14,15,20,21,22,24,25,26,27,28,29,30,35,36,50,],[11,11,11,11,11,11,11,11,-16,-17,-18,-19,-20,-21,-22,11,11,11,]),'BASE8_INTEGER':([0,7,9,14,15,20,21,22,24,25,26,27,28,29,30,35,36,50,],[12,12,12,12,12,12,12,12,-16,-17,-18,-19,-20,-21,-22,12,12,12,]),'BASE2_INTEGER':([0,7,9,14,15,20,21,22,24,25,26,27,28,29,30,35,36,50,],[13,13,13,13,13,13,13,13,-16,-17,-18,-19,-20,-21,-22,13,13,13,]),'PLUS':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,20,21,22,23,24,25,26,27,28,29,30,32,35,36,37,38,39,41,42,43,44,45,46,47,48,49,50,51,],[14,24,-1,-2,-3,-4,-5,35,-8,14,-23,-24,-25,-26,14,14,-29,-7,-6,14,14,14,-34,-16,-17,-18,-19,-20,-21,-22,24,14,14,24,-27,-28,-11,-12,24,-30,-31,-32,-9,-13,-14,14,24,]),'MINUS':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,20,21,22,23,24,25,26,27,28,29,30,32,35,36,37,38,39,41,42,43,44,45,46,47,48,49,50,51,],[15,25,-1,-2,-3,-4,-5,36,-8,15,-23,-24,-25,-26,15,15,-29,-7,-6,15,15,15,-34,-16,-17,-18,-19,-20,-21,-22,25,15,15,25,-27,-28,-11,-12,25,-30,-31,-32,-9,-13,-14,15,25,]),'FLOAT':([0,7,9,14,15,20,21,22,24,25,26,27,28,29,30,35,36,50,],[16,16,16,16,16,16,16,16,-16,-17,-18,-19,-20,-21,-22,16,16,16,]),'STRING':([0,7,9,20,21,22,24,25,26,27,28,29,30,31,50,],[17,17,17,17,17,17,-16,-17,-18,-19,-20,-21,-22,17,17,]),'CHAR':([0,7,9,20,21,22,24,25,26,27,28,29,30,31,50,],[18,18,18,18,18,18,-16,-17,-18,-19,-20,-21,-22,18,18,]),'IDENTIFIER':([0,7,9,19,20,21,22,24,25,26,27,28,29,30,31,50,],[8,8,8,40,8,8,8,-16,-17,-18,-19,-20,-21,-22,8,8,]),'$end':([1,2,3,4,5,6,8,10,11,12,13,16,17,18,23,37,38,39,41,42,43,44,45,46,47,48,49,51,],[0,-1,-2,-3,-4,-5,-8,-23,-24,-25,-26,-29,-7,-6,-34,-33,-27,-28,-11,-12,-15,-30,-31,-32,-9,-13,-14,-10,]),'TICK':([1,2,3,4,5,6,8,10,11,12,13,16,17,18,23,32,37,38,39,40,41,42,43,44,45,46,47,48,49,51,],[19,-1,-2,-3,-4,-5,-8,-23,-24,-25,-26,-29,-7,-6,-34,19,19,-27,-28,50,-11,-12,19,-30,-31,-32,-9,-13,-14,19,]),'SPACE':([1,2,3,4,5,6,8,10,11,12,13,16,17,18,23,32,37,38,39,41,42,43,44,45,46,47,48,49,51,],[20,-1,-2,-3,-4,-5,-8,-23,-24,-25,-26,-29,-7,-6,-34,20,20,-27,-28,-11,20,20,-30,-31,-32,-9,-13,-14,20,]),'DOT_OPERATOR':([1,2,3,4,5,6,7,8,10,11,12,13,16,17,18,23,32,37,38,39,41,42,43,44,45,46,47,48,49,51,],[21,-1,-2,-3,-4,-5,33,-8,-23,-24,-25,-26,-29,-7,-6,-34,21,21,-27,-28,-11,21,21,-30,-31,-32,-9,-13,-14,21,]),'STAR':([1,2,3,4,5,6,7,8,10,11,12,13,16,17,18,23,32,37,38,39,41,42,43,44,45,46,47,48,49,51,],[26,-1,-2,-3,-4,-5,26,-8,-23,-24,-25,-26,-29,-7,-6,-34,26,26,-27,-28,-11,-12,26,-30,-31,-32,-9,-13,-14,26,]),'SLASH':([1,2,3,4,5,6,7,8,10,11,12,13,16,17,18,23,32,37,38,39,41,42,43,44,45,46,47,48,49,51,],[27,-1,-2,-3,-4,-5,27,-8,-23,-24,-25,-26,-29,-7,-6,-34,27,27,-27,-28,-11,-12,27,-30,-31,-32,-9,-13,-14,27,]),'DOUBLESLASH':([1,2,3,4,5,6,7,8,10,11,12,13,16,17,18,23,32,37,38,39,41,42,43,44,45,46,47,48,49,51,],[28,-1,-2,-3,-4,-5,28,-8,-23,-24,-25,-26,-29,-7,-6,-34,28,28,-27,-28,-11,-12,28,-30,-31,-32,-9,-13,-14,28,]),'PERCENT':([1,2,3,4,5,6,7,8,10,11,12,13,16,17,18,23,32,37,38,39,41,42,43,44,45,46,47,48,49,51,],[29,-1,-2,-3,-4,-5,29,-8,-23,-24,-25,-26,-29,-7,-6,-34,29,29,-27,-28,-11,-12,29,-30,-31,-32,-9,-13,-14,29,]),'OPERATOR':([1,2,3,4,5,6,7,8,10,11,12,13,16,17,18,23,32,37,38,39,41,42,43,44,45,46,47,48,49,51,],[30,-1,-2,-3,-4,-5,30,-8,-23,-24,-25,-26,-29,-7,-6,-34,30,30,-27,-28,-11,-12,30,-30,-31,-32,-9,-13,-14,30,]),'RPAREN':([2,3,4,5,6,8,10,11,12,13,16,17,18,23,26,27,28,29,30,32,33,34,35,36,37,38,39,41,42,43,44,45,46,47,48,49,51,],[-1,-2,-3,-4,-5,-8,-23,-24,-25,-26,-29,-7,-6,-34,-18,-19,-20,-21,-22,47,48,49,-16,-17,-33,-27,-28,-11,-12,-15,-30,-31,-32,-9,-13,-14,-10,]),'ANNOTATION':([2,10,11,12,13,16,38,39,],[31,-23,-24,-25,-26,-29,-27,-28,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -18,7 +18,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'expr':([0,7,9,20,21,22,44,],[1,32,33,37,38,39,45,]),'number':([0,7,9,14,15,20,21,22,44,],[2,2,2,34,35,2,2,2,2,]),'concrete_number':([0,7,9,20,21,22,44,],[3,3,3,3,3,3,3,]),'string':([0,7,9,20,21,22,31,44,],[4,4,4,4,4,4,40,4,]),'char':([0,7,9,20,21,22,31,44,],[5,5,5,5,5,5,41,5,]),'identifier':([0,7,9,20,21,22,31,44,],[6,6,6,6,6,6,42,6,]),'operator':([1,32,33,37,38,39,45,],[22,22,22,22,22,22,22,]),}
+_lr_goto_items = {'expr':([0,7,9,20,21,22,50,],[1,32,37,41,42,43,51,]),'number':([0,7,9,14,15,20,21,22,35,36,50,],[2,2,2,38,39,2,2,2,38,39,2,]),'concrete_number':([0,7,9,20,21,22,50,],[3,3,3,3,3,3,3,]),'string':([0,7,9,20,21,22,31,50,],[4,4,4,4,4,4,44,4,]),'char':([0,7,9,20,21,22,31,50,],[5,5,5,5,5,5,45,5,]),'identifier':([0,7,9,20,21,22,31,50,],[6,6,6,6,6,6,46,6,]),'operator':([1,7,32,37,41,42,43,51,],[22,34,22,22,22,22,22,22,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -28,47 +28,49 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> expr","S'",1,None,None,None),
-  ('expr -> number','expr',1,'p_literals','parser.py',231),
-  ('expr -> concrete_number','expr',1,'p_literals','parser.py',232),
-  ('expr -> string','expr',1,'p_literals','parser.py',233),
-  ('expr -> char','expr',1,'p_literals','parser.py',234),
-  ('expr -> identifier','expr',1,'p_literals','parser.py',235),
-  ('char -> CHAR','char',1,'p_char','parser.py',241),
-  ('string -> STRING','string',1,'p_string','parser.py',246),
-  ('identifier -> IDENTIFIER','identifier',1,'p_variable','parser.py',251),
-  ('expr -> LPAREN expr RPAREN','expr',3,'p_paren_expr','parser.py',256),
-  ('expr -> expr TICK IDENTIFIER TICK expr','expr',5,'p_infix_application','parser.py',261),
-  ('expr -> expr SPACE expr','expr',3,'p_application','parser.py',266),
-  ('expr -> expr DOT_OPERATOR expr','expr',3,'p_compose','parser.py',272),
-  ('expr -> expr operator expr','expr',3,'p_user_operator_expr','parser.py',279),
-  ('operator -> PLUS','operator',1,'p_operator','parser.py',297),
-  ('operator -> MINUS','operator',1,'p_operator','parser.py',298),
-  ('operator -> STAR','operator',1,'p_operator','parser.py',299),
-  ('operator -> SLASH','operator',1,'p_operator','parser.py',300),
-  ('operator -> DOUBLESLASH','operator',1,'p_operator','parser.py',301),
-  ('operator -> PERCENT','operator',1,'p_operator','parser.py',302),
-  ('operator -> OPERATOR','operator',1,'p_operator','parser.py',303),
-  ('number -> BASE10_INTEGER','number',1,'p_integer','parser.py',310),
-  ('number -> BASE16_INTEGER','number',1,'p_integer','parser.py',311),
-  ('number -> BASE8_INTEGER','number',1,'p_integer','parser.py',312),
-  ('number -> BASE2_INTEGER','number',1,'p_integer','parser.py',313),
-  ('number -> PLUS number','number',2,'p_pos_number','parser.py',335),
-  ('number -> MINUS number','number',2,'p_neg_number','parser.py',340),
-  ('number -> FLOAT','number',1,'p_float','parser.py',348),
-  ('concrete_number -> number ANNOTATION string','concrete_number',3,'p_concrete_number','parser.py',353),
-  ('concrete_number -> number ANNOTATION char','concrete_number',3,'p_concrete_number','parser.py',354),
-  ('concrete_number -> number ANNOTATION identifier','concrete_number',3,'p_concrete_number','parser.py',355),
-  ('expr -> PADDING expr','expr',2,'p_remove_leftspaces','parser.py',364),
-  ('expr -> expr PADDING','expr',2,'p_remove_rightspaces','parser.py',370),
-  ('empty -> <empty>','empty',0,'p_empty','parser.py',376),
-  ('pattern -> IDENTIFIER _pattern_params','pattern',2,'p_pattern','parser.py',400),
-  ('_pattern_params -> SPACE IDENTIFIER _pattern_params','_pattern_params',3,'p_pattern_param','parser.py',406),
-  ('_pattern_params -> empty','_pattern_params',1,'p_empty_pattern_param','parser.py',415),
-  ('_pattern_params -> SPACE','_pattern_params',1,'p_empty_pattern_param','parser.py',416),
-  ('equation -> pattern EQ expr','equation',3,'p_equation','parser.py',431),
-  ('equations -> equation _equation_set','equations',2,'p_equation_set','parser.py',441),
-  ('_equation_set -> PADDING equation _equation_set','_equation_set',3,'p_equation_set2','parser.py',450),
-  ('_equation_set -> empty','_equation_set',1,'p_equation_set3','parser.py',459),
-  ('letexpr -> KEYWORD_LET equations KEYWORD_IN expr','letexpr',4,'p_let_expr','parser.py',466),
-  ('letrecexpr -> KEYWORD_LETREC equations KEYWORD_IN expr','letrecexpr',4,'p_let_expr','parser.py',467),
+  ('expr -> number','expr',1,'p_literals','parser.py',248),
+  ('expr -> concrete_number','expr',1,'p_literals','parser.py',249),
+  ('expr -> string','expr',1,'p_literals','parser.py',250),
+  ('expr -> char','expr',1,'p_literals','parser.py',251),
+  ('expr -> identifier','expr',1,'p_literals','parser.py',252),
+  ('char -> CHAR','char',1,'p_char','parser.py',258),
+  ('string -> STRING','string',1,'p_string','parser.py',263),
+  ('identifier -> IDENTIFIER','identifier',1,'p_variable','parser.py',268),
+  ('expr -> LPAREN expr RPAREN','expr',3,'p_paren_expr','parser.py',273),
+  ('expr -> expr TICK IDENTIFIER TICK expr','expr',5,'p_infix_application','parser.py',278),
+  ('expr -> expr SPACE expr','expr',3,'p_application','parser.py',283),
+  ('expr -> expr DOT_OPERATOR expr','expr',3,'p_compose','parser.py',289),
+  ('expr -> LPAREN DOT_OPERATOR RPAREN','expr',3,'p_operators_as_expressios','parser.py',305),
+  ('expr -> LPAREN operator RPAREN','expr',3,'p_operators_as_expressios','parser.py',306),
+  ('expr -> expr operator expr','expr',3,'p_user_operator_expr','parser.py',313),
+  ('operator -> PLUS','operator',1,'p_operator','parser.py',325),
+  ('operator -> MINUS','operator',1,'p_operator','parser.py',326),
+  ('operator -> STAR','operator',1,'p_operator','parser.py',327),
+  ('operator -> SLASH','operator',1,'p_operator','parser.py',328),
+  ('operator -> DOUBLESLASH','operator',1,'p_operator','parser.py',329),
+  ('operator -> PERCENT','operator',1,'p_operator','parser.py',330),
+  ('operator -> OPERATOR','operator',1,'p_operator','parser.py',331),
+  ('number -> BASE10_INTEGER','number',1,'p_integer','parser.py',338),
+  ('number -> BASE16_INTEGER','number',1,'p_integer','parser.py',339),
+  ('number -> BASE8_INTEGER','number',1,'p_integer','parser.py',340),
+  ('number -> BASE2_INTEGER','number',1,'p_integer','parser.py',341),
+  ('number -> PLUS number','number',2,'p_pos_number','parser.py',363),
+  ('number -> MINUS number','number',2,'p_neg_number','parser.py',368),
+  ('number -> FLOAT','number',1,'p_float','parser.py',376),
+  ('concrete_number -> number ANNOTATION string','concrete_number',3,'p_concrete_number','parser.py',381),
+  ('concrete_number -> number ANNOTATION char','concrete_number',3,'p_concrete_number','parser.py',382),
+  ('concrete_number -> number ANNOTATION identifier','concrete_number',3,'p_concrete_number','parser.py',383),
+  ('expr -> PADDING expr','expr',2,'p_remove_leftspaces','parser.py',392),
+  ('expr -> expr PADDING','expr',2,'p_remove_rightspaces','parser.py',398),
+  ('empty -> <empty>','empty',0,'p_empty','parser.py',404),
+  ('pattern -> IDENTIFIER _pattern_params','pattern',2,'p_pattern','parser.py',428),
+  ('_pattern_params -> SPACE IDENTIFIER _pattern_params','_pattern_params',3,'p_pattern_param','parser.py',434),
+  ('_pattern_params -> empty','_pattern_params',1,'p_empty_pattern_param','parser.py',443),
+  ('_pattern_params -> SPACE','_pattern_params',1,'p_empty_pattern_param','parser.py',444),
+  ('equation -> pattern EQ expr','equation',3,'p_equation','parser.py',459),
+  ('equations -> equation _equation_set','equations',2,'p_equation_set','parser.py',469),
+  ('_equation_set -> PADDING equation _equation_set','_equation_set',3,'p_equation_set2','parser.py',478),
+  ('_equation_set -> empty','_equation_set',1,'p_equation_set3','parser.py',487),
+  ('letexpr -> KEYWORD_LET equations KEYWORD_IN expr','letexpr',4,'p_let_expr','parser.py',494),
+  ('letrecexpr -> KEYWORD_LETREC equations KEYWORD_IN expr','letrecexpr',4,'p_let_expr','parser.py',495),
 ]

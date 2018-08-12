@@ -19,86 +19,88 @@ Rule 9     expr -> LPAREN expr RPAREN
 Rule 10    expr -> expr TICK IDENTIFIER TICK expr
 Rule 11    expr -> expr SPACE expr
 Rule 12    expr -> expr DOT_OPERATOR expr
-Rule 13    expr -> expr operator expr
-Rule 14    operator -> PLUS
-Rule 15    operator -> MINUS
-Rule 16    operator -> STAR
-Rule 17    operator -> SLASH
-Rule 18    operator -> DOUBLESLASH
-Rule 19    operator -> PERCENT
-Rule 20    operator -> OPERATOR
-Rule 21    number -> BASE10_INTEGER
-Rule 22    number -> BASE16_INTEGER
-Rule 23    number -> BASE8_INTEGER
-Rule 24    number -> BASE2_INTEGER
-Rule 25    number -> PLUS number
-Rule 26    number -> MINUS number
-Rule 27    number -> FLOAT
-Rule 28    concrete_number -> number ANNOTATION string
-Rule 29    concrete_number -> number ANNOTATION char
-Rule 30    concrete_number -> number ANNOTATION identifier
-Rule 31    expr -> PADDING expr
-Rule 32    expr -> expr PADDING
-Rule 33    empty -> <empty>
-Rule 34    pattern -> IDENTIFIER _pattern_params
-Rule 35    _pattern_params -> SPACE IDENTIFIER _pattern_params
-Rule 36    _pattern_params -> empty
-Rule 37    _pattern_params -> SPACE
-Rule 38    equation -> pattern EQ expr
-Rule 39    equations -> equation _equation_set
-Rule 40    _equation_set -> PADDING equation _equation_set
-Rule 41    _equation_set -> empty
-Rule 42    letexpr -> KEYWORD_LET equations KEYWORD_IN expr
-Rule 43    letrecexpr -> KEYWORD_LETREC equations KEYWORD_IN expr
+Rule 13    expr -> LPAREN DOT_OPERATOR RPAREN
+Rule 14    expr -> LPAREN operator RPAREN
+Rule 15    expr -> expr operator expr
+Rule 16    operator -> PLUS
+Rule 17    operator -> MINUS
+Rule 18    operator -> STAR
+Rule 19    operator -> SLASH
+Rule 20    operator -> DOUBLESLASH
+Rule 21    operator -> PERCENT
+Rule 22    operator -> OPERATOR
+Rule 23    number -> BASE10_INTEGER
+Rule 24    number -> BASE16_INTEGER
+Rule 25    number -> BASE8_INTEGER
+Rule 26    number -> BASE2_INTEGER
+Rule 27    number -> PLUS number
+Rule 28    number -> MINUS number
+Rule 29    number -> FLOAT
+Rule 30    concrete_number -> number ANNOTATION string
+Rule 31    concrete_number -> number ANNOTATION char
+Rule 32    concrete_number -> number ANNOTATION identifier
+Rule 33    expr -> PADDING expr
+Rule 34    expr -> expr PADDING
+Rule 35    empty -> <empty>
+Rule 36    pattern -> IDENTIFIER _pattern_params
+Rule 37    _pattern_params -> SPACE IDENTIFIER _pattern_params
+Rule 38    _pattern_params -> empty
+Rule 39    _pattern_params -> SPACE
+Rule 40    equation -> pattern EQ expr
+Rule 41    equations -> equation _equation_set
+Rule 42    _equation_set -> PADDING equation _equation_set
+Rule 43    _equation_set -> empty
+Rule 44    letexpr -> KEYWORD_LET equations KEYWORD_IN expr
+Rule 45    letrecexpr -> KEYWORD_LETREC equations KEYWORD_IN expr
 
 Terminals, with rules where they appear
 
-ANNOTATION           : 28 29 30
-BASE10_INTEGER       : 21
-BASE16_INTEGER       : 22
-BASE2_INTEGER        : 24
-BASE8_INTEGER        : 23
+ANNOTATION           : 30 31 32
+BASE10_INTEGER       : 23
+BASE16_INTEGER       : 24
+BASE2_INTEGER        : 26
+BASE8_INTEGER        : 25
 CHAR                 : 6
 COLON                : 
-DOT_OPERATOR         : 12
-DOUBLESLASH          : 18
-EQ                   : 38
-FLOAT                : 27
-IDENTIFIER           : 8 10 34 35
-KEYWORD_IN           : 42 43
-KEYWORD_LET          : 42
-KEYWORD_LETREC       : 43
-LPAREN               : 9
-MINUS                : 15 26
-OPERATOR             : 20
-PADDING              : 31 32 40
-PERCENT              : 19
-PLUS                 : 14 25
-RPAREN               : 9
-SLASH                : 17
-SPACE                : 11 35 37
-STAR                 : 16
+DOT_OPERATOR         : 12 13
+DOUBLESLASH          : 20
+EQ                   : 40
+FLOAT                : 29
+IDENTIFIER           : 8 10 36 37
+KEYWORD_IN           : 44 45
+KEYWORD_LET          : 44
+KEYWORD_LETREC       : 45
+LPAREN               : 9 13 14
+MINUS                : 17 28
+OPERATOR             : 22
+PADDING              : 33 34 42
+PERCENT              : 21
+PLUS                 : 16 27
+RPAREN               : 9 13 14
+SLASH                : 19
+SPACE                : 11 37 39
+STAR                 : 18
 STRING               : 7
 TICK                 : 10 10
 error                : 
 
 Nonterminals, with rules where they appear
 
-_equation_set        : 39 40
-_pattern_params      : 34 35
-char                 : 4 29
+_equation_set        : 41 42
+_pattern_params      : 36 37
+char                 : 4 31
 concrete_number      : 2
-empty                : 36 41
-equation             : 39 40
-equations            : 42 43
-expr                 : 9 10 10 11 11 12 12 13 13 31 32 38 42 43 0
-identifier           : 5 30
+empty                : 38 43
+equation             : 41 42
+equations            : 44 45
+expr                 : 9 10 10 11 11 12 12 15 15 33 34 40 44 45 0
+identifier           : 5 32
 letexpr              : 
 letrecexpr           : 
-number               : 1 25 26 28 29 30
-operator             : 13
-pattern              : 38
-string               : 3 28
+number               : 1 27 28 30 31 32
+operator             : 14 15
+pattern              : 40
+string               : 3 30
 
 Parsing method: LALR
 
@@ -114,19 +116,21 @@ state 0
     (10) expr -> . expr TICK IDENTIFIER TICK expr
     (11) expr -> . expr SPACE expr
     (12) expr -> . expr DOT_OPERATOR expr
-    (13) expr -> . expr operator expr
-    (31) expr -> . PADDING expr
-    (32) expr -> . expr PADDING
-    (21) number -> . BASE10_INTEGER
-    (22) number -> . BASE16_INTEGER
-    (23) number -> . BASE8_INTEGER
-    (24) number -> . BASE2_INTEGER
-    (25) number -> . PLUS number
-    (26) number -> . MINUS number
-    (27) number -> . FLOAT
-    (28) concrete_number -> . number ANNOTATION string
-    (29) concrete_number -> . number ANNOTATION char
-    (30) concrete_number -> . number ANNOTATION identifier
+    (13) expr -> . LPAREN DOT_OPERATOR RPAREN
+    (14) expr -> . LPAREN operator RPAREN
+    (15) expr -> . expr operator expr
+    (33) expr -> . PADDING expr
+    (34) expr -> . expr PADDING
+    (23) number -> . BASE10_INTEGER
+    (24) number -> . BASE16_INTEGER
+    (25) number -> . BASE8_INTEGER
+    (26) number -> . BASE2_INTEGER
+    (27) number -> . PLUS number
+    (28) number -> . MINUS number
+    (29) number -> . FLOAT
+    (30) concrete_number -> . number ANNOTATION string
+    (31) concrete_number -> . number ANNOTATION char
+    (32) concrete_number -> . number ANNOTATION identifier
     (7) string -> . STRING
     (6) char -> . CHAR
     (8) identifier -> . IDENTIFIER
@@ -157,15 +161,15 @@ state 1
     (10) expr -> expr . TICK IDENTIFIER TICK expr
     (11) expr -> expr . SPACE expr
     (12) expr -> expr . DOT_OPERATOR expr
-    (13) expr -> expr . operator expr
-    (32) expr -> expr . PADDING
-    (14) operator -> . PLUS
-    (15) operator -> . MINUS
-    (16) operator -> . STAR
-    (17) operator -> . SLASH
-    (18) operator -> . DOUBLESLASH
-    (19) operator -> . PERCENT
-    (20) operator -> . OPERATOR
+    (15) expr -> expr . operator expr
+    (34) expr -> expr . PADDING
+    (16) operator -> . PLUS
+    (17) operator -> . MINUS
+    (18) operator -> . STAR
+    (19) operator -> . SLASH
+    (20) operator -> . DOUBLESLASH
+    (21) operator -> . PERCENT
+    (22) operator -> . OPERATOR
 
     TICK            shift and go to state 19
     SPACE           shift and go to state 20
@@ -184,9 +188,9 @@ state 1
 state 2
 
     (1) expr -> number .
-    (28) concrete_number -> number . ANNOTATION string
-    (29) concrete_number -> number . ANNOTATION char
-    (30) concrete_number -> number . ANNOTATION identifier
+    (30) concrete_number -> number . ANNOTATION string
+    (31) concrete_number -> number . ANNOTATION char
+    (32) concrete_number -> number . ANNOTATION identifier
 
     TICK            reduce using rule 1 (expr -> number .)
     SPACE           reduce using rule 1 (expr -> number .)
@@ -283,6 +287,8 @@ state 6
 state 7
 
     (9) expr -> LPAREN . expr RPAREN
+    (13) expr -> LPAREN . DOT_OPERATOR RPAREN
+    (14) expr -> LPAREN . operator RPAREN
     (1) expr -> . number
     (2) expr -> . concrete_number
     (3) expr -> . string
@@ -292,37 +298,53 @@ state 7
     (10) expr -> . expr TICK IDENTIFIER TICK expr
     (11) expr -> . expr SPACE expr
     (12) expr -> . expr DOT_OPERATOR expr
-    (13) expr -> . expr operator expr
-    (31) expr -> . PADDING expr
-    (32) expr -> . expr PADDING
-    (21) number -> . BASE10_INTEGER
-    (22) number -> . BASE16_INTEGER
-    (23) number -> . BASE8_INTEGER
-    (24) number -> . BASE2_INTEGER
-    (25) number -> . PLUS number
-    (26) number -> . MINUS number
-    (27) number -> . FLOAT
-    (28) concrete_number -> . number ANNOTATION string
-    (29) concrete_number -> . number ANNOTATION char
-    (30) concrete_number -> . number ANNOTATION identifier
+    (13) expr -> . LPAREN DOT_OPERATOR RPAREN
+    (14) expr -> . LPAREN operator RPAREN
+    (15) expr -> . expr operator expr
+    (33) expr -> . PADDING expr
+    (34) expr -> . expr PADDING
+    (16) operator -> . PLUS
+    (17) operator -> . MINUS
+    (18) operator -> . STAR
+    (19) operator -> . SLASH
+    (20) operator -> . DOUBLESLASH
+    (21) operator -> . PERCENT
+    (22) operator -> . OPERATOR
+    (23) number -> . BASE10_INTEGER
+    (24) number -> . BASE16_INTEGER
+    (25) number -> . BASE8_INTEGER
+    (26) number -> . BASE2_INTEGER
+    (27) number -> . PLUS number
+    (28) number -> . MINUS number
+    (29) number -> . FLOAT
+    (30) concrete_number -> . number ANNOTATION string
+    (31) concrete_number -> . number ANNOTATION char
+    (32) concrete_number -> . number ANNOTATION identifier
     (7) string -> . STRING
     (6) char -> . CHAR
     (8) identifier -> . IDENTIFIER
 
+    DOT_OPERATOR    shift and go to state 33
     LPAREN          shift and go to state 7
     PADDING         shift and go to state 9
+    PLUS            shift and go to state 35
+    MINUS           shift and go to state 36
+    STAR            shift and go to state 26
+    SLASH           shift and go to state 27
+    DOUBLESLASH     shift and go to state 28
+    PERCENT         shift and go to state 29
+    OPERATOR        shift and go to state 30
     BASE10_INTEGER  shift and go to state 10
     BASE16_INTEGER  shift and go to state 11
     BASE8_INTEGER   shift and go to state 12
     BASE2_INTEGER   shift and go to state 13
-    PLUS            shift and go to state 14
-    MINUS           shift and go to state 15
     FLOAT           shift and go to state 16
     STRING          shift and go to state 17
     CHAR            shift and go to state 18
     IDENTIFIER      shift and go to state 8
 
     expr                           shift and go to state 32
+    operator                       shift and go to state 34
     number                         shift and go to state 2
     concrete_number                shift and go to state 3
     string                         shift and go to state 4
@@ -350,7 +372,7 @@ state 8
 
 state 9
 
-    (31) expr -> PADDING . expr
+    (33) expr -> PADDING . expr
     (1) expr -> . number
     (2) expr -> . concrete_number
     (3) expr -> . string
@@ -360,19 +382,21 @@ state 9
     (10) expr -> . expr TICK IDENTIFIER TICK expr
     (11) expr -> . expr SPACE expr
     (12) expr -> . expr DOT_OPERATOR expr
-    (13) expr -> . expr operator expr
-    (31) expr -> . PADDING expr
-    (32) expr -> . expr PADDING
-    (21) number -> . BASE10_INTEGER
-    (22) number -> . BASE16_INTEGER
-    (23) number -> . BASE8_INTEGER
-    (24) number -> . BASE2_INTEGER
-    (25) number -> . PLUS number
-    (26) number -> . MINUS number
-    (27) number -> . FLOAT
-    (28) concrete_number -> . number ANNOTATION string
-    (29) concrete_number -> . number ANNOTATION char
-    (30) concrete_number -> . number ANNOTATION identifier
+    (13) expr -> . LPAREN DOT_OPERATOR RPAREN
+    (14) expr -> . LPAREN operator RPAREN
+    (15) expr -> . expr operator expr
+    (33) expr -> . PADDING expr
+    (34) expr -> . expr PADDING
+    (23) number -> . BASE10_INTEGER
+    (24) number -> . BASE16_INTEGER
+    (25) number -> . BASE8_INTEGER
+    (26) number -> . BASE2_INTEGER
+    (27) number -> . PLUS number
+    (28) number -> . MINUS number
+    (29) number -> . FLOAT
+    (30) concrete_number -> . number ANNOTATION string
+    (31) concrete_number -> . number ANNOTATION char
+    (32) concrete_number -> . number ANNOTATION identifier
     (7) string -> . STRING
     (6) char -> . CHAR
     (8) identifier -> . IDENTIFIER
@@ -390,7 +414,7 @@ state 9
     CHAR            shift and go to state 18
     IDENTIFIER      shift and go to state 8
 
-    expr                           shift and go to state 33
+    expr                           shift and go to state 37
     number                         shift and go to state 2
     concrete_number                shift and go to state 3
     string                         shift and go to state 4
@@ -399,94 +423,94 @@ state 9
 
 state 10
 
-    (21) number -> BASE10_INTEGER .
+    (23) number -> BASE10_INTEGER .
 
-    ANNOTATION      reduce using rule 21 (number -> BASE10_INTEGER .)
-    TICK            reduce using rule 21 (number -> BASE10_INTEGER .)
-    SPACE           reduce using rule 21 (number -> BASE10_INTEGER .)
-    DOT_OPERATOR    reduce using rule 21 (number -> BASE10_INTEGER .)
-    PADDING         reduce using rule 21 (number -> BASE10_INTEGER .)
-    PLUS            reduce using rule 21 (number -> BASE10_INTEGER .)
-    MINUS           reduce using rule 21 (number -> BASE10_INTEGER .)
-    STAR            reduce using rule 21 (number -> BASE10_INTEGER .)
-    SLASH           reduce using rule 21 (number -> BASE10_INTEGER .)
-    DOUBLESLASH     reduce using rule 21 (number -> BASE10_INTEGER .)
-    PERCENT         reduce using rule 21 (number -> BASE10_INTEGER .)
-    OPERATOR        reduce using rule 21 (number -> BASE10_INTEGER .)
-    $end            reduce using rule 21 (number -> BASE10_INTEGER .)
-    RPAREN          reduce using rule 21 (number -> BASE10_INTEGER .)
+    ANNOTATION      reduce using rule 23 (number -> BASE10_INTEGER .)
+    TICK            reduce using rule 23 (number -> BASE10_INTEGER .)
+    SPACE           reduce using rule 23 (number -> BASE10_INTEGER .)
+    DOT_OPERATOR    reduce using rule 23 (number -> BASE10_INTEGER .)
+    PADDING         reduce using rule 23 (number -> BASE10_INTEGER .)
+    PLUS            reduce using rule 23 (number -> BASE10_INTEGER .)
+    MINUS           reduce using rule 23 (number -> BASE10_INTEGER .)
+    STAR            reduce using rule 23 (number -> BASE10_INTEGER .)
+    SLASH           reduce using rule 23 (number -> BASE10_INTEGER .)
+    DOUBLESLASH     reduce using rule 23 (number -> BASE10_INTEGER .)
+    PERCENT         reduce using rule 23 (number -> BASE10_INTEGER .)
+    OPERATOR        reduce using rule 23 (number -> BASE10_INTEGER .)
+    $end            reduce using rule 23 (number -> BASE10_INTEGER .)
+    RPAREN          reduce using rule 23 (number -> BASE10_INTEGER .)
 
 
 state 11
 
-    (22) number -> BASE16_INTEGER .
+    (24) number -> BASE16_INTEGER .
 
-    ANNOTATION      reduce using rule 22 (number -> BASE16_INTEGER .)
-    TICK            reduce using rule 22 (number -> BASE16_INTEGER .)
-    SPACE           reduce using rule 22 (number -> BASE16_INTEGER .)
-    DOT_OPERATOR    reduce using rule 22 (number -> BASE16_INTEGER .)
-    PADDING         reduce using rule 22 (number -> BASE16_INTEGER .)
-    PLUS            reduce using rule 22 (number -> BASE16_INTEGER .)
-    MINUS           reduce using rule 22 (number -> BASE16_INTEGER .)
-    STAR            reduce using rule 22 (number -> BASE16_INTEGER .)
-    SLASH           reduce using rule 22 (number -> BASE16_INTEGER .)
-    DOUBLESLASH     reduce using rule 22 (number -> BASE16_INTEGER .)
-    PERCENT         reduce using rule 22 (number -> BASE16_INTEGER .)
-    OPERATOR        reduce using rule 22 (number -> BASE16_INTEGER .)
-    $end            reduce using rule 22 (number -> BASE16_INTEGER .)
-    RPAREN          reduce using rule 22 (number -> BASE16_INTEGER .)
+    ANNOTATION      reduce using rule 24 (number -> BASE16_INTEGER .)
+    TICK            reduce using rule 24 (number -> BASE16_INTEGER .)
+    SPACE           reduce using rule 24 (number -> BASE16_INTEGER .)
+    DOT_OPERATOR    reduce using rule 24 (number -> BASE16_INTEGER .)
+    PADDING         reduce using rule 24 (number -> BASE16_INTEGER .)
+    PLUS            reduce using rule 24 (number -> BASE16_INTEGER .)
+    MINUS           reduce using rule 24 (number -> BASE16_INTEGER .)
+    STAR            reduce using rule 24 (number -> BASE16_INTEGER .)
+    SLASH           reduce using rule 24 (number -> BASE16_INTEGER .)
+    DOUBLESLASH     reduce using rule 24 (number -> BASE16_INTEGER .)
+    PERCENT         reduce using rule 24 (number -> BASE16_INTEGER .)
+    OPERATOR        reduce using rule 24 (number -> BASE16_INTEGER .)
+    $end            reduce using rule 24 (number -> BASE16_INTEGER .)
+    RPAREN          reduce using rule 24 (number -> BASE16_INTEGER .)
 
 
 state 12
 
-    (23) number -> BASE8_INTEGER .
+    (25) number -> BASE8_INTEGER .
 
-    ANNOTATION      reduce using rule 23 (number -> BASE8_INTEGER .)
-    TICK            reduce using rule 23 (number -> BASE8_INTEGER .)
-    SPACE           reduce using rule 23 (number -> BASE8_INTEGER .)
-    DOT_OPERATOR    reduce using rule 23 (number -> BASE8_INTEGER .)
-    PADDING         reduce using rule 23 (number -> BASE8_INTEGER .)
-    PLUS            reduce using rule 23 (number -> BASE8_INTEGER .)
-    MINUS           reduce using rule 23 (number -> BASE8_INTEGER .)
-    STAR            reduce using rule 23 (number -> BASE8_INTEGER .)
-    SLASH           reduce using rule 23 (number -> BASE8_INTEGER .)
-    DOUBLESLASH     reduce using rule 23 (number -> BASE8_INTEGER .)
-    PERCENT         reduce using rule 23 (number -> BASE8_INTEGER .)
-    OPERATOR        reduce using rule 23 (number -> BASE8_INTEGER .)
-    $end            reduce using rule 23 (number -> BASE8_INTEGER .)
-    RPAREN          reduce using rule 23 (number -> BASE8_INTEGER .)
+    ANNOTATION      reduce using rule 25 (number -> BASE8_INTEGER .)
+    TICK            reduce using rule 25 (number -> BASE8_INTEGER .)
+    SPACE           reduce using rule 25 (number -> BASE8_INTEGER .)
+    DOT_OPERATOR    reduce using rule 25 (number -> BASE8_INTEGER .)
+    PADDING         reduce using rule 25 (number -> BASE8_INTEGER .)
+    PLUS            reduce using rule 25 (number -> BASE8_INTEGER .)
+    MINUS           reduce using rule 25 (number -> BASE8_INTEGER .)
+    STAR            reduce using rule 25 (number -> BASE8_INTEGER .)
+    SLASH           reduce using rule 25 (number -> BASE8_INTEGER .)
+    DOUBLESLASH     reduce using rule 25 (number -> BASE8_INTEGER .)
+    PERCENT         reduce using rule 25 (number -> BASE8_INTEGER .)
+    OPERATOR        reduce using rule 25 (number -> BASE8_INTEGER .)
+    $end            reduce using rule 25 (number -> BASE8_INTEGER .)
+    RPAREN          reduce using rule 25 (number -> BASE8_INTEGER .)
 
 
 state 13
 
-    (24) number -> BASE2_INTEGER .
+    (26) number -> BASE2_INTEGER .
 
-    ANNOTATION      reduce using rule 24 (number -> BASE2_INTEGER .)
-    TICK            reduce using rule 24 (number -> BASE2_INTEGER .)
-    SPACE           reduce using rule 24 (number -> BASE2_INTEGER .)
-    DOT_OPERATOR    reduce using rule 24 (number -> BASE2_INTEGER .)
-    PADDING         reduce using rule 24 (number -> BASE2_INTEGER .)
-    PLUS            reduce using rule 24 (number -> BASE2_INTEGER .)
-    MINUS           reduce using rule 24 (number -> BASE2_INTEGER .)
-    STAR            reduce using rule 24 (number -> BASE2_INTEGER .)
-    SLASH           reduce using rule 24 (number -> BASE2_INTEGER .)
-    DOUBLESLASH     reduce using rule 24 (number -> BASE2_INTEGER .)
-    PERCENT         reduce using rule 24 (number -> BASE2_INTEGER .)
-    OPERATOR        reduce using rule 24 (number -> BASE2_INTEGER .)
-    $end            reduce using rule 24 (number -> BASE2_INTEGER .)
-    RPAREN          reduce using rule 24 (number -> BASE2_INTEGER .)
+    ANNOTATION      reduce using rule 26 (number -> BASE2_INTEGER .)
+    TICK            reduce using rule 26 (number -> BASE2_INTEGER .)
+    SPACE           reduce using rule 26 (number -> BASE2_INTEGER .)
+    DOT_OPERATOR    reduce using rule 26 (number -> BASE2_INTEGER .)
+    PADDING         reduce using rule 26 (number -> BASE2_INTEGER .)
+    PLUS            reduce using rule 26 (number -> BASE2_INTEGER .)
+    MINUS           reduce using rule 26 (number -> BASE2_INTEGER .)
+    STAR            reduce using rule 26 (number -> BASE2_INTEGER .)
+    SLASH           reduce using rule 26 (number -> BASE2_INTEGER .)
+    DOUBLESLASH     reduce using rule 26 (number -> BASE2_INTEGER .)
+    PERCENT         reduce using rule 26 (number -> BASE2_INTEGER .)
+    OPERATOR        reduce using rule 26 (number -> BASE2_INTEGER .)
+    $end            reduce using rule 26 (number -> BASE2_INTEGER .)
+    RPAREN          reduce using rule 26 (number -> BASE2_INTEGER .)
 
 
 state 14
 
-    (25) number -> PLUS . number
-    (21) number -> . BASE10_INTEGER
-    (22) number -> . BASE16_INTEGER
-    (23) number -> . BASE8_INTEGER
-    (24) number -> . BASE2_INTEGER
-    (25) number -> . PLUS number
-    (26) number -> . MINUS number
-    (27) number -> . FLOAT
+    (27) number -> PLUS . number
+    (23) number -> . BASE10_INTEGER
+    (24) number -> . BASE16_INTEGER
+    (25) number -> . BASE8_INTEGER
+    (26) number -> . BASE2_INTEGER
+    (27) number -> . PLUS number
+    (28) number -> . MINUS number
+    (29) number -> . FLOAT
 
     BASE10_INTEGER  shift and go to state 10
     BASE16_INTEGER  shift and go to state 11
@@ -496,18 +520,18 @@ state 14
     MINUS           shift and go to state 15
     FLOAT           shift and go to state 16
 
-    number                         shift and go to state 34
+    number                         shift and go to state 38
 
 state 15
 
-    (26) number -> MINUS . number
-    (21) number -> . BASE10_INTEGER
-    (22) number -> . BASE16_INTEGER
-    (23) number -> . BASE8_INTEGER
-    (24) number -> . BASE2_INTEGER
-    (25) number -> . PLUS number
-    (26) number -> . MINUS number
-    (27) number -> . FLOAT
+    (28) number -> MINUS . number
+    (23) number -> . BASE10_INTEGER
+    (24) number -> . BASE16_INTEGER
+    (25) number -> . BASE8_INTEGER
+    (26) number -> . BASE2_INTEGER
+    (27) number -> . PLUS number
+    (28) number -> . MINUS number
+    (29) number -> . FLOAT
 
     BASE10_INTEGER  shift and go to state 10
     BASE16_INTEGER  shift and go to state 11
@@ -517,26 +541,26 @@ state 15
     MINUS           shift and go to state 15
     FLOAT           shift and go to state 16
 
-    number                         shift and go to state 35
+    number                         shift and go to state 39
 
 state 16
 
-    (27) number -> FLOAT .
+    (29) number -> FLOAT .
 
-    ANNOTATION      reduce using rule 27 (number -> FLOAT .)
-    TICK            reduce using rule 27 (number -> FLOAT .)
-    SPACE           reduce using rule 27 (number -> FLOAT .)
-    DOT_OPERATOR    reduce using rule 27 (number -> FLOAT .)
-    PADDING         reduce using rule 27 (number -> FLOAT .)
-    PLUS            reduce using rule 27 (number -> FLOAT .)
-    MINUS           reduce using rule 27 (number -> FLOAT .)
-    STAR            reduce using rule 27 (number -> FLOAT .)
-    SLASH           reduce using rule 27 (number -> FLOAT .)
-    DOUBLESLASH     reduce using rule 27 (number -> FLOAT .)
-    PERCENT         reduce using rule 27 (number -> FLOAT .)
-    OPERATOR        reduce using rule 27 (number -> FLOAT .)
-    $end            reduce using rule 27 (number -> FLOAT .)
-    RPAREN          reduce using rule 27 (number -> FLOAT .)
+    ANNOTATION      reduce using rule 29 (number -> FLOAT .)
+    TICK            reduce using rule 29 (number -> FLOAT .)
+    SPACE           reduce using rule 29 (number -> FLOAT .)
+    DOT_OPERATOR    reduce using rule 29 (number -> FLOAT .)
+    PADDING         reduce using rule 29 (number -> FLOAT .)
+    PLUS            reduce using rule 29 (number -> FLOAT .)
+    MINUS           reduce using rule 29 (number -> FLOAT .)
+    STAR            reduce using rule 29 (number -> FLOAT .)
+    SLASH           reduce using rule 29 (number -> FLOAT .)
+    DOUBLESLASH     reduce using rule 29 (number -> FLOAT .)
+    PERCENT         reduce using rule 29 (number -> FLOAT .)
+    OPERATOR        reduce using rule 29 (number -> FLOAT .)
+    $end            reduce using rule 29 (number -> FLOAT .)
+    RPAREN          reduce using rule 29 (number -> FLOAT .)
 
 
 state 17
@@ -581,7 +605,7 @@ state 19
 
     (10) expr -> expr TICK . IDENTIFIER TICK expr
 
-    IDENTIFIER      shift and go to state 36
+    IDENTIFIER      shift and go to state 40
 
 
 state 20
@@ -596,19 +620,21 @@ state 20
     (10) expr -> . expr TICK IDENTIFIER TICK expr
     (11) expr -> . expr SPACE expr
     (12) expr -> . expr DOT_OPERATOR expr
-    (13) expr -> . expr operator expr
-    (31) expr -> . PADDING expr
-    (32) expr -> . expr PADDING
-    (21) number -> . BASE10_INTEGER
-    (22) number -> . BASE16_INTEGER
-    (23) number -> . BASE8_INTEGER
-    (24) number -> . BASE2_INTEGER
-    (25) number -> . PLUS number
-    (26) number -> . MINUS number
-    (27) number -> . FLOAT
-    (28) concrete_number -> . number ANNOTATION string
-    (29) concrete_number -> . number ANNOTATION char
-    (30) concrete_number -> . number ANNOTATION identifier
+    (13) expr -> . LPAREN DOT_OPERATOR RPAREN
+    (14) expr -> . LPAREN operator RPAREN
+    (15) expr -> . expr operator expr
+    (33) expr -> . PADDING expr
+    (34) expr -> . expr PADDING
+    (23) number -> . BASE10_INTEGER
+    (24) number -> . BASE16_INTEGER
+    (25) number -> . BASE8_INTEGER
+    (26) number -> . BASE2_INTEGER
+    (27) number -> . PLUS number
+    (28) number -> . MINUS number
+    (29) number -> . FLOAT
+    (30) concrete_number -> . number ANNOTATION string
+    (31) concrete_number -> . number ANNOTATION char
+    (32) concrete_number -> . number ANNOTATION identifier
     (7) string -> . STRING
     (6) char -> . CHAR
     (8) identifier -> . IDENTIFIER
@@ -626,7 +652,7 @@ state 20
     CHAR            shift and go to state 18
     IDENTIFIER      shift and go to state 8
 
-    expr                           shift and go to state 37
+    expr                           shift and go to state 41
     number                         shift and go to state 2
     concrete_number                shift and go to state 3
     string                         shift and go to state 4
@@ -645,19 +671,21 @@ state 21
     (10) expr -> . expr TICK IDENTIFIER TICK expr
     (11) expr -> . expr SPACE expr
     (12) expr -> . expr DOT_OPERATOR expr
-    (13) expr -> . expr operator expr
-    (31) expr -> . PADDING expr
-    (32) expr -> . expr PADDING
-    (21) number -> . BASE10_INTEGER
-    (22) number -> . BASE16_INTEGER
-    (23) number -> . BASE8_INTEGER
-    (24) number -> . BASE2_INTEGER
-    (25) number -> . PLUS number
-    (26) number -> . MINUS number
-    (27) number -> . FLOAT
-    (28) concrete_number -> . number ANNOTATION string
-    (29) concrete_number -> . number ANNOTATION char
-    (30) concrete_number -> . number ANNOTATION identifier
+    (13) expr -> . LPAREN DOT_OPERATOR RPAREN
+    (14) expr -> . LPAREN operator RPAREN
+    (15) expr -> . expr operator expr
+    (33) expr -> . PADDING expr
+    (34) expr -> . expr PADDING
+    (23) number -> . BASE10_INTEGER
+    (24) number -> . BASE16_INTEGER
+    (25) number -> . BASE8_INTEGER
+    (26) number -> . BASE2_INTEGER
+    (27) number -> . PLUS number
+    (28) number -> . MINUS number
+    (29) number -> . FLOAT
+    (30) concrete_number -> . number ANNOTATION string
+    (31) concrete_number -> . number ANNOTATION char
+    (32) concrete_number -> . number ANNOTATION identifier
     (7) string -> . STRING
     (6) char -> . CHAR
     (8) identifier -> . IDENTIFIER
@@ -675,7 +703,7 @@ state 21
     CHAR            shift and go to state 18
     IDENTIFIER      shift and go to state 8
 
-    expr                           shift and go to state 38
+    expr                           shift and go to state 42
     number                         shift and go to state 2
     concrete_number                shift and go to state 3
     string                         shift and go to state 4
@@ -684,7 +712,7 @@ state 21
 
 state 22
 
-    (13) expr -> expr operator . expr
+    (15) expr -> expr operator . expr
     (1) expr -> . number
     (2) expr -> . concrete_number
     (3) expr -> . string
@@ -694,19 +722,21 @@ state 22
     (10) expr -> . expr TICK IDENTIFIER TICK expr
     (11) expr -> . expr SPACE expr
     (12) expr -> . expr DOT_OPERATOR expr
-    (13) expr -> . expr operator expr
-    (31) expr -> . PADDING expr
-    (32) expr -> . expr PADDING
-    (21) number -> . BASE10_INTEGER
-    (22) number -> . BASE16_INTEGER
-    (23) number -> . BASE8_INTEGER
-    (24) number -> . BASE2_INTEGER
-    (25) number -> . PLUS number
-    (26) number -> . MINUS number
-    (27) number -> . FLOAT
-    (28) concrete_number -> . number ANNOTATION string
-    (29) concrete_number -> . number ANNOTATION char
-    (30) concrete_number -> . number ANNOTATION identifier
+    (13) expr -> . LPAREN DOT_OPERATOR RPAREN
+    (14) expr -> . LPAREN operator RPAREN
+    (15) expr -> . expr operator expr
+    (33) expr -> . PADDING expr
+    (34) expr -> . expr PADDING
+    (23) number -> . BASE10_INTEGER
+    (24) number -> . BASE16_INTEGER
+    (25) number -> . BASE8_INTEGER
+    (26) number -> . BASE2_INTEGER
+    (27) number -> . PLUS number
+    (28) number -> . MINUS number
+    (29) number -> . FLOAT
+    (30) concrete_number -> . number ANNOTATION string
+    (31) concrete_number -> . number ANNOTATION char
+    (32) concrete_number -> . number ANNOTATION identifier
     (7) string -> . STRING
     (6) char -> . CHAR
     (8) identifier -> . IDENTIFIER
@@ -724,7 +754,7 @@ state 22
     CHAR            shift and go to state 18
     IDENTIFIER      shift and go to state 8
 
-    expr                           shift and go to state 39
+    expr                           shift and go to state 43
     number                         shift and go to state 2
     concrete_number                shift and go to state 3
     string                         shift and go to state 4
@@ -733,154 +763,159 @@ state 22
 
 state 23
 
-    (32) expr -> expr PADDING .
+    (34) expr -> expr PADDING .
 
-    TICK            reduce using rule 32 (expr -> expr PADDING .)
-    SPACE           reduce using rule 32 (expr -> expr PADDING .)
-    DOT_OPERATOR    reduce using rule 32 (expr -> expr PADDING .)
-    PADDING         reduce using rule 32 (expr -> expr PADDING .)
-    PLUS            reduce using rule 32 (expr -> expr PADDING .)
-    MINUS           reduce using rule 32 (expr -> expr PADDING .)
-    STAR            reduce using rule 32 (expr -> expr PADDING .)
-    SLASH           reduce using rule 32 (expr -> expr PADDING .)
-    DOUBLESLASH     reduce using rule 32 (expr -> expr PADDING .)
-    PERCENT         reduce using rule 32 (expr -> expr PADDING .)
-    OPERATOR        reduce using rule 32 (expr -> expr PADDING .)
-    $end            reduce using rule 32 (expr -> expr PADDING .)
-    RPAREN          reduce using rule 32 (expr -> expr PADDING .)
+    TICK            reduce using rule 34 (expr -> expr PADDING .)
+    SPACE           reduce using rule 34 (expr -> expr PADDING .)
+    DOT_OPERATOR    reduce using rule 34 (expr -> expr PADDING .)
+    PADDING         reduce using rule 34 (expr -> expr PADDING .)
+    PLUS            reduce using rule 34 (expr -> expr PADDING .)
+    MINUS           reduce using rule 34 (expr -> expr PADDING .)
+    STAR            reduce using rule 34 (expr -> expr PADDING .)
+    SLASH           reduce using rule 34 (expr -> expr PADDING .)
+    DOUBLESLASH     reduce using rule 34 (expr -> expr PADDING .)
+    PERCENT         reduce using rule 34 (expr -> expr PADDING .)
+    OPERATOR        reduce using rule 34 (expr -> expr PADDING .)
+    $end            reduce using rule 34 (expr -> expr PADDING .)
+    RPAREN          reduce using rule 34 (expr -> expr PADDING .)
 
 
 state 24
 
-    (14) operator -> PLUS .
+    (16) operator -> PLUS .
 
-    LPAREN          reduce using rule 14 (operator -> PLUS .)
-    PADDING         reduce using rule 14 (operator -> PLUS .)
-    BASE10_INTEGER  reduce using rule 14 (operator -> PLUS .)
-    BASE16_INTEGER  reduce using rule 14 (operator -> PLUS .)
-    BASE8_INTEGER   reduce using rule 14 (operator -> PLUS .)
-    BASE2_INTEGER   reduce using rule 14 (operator -> PLUS .)
-    PLUS            reduce using rule 14 (operator -> PLUS .)
-    MINUS           reduce using rule 14 (operator -> PLUS .)
-    FLOAT           reduce using rule 14 (operator -> PLUS .)
-    STRING          reduce using rule 14 (operator -> PLUS .)
-    CHAR            reduce using rule 14 (operator -> PLUS .)
-    IDENTIFIER      reduce using rule 14 (operator -> PLUS .)
+    LPAREN          reduce using rule 16 (operator -> PLUS .)
+    PADDING         reduce using rule 16 (operator -> PLUS .)
+    BASE10_INTEGER  reduce using rule 16 (operator -> PLUS .)
+    BASE16_INTEGER  reduce using rule 16 (operator -> PLUS .)
+    BASE8_INTEGER   reduce using rule 16 (operator -> PLUS .)
+    BASE2_INTEGER   reduce using rule 16 (operator -> PLUS .)
+    PLUS            reduce using rule 16 (operator -> PLUS .)
+    MINUS           reduce using rule 16 (operator -> PLUS .)
+    FLOAT           reduce using rule 16 (operator -> PLUS .)
+    STRING          reduce using rule 16 (operator -> PLUS .)
+    CHAR            reduce using rule 16 (operator -> PLUS .)
+    IDENTIFIER      reduce using rule 16 (operator -> PLUS .)
 
 
 state 25
 
-    (15) operator -> MINUS .
+    (17) operator -> MINUS .
 
-    LPAREN          reduce using rule 15 (operator -> MINUS .)
-    PADDING         reduce using rule 15 (operator -> MINUS .)
-    BASE10_INTEGER  reduce using rule 15 (operator -> MINUS .)
-    BASE16_INTEGER  reduce using rule 15 (operator -> MINUS .)
-    BASE8_INTEGER   reduce using rule 15 (operator -> MINUS .)
-    BASE2_INTEGER   reduce using rule 15 (operator -> MINUS .)
-    PLUS            reduce using rule 15 (operator -> MINUS .)
-    MINUS           reduce using rule 15 (operator -> MINUS .)
-    FLOAT           reduce using rule 15 (operator -> MINUS .)
-    STRING          reduce using rule 15 (operator -> MINUS .)
-    CHAR            reduce using rule 15 (operator -> MINUS .)
-    IDENTIFIER      reduce using rule 15 (operator -> MINUS .)
+    LPAREN          reduce using rule 17 (operator -> MINUS .)
+    PADDING         reduce using rule 17 (operator -> MINUS .)
+    BASE10_INTEGER  reduce using rule 17 (operator -> MINUS .)
+    BASE16_INTEGER  reduce using rule 17 (operator -> MINUS .)
+    BASE8_INTEGER   reduce using rule 17 (operator -> MINUS .)
+    BASE2_INTEGER   reduce using rule 17 (operator -> MINUS .)
+    PLUS            reduce using rule 17 (operator -> MINUS .)
+    MINUS           reduce using rule 17 (operator -> MINUS .)
+    FLOAT           reduce using rule 17 (operator -> MINUS .)
+    STRING          reduce using rule 17 (operator -> MINUS .)
+    CHAR            reduce using rule 17 (operator -> MINUS .)
+    IDENTIFIER      reduce using rule 17 (operator -> MINUS .)
 
 
 state 26
 
-    (16) operator -> STAR .
+    (18) operator -> STAR .
 
-    LPAREN          reduce using rule 16 (operator -> STAR .)
-    PADDING         reduce using rule 16 (operator -> STAR .)
-    BASE10_INTEGER  reduce using rule 16 (operator -> STAR .)
-    BASE16_INTEGER  reduce using rule 16 (operator -> STAR .)
-    BASE8_INTEGER   reduce using rule 16 (operator -> STAR .)
-    BASE2_INTEGER   reduce using rule 16 (operator -> STAR .)
-    PLUS            reduce using rule 16 (operator -> STAR .)
-    MINUS           reduce using rule 16 (operator -> STAR .)
-    FLOAT           reduce using rule 16 (operator -> STAR .)
-    STRING          reduce using rule 16 (operator -> STAR .)
-    CHAR            reduce using rule 16 (operator -> STAR .)
-    IDENTIFIER      reduce using rule 16 (operator -> STAR .)
+    LPAREN          reduce using rule 18 (operator -> STAR .)
+    PADDING         reduce using rule 18 (operator -> STAR .)
+    BASE10_INTEGER  reduce using rule 18 (operator -> STAR .)
+    BASE16_INTEGER  reduce using rule 18 (operator -> STAR .)
+    BASE8_INTEGER   reduce using rule 18 (operator -> STAR .)
+    BASE2_INTEGER   reduce using rule 18 (operator -> STAR .)
+    PLUS            reduce using rule 18 (operator -> STAR .)
+    MINUS           reduce using rule 18 (operator -> STAR .)
+    FLOAT           reduce using rule 18 (operator -> STAR .)
+    STRING          reduce using rule 18 (operator -> STAR .)
+    CHAR            reduce using rule 18 (operator -> STAR .)
+    IDENTIFIER      reduce using rule 18 (operator -> STAR .)
+    RPAREN          reduce using rule 18 (operator -> STAR .)
 
 
 state 27
 
-    (17) operator -> SLASH .
+    (19) operator -> SLASH .
 
-    LPAREN          reduce using rule 17 (operator -> SLASH .)
-    PADDING         reduce using rule 17 (operator -> SLASH .)
-    BASE10_INTEGER  reduce using rule 17 (operator -> SLASH .)
-    BASE16_INTEGER  reduce using rule 17 (operator -> SLASH .)
-    BASE8_INTEGER   reduce using rule 17 (operator -> SLASH .)
-    BASE2_INTEGER   reduce using rule 17 (operator -> SLASH .)
-    PLUS            reduce using rule 17 (operator -> SLASH .)
-    MINUS           reduce using rule 17 (operator -> SLASH .)
-    FLOAT           reduce using rule 17 (operator -> SLASH .)
-    STRING          reduce using rule 17 (operator -> SLASH .)
-    CHAR            reduce using rule 17 (operator -> SLASH .)
-    IDENTIFIER      reduce using rule 17 (operator -> SLASH .)
+    LPAREN          reduce using rule 19 (operator -> SLASH .)
+    PADDING         reduce using rule 19 (operator -> SLASH .)
+    BASE10_INTEGER  reduce using rule 19 (operator -> SLASH .)
+    BASE16_INTEGER  reduce using rule 19 (operator -> SLASH .)
+    BASE8_INTEGER   reduce using rule 19 (operator -> SLASH .)
+    BASE2_INTEGER   reduce using rule 19 (operator -> SLASH .)
+    PLUS            reduce using rule 19 (operator -> SLASH .)
+    MINUS           reduce using rule 19 (operator -> SLASH .)
+    FLOAT           reduce using rule 19 (operator -> SLASH .)
+    STRING          reduce using rule 19 (operator -> SLASH .)
+    CHAR            reduce using rule 19 (operator -> SLASH .)
+    IDENTIFIER      reduce using rule 19 (operator -> SLASH .)
+    RPAREN          reduce using rule 19 (operator -> SLASH .)
 
 
 state 28
 
-    (18) operator -> DOUBLESLASH .
+    (20) operator -> DOUBLESLASH .
 
-    LPAREN          reduce using rule 18 (operator -> DOUBLESLASH .)
-    PADDING         reduce using rule 18 (operator -> DOUBLESLASH .)
-    BASE10_INTEGER  reduce using rule 18 (operator -> DOUBLESLASH .)
-    BASE16_INTEGER  reduce using rule 18 (operator -> DOUBLESLASH .)
-    BASE8_INTEGER   reduce using rule 18 (operator -> DOUBLESLASH .)
-    BASE2_INTEGER   reduce using rule 18 (operator -> DOUBLESLASH .)
-    PLUS            reduce using rule 18 (operator -> DOUBLESLASH .)
-    MINUS           reduce using rule 18 (operator -> DOUBLESLASH .)
-    FLOAT           reduce using rule 18 (operator -> DOUBLESLASH .)
-    STRING          reduce using rule 18 (operator -> DOUBLESLASH .)
-    CHAR            reduce using rule 18 (operator -> DOUBLESLASH .)
-    IDENTIFIER      reduce using rule 18 (operator -> DOUBLESLASH .)
+    LPAREN          reduce using rule 20 (operator -> DOUBLESLASH .)
+    PADDING         reduce using rule 20 (operator -> DOUBLESLASH .)
+    BASE10_INTEGER  reduce using rule 20 (operator -> DOUBLESLASH .)
+    BASE16_INTEGER  reduce using rule 20 (operator -> DOUBLESLASH .)
+    BASE8_INTEGER   reduce using rule 20 (operator -> DOUBLESLASH .)
+    BASE2_INTEGER   reduce using rule 20 (operator -> DOUBLESLASH .)
+    PLUS            reduce using rule 20 (operator -> DOUBLESLASH .)
+    MINUS           reduce using rule 20 (operator -> DOUBLESLASH .)
+    FLOAT           reduce using rule 20 (operator -> DOUBLESLASH .)
+    STRING          reduce using rule 20 (operator -> DOUBLESLASH .)
+    CHAR            reduce using rule 20 (operator -> DOUBLESLASH .)
+    IDENTIFIER      reduce using rule 20 (operator -> DOUBLESLASH .)
+    RPAREN          reduce using rule 20 (operator -> DOUBLESLASH .)
 
 
 state 29
 
-    (19) operator -> PERCENT .
+    (21) operator -> PERCENT .
 
-    LPAREN          reduce using rule 19 (operator -> PERCENT .)
-    PADDING         reduce using rule 19 (operator -> PERCENT .)
-    BASE10_INTEGER  reduce using rule 19 (operator -> PERCENT .)
-    BASE16_INTEGER  reduce using rule 19 (operator -> PERCENT .)
-    BASE8_INTEGER   reduce using rule 19 (operator -> PERCENT .)
-    BASE2_INTEGER   reduce using rule 19 (operator -> PERCENT .)
-    PLUS            reduce using rule 19 (operator -> PERCENT .)
-    MINUS           reduce using rule 19 (operator -> PERCENT .)
-    FLOAT           reduce using rule 19 (operator -> PERCENT .)
-    STRING          reduce using rule 19 (operator -> PERCENT .)
-    CHAR            reduce using rule 19 (operator -> PERCENT .)
-    IDENTIFIER      reduce using rule 19 (operator -> PERCENT .)
+    LPAREN          reduce using rule 21 (operator -> PERCENT .)
+    PADDING         reduce using rule 21 (operator -> PERCENT .)
+    BASE10_INTEGER  reduce using rule 21 (operator -> PERCENT .)
+    BASE16_INTEGER  reduce using rule 21 (operator -> PERCENT .)
+    BASE8_INTEGER   reduce using rule 21 (operator -> PERCENT .)
+    BASE2_INTEGER   reduce using rule 21 (operator -> PERCENT .)
+    PLUS            reduce using rule 21 (operator -> PERCENT .)
+    MINUS           reduce using rule 21 (operator -> PERCENT .)
+    FLOAT           reduce using rule 21 (operator -> PERCENT .)
+    STRING          reduce using rule 21 (operator -> PERCENT .)
+    CHAR            reduce using rule 21 (operator -> PERCENT .)
+    IDENTIFIER      reduce using rule 21 (operator -> PERCENT .)
+    RPAREN          reduce using rule 21 (operator -> PERCENT .)
 
 
 state 30
 
-    (20) operator -> OPERATOR .
+    (22) operator -> OPERATOR .
 
-    LPAREN          reduce using rule 20 (operator -> OPERATOR .)
-    PADDING         reduce using rule 20 (operator -> OPERATOR .)
-    BASE10_INTEGER  reduce using rule 20 (operator -> OPERATOR .)
-    BASE16_INTEGER  reduce using rule 20 (operator -> OPERATOR .)
-    BASE8_INTEGER   reduce using rule 20 (operator -> OPERATOR .)
-    BASE2_INTEGER   reduce using rule 20 (operator -> OPERATOR .)
-    PLUS            reduce using rule 20 (operator -> OPERATOR .)
-    MINUS           reduce using rule 20 (operator -> OPERATOR .)
-    FLOAT           reduce using rule 20 (operator -> OPERATOR .)
-    STRING          reduce using rule 20 (operator -> OPERATOR .)
-    CHAR            reduce using rule 20 (operator -> OPERATOR .)
-    IDENTIFIER      reduce using rule 20 (operator -> OPERATOR .)
+    LPAREN          reduce using rule 22 (operator -> OPERATOR .)
+    PADDING         reduce using rule 22 (operator -> OPERATOR .)
+    BASE10_INTEGER  reduce using rule 22 (operator -> OPERATOR .)
+    BASE16_INTEGER  reduce using rule 22 (operator -> OPERATOR .)
+    BASE8_INTEGER   reduce using rule 22 (operator -> OPERATOR .)
+    BASE2_INTEGER   reduce using rule 22 (operator -> OPERATOR .)
+    PLUS            reduce using rule 22 (operator -> OPERATOR .)
+    MINUS           reduce using rule 22 (operator -> OPERATOR .)
+    FLOAT           reduce using rule 22 (operator -> OPERATOR .)
+    STRING          reduce using rule 22 (operator -> OPERATOR .)
+    CHAR            reduce using rule 22 (operator -> OPERATOR .)
+    IDENTIFIER      reduce using rule 22 (operator -> OPERATOR .)
+    RPAREN          reduce using rule 22 (operator -> OPERATOR .)
 
 
 state 31
 
-    (28) concrete_number -> number ANNOTATION . string
-    (29) concrete_number -> number ANNOTATION . char
-    (30) concrete_number -> number ANNOTATION . identifier
+    (30) concrete_number -> number ANNOTATION . string
+    (31) concrete_number -> number ANNOTATION . char
+    (32) concrete_number -> number ANNOTATION . identifier
     (7) string -> . STRING
     (6) char -> . CHAR
     (8) identifier -> . IDENTIFIER
@@ -889,9 +924,9 @@ state 31
     CHAR            shift and go to state 18
     IDENTIFIER      shift and go to state 8
 
-    string                         shift and go to state 40
-    char                           shift and go to state 41
-    identifier                     shift and go to state 42
+    string                         shift and go to state 44
+    char                           shift and go to state 45
+    identifier                     shift and go to state 46
 
 state 32
 
@@ -899,17 +934,17 @@ state 32
     (10) expr -> expr . TICK IDENTIFIER TICK expr
     (11) expr -> expr . SPACE expr
     (12) expr -> expr . DOT_OPERATOR expr
-    (13) expr -> expr . operator expr
-    (32) expr -> expr . PADDING
-    (14) operator -> . PLUS
-    (15) operator -> . MINUS
-    (16) operator -> . STAR
-    (17) operator -> . SLASH
-    (18) operator -> . DOUBLESLASH
-    (19) operator -> . PERCENT
-    (20) operator -> . OPERATOR
+    (15) expr -> expr . operator expr
+    (34) expr -> expr . PADDING
+    (16) operator -> . PLUS
+    (17) operator -> . MINUS
+    (18) operator -> . STAR
+    (19) operator -> . SLASH
+    (20) operator -> . DOUBLESLASH
+    (21) operator -> . PERCENT
+    (22) operator -> . OPERATOR
 
-    RPAREN          shift and go to state 43
+    RPAREN          shift and go to state 47
     TICK            shift and go to state 19
     SPACE           shift and go to state 20
     DOT_OPERATOR    shift and go to state 21
@@ -926,19 +961,79 @@ state 32
 
 state 33
 
-    (31) expr -> PADDING expr .
+    (13) expr -> LPAREN DOT_OPERATOR . RPAREN
+
+    RPAREN          shift and go to state 48
+
+
+state 34
+
+    (14) expr -> LPAREN operator . RPAREN
+
+    RPAREN          shift and go to state 49
+
+
+state 35
+
+    (16) operator -> PLUS .
+    (27) number -> PLUS . number
+    (23) number -> . BASE10_INTEGER
+    (24) number -> . BASE16_INTEGER
+    (25) number -> . BASE8_INTEGER
+    (26) number -> . BASE2_INTEGER
+    (27) number -> . PLUS number
+    (28) number -> . MINUS number
+    (29) number -> . FLOAT
+
+    RPAREN          reduce using rule 16 (operator -> PLUS .)
+    BASE10_INTEGER  shift and go to state 10
+    BASE16_INTEGER  shift and go to state 11
+    BASE8_INTEGER   shift and go to state 12
+    BASE2_INTEGER   shift and go to state 13
+    PLUS            shift and go to state 14
+    MINUS           shift and go to state 15
+    FLOAT           shift and go to state 16
+
+    number                         shift and go to state 38
+
+state 36
+
+    (17) operator -> MINUS .
+    (28) number -> MINUS . number
+    (23) number -> . BASE10_INTEGER
+    (24) number -> . BASE16_INTEGER
+    (25) number -> . BASE8_INTEGER
+    (26) number -> . BASE2_INTEGER
+    (27) number -> . PLUS number
+    (28) number -> . MINUS number
+    (29) number -> . FLOAT
+
+    RPAREN          reduce using rule 17 (operator -> MINUS .)
+    BASE10_INTEGER  shift and go to state 10
+    BASE16_INTEGER  shift and go to state 11
+    BASE8_INTEGER   shift and go to state 12
+    BASE2_INTEGER   shift and go to state 13
+    PLUS            shift and go to state 14
+    MINUS           shift and go to state 15
+    FLOAT           shift and go to state 16
+
+    number                         shift and go to state 39
+
+state 37
+
+    (33) expr -> PADDING expr .
     (10) expr -> expr . TICK IDENTIFIER TICK expr
     (11) expr -> expr . SPACE expr
     (12) expr -> expr . DOT_OPERATOR expr
-    (13) expr -> expr . operator expr
-    (32) expr -> expr . PADDING
-    (14) operator -> . PLUS
-    (15) operator -> . MINUS
-    (16) operator -> . STAR
-    (17) operator -> . SLASH
-    (18) operator -> . DOUBLESLASH
-    (19) operator -> . PERCENT
-    (20) operator -> . OPERATOR
+    (15) expr -> expr . operator expr
+    (34) expr -> expr . PADDING
+    (16) operator -> . PLUS
+    (17) operator -> . MINUS
+    (18) operator -> . STAR
+    (19) operator -> . SLASH
+    (20) operator -> . DOUBLESLASH
+    (21) operator -> . PERCENT
+    (22) operator -> . OPERATOR
 
   ! shift/reduce conflict for TICK resolved as shift
   ! shift/reduce conflict for SPACE resolved as shift
@@ -951,8 +1046,8 @@ state 33
   ! shift/reduce conflict for DOUBLESLASH resolved as shift
   ! shift/reduce conflict for PERCENT resolved as shift
   ! shift/reduce conflict for OPERATOR resolved as shift
-    $end            reduce using rule 31 (expr -> PADDING expr .)
-    RPAREN          reduce using rule 31 (expr -> PADDING expr .)
+    $end            reduce using rule 33 (expr -> PADDING expr .)
+    RPAREN          reduce using rule 33 (expr -> PADDING expr .)
     TICK            shift and go to state 19
     SPACE           shift and go to state 20
     DOT_OPERATOR    shift and go to state 21
@@ -965,82 +1060,82 @@ state 33
     PERCENT         shift and go to state 29
     OPERATOR        shift and go to state 30
 
-  ! TICK            [ reduce using rule 31 (expr -> PADDING expr .) ]
-  ! SPACE           [ reduce using rule 31 (expr -> PADDING expr .) ]
-  ! DOT_OPERATOR    [ reduce using rule 31 (expr -> PADDING expr .) ]
-  ! PADDING         [ reduce using rule 31 (expr -> PADDING expr .) ]
-  ! PLUS            [ reduce using rule 31 (expr -> PADDING expr .) ]
-  ! MINUS           [ reduce using rule 31 (expr -> PADDING expr .) ]
-  ! STAR            [ reduce using rule 31 (expr -> PADDING expr .) ]
-  ! SLASH           [ reduce using rule 31 (expr -> PADDING expr .) ]
-  ! DOUBLESLASH     [ reduce using rule 31 (expr -> PADDING expr .) ]
-  ! PERCENT         [ reduce using rule 31 (expr -> PADDING expr .) ]
-  ! OPERATOR        [ reduce using rule 31 (expr -> PADDING expr .) ]
+  ! TICK            [ reduce using rule 33 (expr -> PADDING expr .) ]
+  ! SPACE           [ reduce using rule 33 (expr -> PADDING expr .) ]
+  ! DOT_OPERATOR    [ reduce using rule 33 (expr -> PADDING expr .) ]
+  ! PADDING         [ reduce using rule 33 (expr -> PADDING expr .) ]
+  ! PLUS            [ reduce using rule 33 (expr -> PADDING expr .) ]
+  ! MINUS           [ reduce using rule 33 (expr -> PADDING expr .) ]
+  ! STAR            [ reduce using rule 33 (expr -> PADDING expr .) ]
+  ! SLASH           [ reduce using rule 33 (expr -> PADDING expr .) ]
+  ! DOUBLESLASH     [ reduce using rule 33 (expr -> PADDING expr .) ]
+  ! PERCENT         [ reduce using rule 33 (expr -> PADDING expr .) ]
+  ! OPERATOR        [ reduce using rule 33 (expr -> PADDING expr .) ]
 
     operator                       shift and go to state 22
 
-state 34
+state 38
 
-    (25) number -> PLUS number .
+    (27) number -> PLUS number .
 
-    ANNOTATION      reduce using rule 25 (number -> PLUS number .)
-    TICK            reduce using rule 25 (number -> PLUS number .)
-    SPACE           reduce using rule 25 (number -> PLUS number .)
-    DOT_OPERATOR    reduce using rule 25 (number -> PLUS number .)
-    PADDING         reduce using rule 25 (number -> PLUS number .)
-    PLUS            reduce using rule 25 (number -> PLUS number .)
-    MINUS           reduce using rule 25 (number -> PLUS number .)
-    STAR            reduce using rule 25 (number -> PLUS number .)
-    SLASH           reduce using rule 25 (number -> PLUS number .)
-    DOUBLESLASH     reduce using rule 25 (number -> PLUS number .)
-    PERCENT         reduce using rule 25 (number -> PLUS number .)
-    OPERATOR        reduce using rule 25 (number -> PLUS number .)
-    $end            reduce using rule 25 (number -> PLUS number .)
-    RPAREN          reduce using rule 25 (number -> PLUS number .)
-
-
-state 35
-
-    (26) number -> MINUS number .
-
-    ANNOTATION      reduce using rule 26 (number -> MINUS number .)
-    TICK            reduce using rule 26 (number -> MINUS number .)
-    SPACE           reduce using rule 26 (number -> MINUS number .)
-    DOT_OPERATOR    reduce using rule 26 (number -> MINUS number .)
-    PADDING         reduce using rule 26 (number -> MINUS number .)
-    PLUS            reduce using rule 26 (number -> MINUS number .)
-    MINUS           reduce using rule 26 (number -> MINUS number .)
-    STAR            reduce using rule 26 (number -> MINUS number .)
-    SLASH           reduce using rule 26 (number -> MINUS number .)
-    DOUBLESLASH     reduce using rule 26 (number -> MINUS number .)
-    PERCENT         reduce using rule 26 (number -> MINUS number .)
-    OPERATOR        reduce using rule 26 (number -> MINUS number .)
-    $end            reduce using rule 26 (number -> MINUS number .)
-    RPAREN          reduce using rule 26 (number -> MINUS number .)
+    ANNOTATION      reduce using rule 27 (number -> PLUS number .)
+    TICK            reduce using rule 27 (number -> PLUS number .)
+    SPACE           reduce using rule 27 (number -> PLUS number .)
+    DOT_OPERATOR    reduce using rule 27 (number -> PLUS number .)
+    PADDING         reduce using rule 27 (number -> PLUS number .)
+    PLUS            reduce using rule 27 (number -> PLUS number .)
+    MINUS           reduce using rule 27 (number -> PLUS number .)
+    STAR            reduce using rule 27 (number -> PLUS number .)
+    SLASH           reduce using rule 27 (number -> PLUS number .)
+    DOUBLESLASH     reduce using rule 27 (number -> PLUS number .)
+    PERCENT         reduce using rule 27 (number -> PLUS number .)
+    OPERATOR        reduce using rule 27 (number -> PLUS number .)
+    $end            reduce using rule 27 (number -> PLUS number .)
+    RPAREN          reduce using rule 27 (number -> PLUS number .)
 
 
-state 36
+state 39
+
+    (28) number -> MINUS number .
+
+    ANNOTATION      reduce using rule 28 (number -> MINUS number .)
+    TICK            reduce using rule 28 (number -> MINUS number .)
+    SPACE           reduce using rule 28 (number -> MINUS number .)
+    DOT_OPERATOR    reduce using rule 28 (number -> MINUS number .)
+    PADDING         reduce using rule 28 (number -> MINUS number .)
+    PLUS            reduce using rule 28 (number -> MINUS number .)
+    MINUS           reduce using rule 28 (number -> MINUS number .)
+    STAR            reduce using rule 28 (number -> MINUS number .)
+    SLASH           reduce using rule 28 (number -> MINUS number .)
+    DOUBLESLASH     reduce using rule 28 (number -> MINUS number .)
+    PERCENT         reduce using rule 28 (number -> MINUS number .)
+    OPERATOR        reduce using rule 28 (number -> MINUS number .)
+    $end            reduce using rule 28 (number -> MINUS number .)
+    RPAREN          reduce using rule 28 (number -> MINUS number .)
+
+
+state 40
 
     (10) expr -> expr TICK IDENTIFIER . TICK expr
 
-    TICK            shift and go to state 44
+    TICK            shift and go to state 50
 
 
-state 37
+state 41
 
     (11) expr -> expr SPACE expr .
     (10) expr -> expr . TICK IDENTIFIER TICK expr
     (11) expr -> expr . SPACE expr
     (12) expr -> expr . DOT_OPERATOR expr
-    (13) expr -> expr . operator expr
-    (32) expr -> expr . PADDING
-    (14) operator -> . PLUS
-    (15) operator -> . MINUS
-    (16) operator -> . STAR
-    (17) operator -> . SLASH
-    (18) operator -> . DOUBLESLASH
-    (19) operator -> . PERCENT
-    (20) operator -> . OPERATOR
+    (15) expr -> expr . operator expr
+    (34) expr -> expr . PADDING
+    (16) operator -> . PLUS
+    (17) operator -> . MINUS
+    (18) operator -> . STAR
+    (19) operator -> . SLASH
+    (20) operator -> . DOUBLESLASH
+    (21) operator -> . PERCENT
+    (22) operator -> . OPERATOR
 
     TICK            reduce using rule 11 (expr -> expr SPACE expr .)
     SPACE           reduce using rule 11 (expr -> expr SPACE expr .)
@@ -1070,21 +1165,21 @@ state 37
 
     operator                       shift and go to state 22
 
-state 38
+state 42
 
     (12) expr -> expr DOT_OPERATOR expr .
     (10) expr -> expr . TICK IDENTIFIER TICK expr
     (11) expr -> expr . SPACE expr
     (12) expr -> expr . DOT_OPERATOR expr
-    (13) expr -> expr . operator expr
-    (32) expr -> expr . PADDING
-    (14) operator -> . PLUS
-    (15) operator -> . MINUS
-    (16) operator -> . STAR
-    (17) operator -> . SLASH
-    (18) operator -> . DOUBLESLASH
-    (19) operator -> . PERCENT
-    (20) operator -> . OPERATOR
+    (15) expr -> expr . operator expr
+    (34) expr -> expr . PADDING
+    (16) operator -> . PLUS
+    (17) operator -> . MINUS
+    (18) operator -> . STAR
+    (19) operator -> . SLASH
+    (20) operator -> . DOUBLESLASH
+    (21) operator -> . PERCENT
+    (22) operator -> . OPERATOR
 
     TICK            reduce using rule 12 (expr -> expr DOT_OPERATOR expr .)
     PADDING         reduce using rule 12 (expr -> expr DOT_OPERATOR expr .)
@@ -1114,21 +1209,21 @@ state 38
 
     operator                       shift and go to state 22
 
-state 39
+state 43
 
-    (13) expr -> expr operator expr .
+    (15) expr -> expr operator expr .
     (10) expr -> expr . TICK IDENTIFIER TICK expr
     (11) expr -> expr . SPACE expr
     (12) expr -> expr . DOT_OPERATOR expr
-    (13) expr -> expr . operator expr
-    (32) expr -> expr . PADDING
-    (14) operator -> . PLUS
-    (15) operator -> . MINUS
-    (16) operator -> . STAR
-    (17) operator -> . SLASH
-    (18) operator -> . DOUBLESLASH
-    (19) operator -> . PERCENT
-    (20) operator -> . OPERATOR
+    (15) expr -> expr . operator expr
+    (34) expr -> expr . PADDING
+    (16) operator -> . PLUS
+    (17) operator -> . MINUS
+    (18) operator -> . STAR
+    (19) operator -> . SLASH
+    (20) operator -> . DOUBLESLASH
+    (21) operator -> . PERCENT
+    (22) operator -> . OPERATOR
 
   ! shift/reduce conflict for TICK resolved as shift
   ! shift/reduce conflict for SPACE resolved as shift
@@ -1141,8 +1236,8 @@ state 39
   ! shift/reduce conflict for DOUBLESLASH resolved as shift
   ! shift/reduce conflict for PERCENT resolved as shift
   ! shift/reduce conflict for OPERATOR resolved as shift
-    $end            reduce using rule 13 (expr -> expr operator expr .)
-    RPAREN          reduce using rule 13 (expr -> expr operator expr .)
+    $end            reduce using rule 15 (expr -> expr operator expr .)
+    RPAREN          reduce using rule 15 (expr -> expr operator expr .)
     TICK            shift and go to state 19
     SPACE           shift and go to state 20
     DOT_OPERATOR    shift and go to state 21
@@ -1155,78 +1250,78 @@ state 39
     PERCENT         shift and go to state 29
     OPERATOR        shift and go to state 30
 
-  ! TICK            [ reduce using rule 13 (expr -> expr operator expr .) ]
-  ! SPACE           [ reduce using rule 13 (expr -> expr operator expr .) ]
-  ! DOT_OPERATOR    [ reduce using rule 13 (expr -> expr operator expr .) ]
-  ! PADDING         [ reduce using rule 13 (expr -> expr operator expr .) ]
-  ! PLUS            [ reduce using rule 13 (expr -> expr operator expr .) ]
-  ! MINUS           [ reduce using rule 13 (expr -> expr operator expr .) ]
-  ! STAR            [ reduce using rule 13 (expr -> expr operator expr .) ]
-  ! SLASH           [ reduce using rule 13 (expr -> expr operator expr .) ]
-  ! DOUBLESLASH     [ reduce using rule 13 (expr -> expr operator expr .) ]
-  ! PERCENT         [ reduce using rule 13 (expr -> expr operator expr .) ]
-  ! OPERATOR        [ reduce using rule 13 (expr -> expr operator expr .) ]
+  ! TICK            [ reduce using rule 15 (expr -> expr operator expr .) ]
+  ! SPACE           [ reduce using rule 15 (expr -> expr operator expr .) ]
+  ! DOT_OPERATOR    [ reduce using rule 15 (expr -> expr operator expr .) ]
+  ! PADDING         [ reduce using rule 15 (expr -> expr operator expr .) ]
+  ! PLUS            [ reduce using rule 15 (expr -> expr operator expr .) ]
+  ! MINUS           [ reduce using rule 15 (expr -> expr operator expr .) ]
+  ! STAR            [ reduce using rule 15 (expr -> expr operator expr .) ]
+  ! SLASH           [ reduce using rule 15 (expr -> expr operator expr .) ]
+  ! DOUBLESLASH     [ reduce using rule 15 (expr -> expr operator expr .) ]
+  ! PERCENT         [ reduce using rule 15 (expr -> expr operator expr .) ]
+  ! OPERATOR        [ reduce using rule 15 (expr -> expr operator expr .) ]
 
     operator                       shift and go to state 22
 
-state 40
+state 44
 
-    (28) concrete_number -> number ANNOTATION string .
+    (30) concrete_number -> number ANNOTATION string .
 
-    TICK            reduce using rule 28 (concrete_number -> number ANNOTATION string .)
-    SPACE           reduce using rule 28 (concrete_number -> number ANNOTATION string .)
-    DOT_OPERATOR    reduce using rule 28 (concrete_number -> number ANNOTATION string .)
-    PADDING         reduce using rule 28 (concrete_number -> number ANNOTATION string .)
-    PLUS            reduce using rule 28 (concrete_number -> number ANNOTATION string .)
-    MINUS           reduce using rule 28 (concrete_number -> number ANNOTATION string .)
-    STAR            reduce using rule 28 (concrete_number -> number ANNOTATION string .)
-    SLASH           reduce using rule 28 (concrete_number -> number ANNOTATION string .)
-    DOUBLESLASH     reduce using rule 28 (concrete_number -> number ANNOTATION string .)
-    PERCENT         reduce using rule 28 (concrete_number -> number ANNOTATION string .)
-    OPERATOR        reduce using rule 28 (concrete_number -> number ANNOTATION string .)
-    $end            reduce using rule 28 (concrete_number -> number ANNOTATION string .)
-    RPAREN          reduce using rule 28 (concrete_number -> number ANNOTATION string .)
-
-
-state 41
-
-    (29) concrete_number -> number ANNOTATION char .
-
-    TICK            reduce using rule 29 (concrete_number -> number ANNOTATION char .)
-    SPACE           reduce using rule 29 (concrete_number -> number ANNOTATION char .)
-    DOT_OPERATOR    reduce using rule 29 (concrete_number -> number ANNOTATION char .)
-    PADDING         reduce using rule 29 (concrete_number -> number ANNOTATION char .)
-    PLUS            reduce using rule 29 (concrete_number -> number ANNOTATION char .)
-    MINUS           reduce using rule 29 (concrete_number -> number ANNOTATION char .)
-    STAR            reduce using rule 29 (concrete_number -> number ANNOTATION char .)
-    SLASH           reduce using rule 29 (concrete_number -> number ANNOTATION char .)
-    DOUBLESLASH     reduce using rule 29 (concrete_number -> number ANNOTATION char .)
-    PERCENT         reduce using rule 29 (concrete_number -> number ANNOTATION char .)
-    OPERATOR        reduce using rule 29 (concrete_number -> number ANNOTATION char .)
-    $end            reduce using rule 29 (concrete_number -> number ANNOTATION char .)
-    RPAREN          reduce using rule 29 (concrete_number -> number ANNOTATION char .)
+    TICK            reduce using rule 30 (concrete_number -> number ANNOTATION string .)
+    SPACE           reduce using rule 30 (concrete_number -> number ANNOTATION string .)
+    DOT_OPERATOR    reduce using rule 30 (concrete_number -> number ANNOTATION string .)
+    PADDING         reduce using rule 30 (concrete_number -> number ANNOTATION string .)
+    PLUS            reduce using rule 30 (concrete_number -> number ANNOTATION string .)
+    MINUS           reduce using rule 30 (concrete_number -> number ANNOTATION string .)
+    STAR            reduce using rule 30 (concrete_number -> number ANNOTATION string .)
+    SLASH           reduce using rule 30 (concrete_number -> number ANNOTATION string .)
+    DOUBLESLASH     reduce using rule 30 (concrete_number -> number ANNOTATION string .)
+    PERCENT         reduce using rule 30 (concrete_number -> number ANNOTATION string .)
+    OPERATOR        reduce using rule 30 (concrete_number -> number ANNOTATION string .)
+    $end            reduce using rule 30 (concrete_number -> number ANNOTATION string .)
+    RPAREN          reduce using rule 30 (concrete_number -> number ANNOTATION string .)
 
 
-state 42
+state 45
 
-    (30) concrete_number -> number ANNOTATION identifier .
+    (31) concrete_number -> number ANNOTATION char .
 
-    TICK            reduce using rule 30 (concrete_number -> number ANNOTATION identifier .)
-    SPACE           reduce using rule 30 (concrete_number -> number ANNOTATION identifier .)
-    DOT_OPERATOR    reduce using rule 30 (concrete_number -> number ANNOTATION identifier .)
-    PADDING         reduce using rule 30 (concrete_number -> number ANNOTATION identifier .)
-    PLUS            reduce using rule 30 (concrete_number -> number ANNOTATION identifier .)
-    MINUS           reduce using rule 30 (concrete_number -> number ANNOTATION identifier .)
-    STAR            reduce using rule 30 (concrete_number -> number ANNOTATION identifier .)
-    SLASH           reduce using rule 30 (concrete_number -> number ANNOTATION identifier .)
-    DOUBLESLASH     reduce using rule 30 (concrete_number -> number ANNOTATION identifier .)
-    PERCENT         reduce using rule 30 (concrete_number -> number ANNOTATION identifier .)
-    OPERATOR        reduce using rule 30 (concrete_number -> number ANNOTATION identifier .)
-    $end            reduce using rule 30 (concrete_number -> number ANNOTATION identifier .)
-    RPAREN          reduce using rule 30 (concrete_number -> number ANNOTATION identifier .)
+    TICK            reduce using rule 31 (concrete_number -> number ANNOTATION char .)
+    SPACE           reduce using rule 31 (concrete_number -> number ANNOTATION char .)
+    DOT_OPERATOR    reduce using rule 31 (concrete_number -> number ANNOTATION char .)
+    PADDING         reduce using rule 31 (concrete_number -> number ANNOTATION char .)
+    PLUS            reduce using rule 31 (concrete_number -> number ANNOTATION char .)
+    MINUS           reduce using rule 31 (concrete_number -> number ANNOTATION char .)
+    STAR            reduce using rule 31 (concrete_number -> number ANNOTATION char .)
+    SLASH           reduce using rule 31 (concrete_number -> number ANNOTATION char .)
+    DOUBLESLASH     reduce using rule 31 (concrete_number -> number ANNOTATION char .)
+    PERCENT         reduce using rule 31 (concrete_number -> number ANNOTATION char .)
+    OPERATOR        reduce using rule 31 (concrete_number -> number ANNOTATION char .)
+    $end            reduce using rule 31 (concrete_number -> number ANNOTATION char .)
+    RPAREN          reduce using rule 31 (concrete_number -> number ANNOTATION char .)
 
 
-state 43
+state 46
+
+    (32) concrete_number -> number ANNOTATION identifier .
+
+    TICK            reduce using rule 32 (concrete_number -> number ANNOTATION identifier .)
+    SPACE           reduce using rule 32 (concrete_number -> number ANNOTATION identifier .)
+    DOT_OPERATOR    reduce using rule 32 (concrete_number -> number ANNOTATION identifier .)
+    PADDING         reduce using rule 32 (concrete_number -> number ANNOTATION identifier .)
+    PLUS            reduce using rule 32 (concrete_number -> number ANNOTATION identifier .)
+    MINUS           reduce using rule 32 (concrete_number -> number ANNOTATION identifier .)
+    STAR            reduce using rule 32 (concrete_number -> number ANNOTATION identifier .)
+    SLASH           reduce using rule 32 (concrete_number -> number ANNOTATION identifier .)
+    DOUBLESLASH     reduce using rule 32 (concrete_number -> number ANNOTATION identifier .)
+    PERCENT         reduce using rule 32 (concrete_number -> number ANNOTATION identifier .)
+    OPERATOR        reduce using rule 32 (concrete_number -> number ANNOTATION identifier .)
+    $end            reduce using rule 32 (concrete_number -> number ANNOTATION identifier .)
+    RPAREN          reduce using rule 32 (concrete_number -> number ANNOTATION identifier .)
+
+
+state 47
 
     (9) expr -> LPAREN expr RPAREN .
 
@@ -1245,7 +1340,45 @@ state 43
     RPAREN          reduce using rule 9 (expr -> LPAREN expr RPAREN .)
 
 
-state 44
+state 48
+
+    (13) expr -> LPAREN DOT_OPERATOR RPAREN .
+
+    TICK            reduce using rule 13 (expr -> LPAREN DOT_OPERATOR RPAREN .)
+    SPACE           reduce using rule 13 (expr -> LPAREN DOT_OPERATOR RPAREN .)
+    DOT_OPERATOR    reduce using rule 13 (expr -> LPAREN DOT_OPERATOR RPAREN .)
+    PADDING         reduce using rule 13 (expr -> LPAREN DOT_OPERATOR RPAREN .)
+    PLUS            reduce using rule 13 (expr -> LPAREN DOT_OPERATOR RPAREN .)
+    MINUS           reduce using rule 13 (expr -> LPAREN DOT_OPERATOR RPAREN .)
+    STAR            reduce using rule 13 (expr -> LPAREN DOT_OPERATOR RPAREN .)
+    SLASH           reduce using rule 13 (expr -> LPAREN DOT_OPERATOR RPAREN .)
+    DOUBLESLASH     reduce using rule 13 (expr -> LPAREN DOT_OPERATOR RPAREN .)
+    PERCENT         reduce using rule 13 (expr -> LPAREN DOT_OPERATOR RPAREN .)
+    OPERATOR        reduce using rule 13 (expr -> LPAREN DOT_OPERATOR RPAREN .)
+    $end            reduce using rule 13 (expr -> LPAREN DOT_OPERATOR RPAREN .)
+    RPAREN          reduce using rule 13 (expr -> LPAREN DOT_OPERATOR RPAREN .)
+
+
+state 49
+
+    (14) expr -> LPAREN operator RPAREN .
+
+    TICK            reduce using rule 14 (expr -> LPAREN operator RPAREN .)
+    SPACE           reduce using rule 14 (expr -> LPAREN operator RPAREN .)
+    DOT_OPERATOR    reduce using rule 14 (expr -> LPAREN operator RPAREN .)
+    PADDING         reduce using rule 14 (expr -> LPAREN operator RPAREN .)
+    PLUS            reduce using rule 14 (expr -> LPAREN operator RPAREN .)
+    MINUS           reduce using rule 14 (expr -> LPAREN operator RPAREN .)
+    STAR            reduce using rule 14 (expr -> LPAREN operator RPAREN .)
+    SLASH           reduce using rule 14 (expr -> LPAREN operator RPAREN .)
+    DOUBLESLASH     reduce using rule 14 (expr -> LPAREN operator RPAREN .)
+    PERCENT         reduce using rule 14 (expr -> LPAREN operator RPAREN .)
+    OPERATOR        reduce using rule 14 (expr -> LPAREN operator RPAREN .)
+    $end            reduce using rule 14 (expr -> LPAREN operator RPAREN .)
+    RPAREN          reduce using rule 14 (expr -> LPAREN operator RPAREN .)
+
+
+state 50
 
     (10) expr -> expr TICK IDENTIFIER TICK . expr
     (1) expr -> . number
@@ -1257,19 +1390,21 @@ state 44
     (10) expr -> . expr TICK IDENTIFIER TICK expr
     (11) expr -> . expr SPACE expr
     (12) expr -> . expr DOT_OPERATOR expr
-    (13) expr -> . expr operator expr
-    (31) expr -> . PADDING expr
-    (32) expr -> . expr PADDING
-    (21) number -> . BASE10_INTEGER
-    (22) number -> . BASE16_INTEGER
-    (23) number -> . BASE8_INTEGER
-    (24) number -> . BASE2_INTEGER
-    (25) number -> . PLUS number
-    (26) number -> . MINUS number
-    (27) number -> . FLOAT
-    (28) concrete_number -> . number ANNOTATION string
-    (29) concrete_number -> . number ANNOTATION char
-    (30) concrete_number -> . number ANNOTATION identifier
+    (13) expr -> . LPAREN DOT_OPERATOR RPAREN
+    (14) expr -> . LPAREN operator RPAREN
+    (15) expr -> . expr operator expr
+    (33) expr -> . PADDING expr
+    (34) expr -> . expr PADDING
+    (23) number -> . BASE10_INTEGER
+    (24) number -> . BASE16_INTEGER
+    (25) number -> . BASE8_INTEGER
+    (26) number -> . BASE2_INTEGER
+    (27) number -> . PLUS number
+    (28) number -> . MINUS number
+    (29) number -> . FLOAT
+    (30) concrete_number -> . number ANNOTATION string
+    (31) concrete_number -> . number ANNOTATION char
+    (32) concrete_number -> . number ANNOTATION identifier
     (7) string -> . STRING
     (6) char -> . CHAR
     (8) identifier -> . IDENTIFIER
@@ -1287,28 +1422,28 @@ state 44
     CHAR            shift and go to state 18
     IDENTIFIER      shift and go to state 8
 
-    expr                           shift and go to state 45
+    expr                           shift and go to state 51
     number                         shift and go to state 2
     concrete_number                shift and go to state 3
     string                         shift and go to state 4
     char                           shift and go to state 5
     identifier                     shift and go to state 6
 
-state 45
+state 51
 
     (10) expr -> expr TICK IDENTIFIER TICK expr .
     (10) expr -> expr . TICK IDENTIFIER TICK expr
     (11) expr -> expr . SPACE expr
     (12) expr -> expr . DOT_OPERATOR expr
-    (13) expr -> expr . operator expr
-    (32) expr -> expr . PADDING
-    (14) operator -> . PLUS
-    (15) operator -> . MINUS
-    (16) operator -> . STAR
-    (17) operator -> . SLASH
-    (18) operator -> . DOUBLESLASH
-    (19) operator -> . PERCENT
-    (20) operator -> . OPERATOR
+    (15) expr -> expr . operator expr
+    (34) expr -> expr . PADDING
+    (16) operator -> . PLUS
+    (17) operator -> . MINUS
+    (18) operator -> . STAR
+    (19) operator -> . SLASH
+    (20) operator -> . DOUBLESLASH
+    (21) operator -> . PERCENT
+    (22) operator -> . OPERATOR
 
   ! shift/reduce conflict for TICK resolved as shift
   ! shift/reduce conflict for SPACE resolved as shift
@@ -1351,36 +1486,36 @@ state 45
 WARNING: 
 WARNING: Conflicts:
 WARNING: 
-WARNING: shift/reduce conflict for TICK in state 33 resolved as shift
-WARNING: shift/reduce conflict for SPACE in state 33 resolved as shift
-WARNING: shift/reduce conflict for DOT_OPERATOR in state 33 resolved as shift
-WARNING: shift/reduce conflict for PADDING in state 33 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 33 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 33 resolved as shift
-WARNING: shift/reduce conflict for STAR in state 33 resolved as shift
-WARNING: shift/reduce conflict for SLASH in state 33 resolved as shift
-WARNING: shift/reduce conflict for DOUBLESLASH in state 33 resolved as shift
-WARNING: shift/reduce conflict for PERCENT in state 33 resolved as shift
-WARNING: shift/reduce conflict for OPERATOR in state 33 resolved as shift
-WARNING: shift/reduce conflict for TICK in state 39 resolved as shift
-WARNING: shift/reduce conflict for SPACE in state 39 resolved as shift
-WARNING: shift/reduce conflict for DOT_OPERATOR in state 39 resolved as shift
-WARNING: shift/reduce conflict for PADDING in state 39 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 39 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 39 resolved as shift
-WARNING: shift/reduce conflict for STAR in state 39 resolved as shift
-WARNING: shift/reduce conflict for SLASH in state 39 resolved as shift
-WARNING: shift/reduce conflict for DOUBLESLASH in state 39 resolved as shift
-WARNING: shift/reduce conflict for PERCENT in state 39 resolved as shift
-WARNING: shift/reduce conflict for OPERATOR in state 39 resolved as shift
-WARNING: shift/reduce conflict for TICK in state 45 resolved as shift
-WARNING: shift/reduce conflict for SPACE in state 45 resolved as shift
-WARNING: shift/reduce conflict for DOT_OPERATOR in state 45 resolved as shift
-WARNING: shift/reduce conflict for PADDING in state 45 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 45 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 45 resolved as shift
-WARNING: shift/reduce conflict for STAR in state 45 resolved as shift
-WARNING: shift/reduce conflict for SLASH in state 45 resolved as shift
-WARNING: shift/reduce conflict for DOUBLESLASH in state 45 resolved as shift
-WARNING: shift/reduce conflict for PERCENT in state 45 resolved as shift
-WARNING: shift/reduce conflict for OPERATOR in state 45 resolved as shift
+WARNING: shift/reduce conflict for TICK in state 37 resolved as shift
+WARNING: shift/reduce conflict for SPACE in state 37 resolved as shift
+WARNING: shift/reduce conflict for DOT_OPERATOR in state 37 resolved as shift
+WARNING: shift/reduce conflict for PADDING in state 37 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 37 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 37 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 37 resolved as shift
+WARNING: shift/reduce conflict for SLASH in state 37 resolved as shift
+WARNING: shift/reduce conflict for DOUBLESLASH in state 37 resolved as shift
+WARNING: shift/reduce conflict for PERCENT in state 37 resolved as shift
+WARNING: shift/reduce conflict for OPERATOR in state 37 resolved as shift
+WARNING: shift/reduce conflict for TICK in state 43 resolved as shift
+WARNING: shift/reduce conflict for SPACE in state 43 resolved as shift
+WARNING: shift/reduce conflict for DOT_OPERATOR in state 43 resolved as shift
+WARNING: shift/reduce conflict for PADDING in state 43 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 43 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 43 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 43 resolved as shift
+WARNING: shift/reduce conflict for SLASH in state 43 resolved as shift
+WARNING: shift/reduce conflict for DOUBLESLASH in state 43 resolved as shift
+WARNING: shift/reduce conflict for PERCENT in state 43 resolved as shift
+WARNING: shift/reduce conflict for OPERATOR in state 43 resolved as shift
+WARNING: shift/reduce conflict for TICK in state 51 resolved as shift
+WARNING: shift/reduce conflict for SPACE in state 51 resolved as shift
+WARNING: shift/reduce conflict for DOT_OPERATOR in state 51 resolved as shift
+WARNING: shift/reduce conflict for PADDING in state 51 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 51 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 51 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 51 resolved as shift
+WARNING: shift/reduce conflict for SLASH in state 51 resolved as shift
+WARNING: shift/reduce conflict for DOUBLESLASH in state 51 resolved as shift
+WARNING: shift/reduce conflict for PERCENT in state 51 resolved as shift
+WARNING: shift/reduce conflict for OPERATOR in state 51 resolved as shift
