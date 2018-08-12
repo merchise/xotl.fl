@@ -15,6 +15,7 @@ from xopgi.ql.lang.expressions import parse, tokenize
 from xopgi.ql.lang.expressions.base import (
     Identifier,
     Literal,
+    Application,
 )
 from xopgi.ql.lang.expressions.parser import string_repr
 
@@ -92,3 +93,8 @@ def test_wfe_float_literals(n):
         tokenize('_1e+10')
     with pytest.raises(lex.LexError):
         tokenize('_0.1')
+
+
+def test_wfe_application():
+    assert parse('a b') == Application(Identifier('a'), Identifier('b'))
+    assert parse('a b c') == parse('(a b) c')

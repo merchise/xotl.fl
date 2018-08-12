@@ -71,6 +71,12 @@ class Application(AST):
     def __repr__(self):
         return f'Application({self.e1!r}, {self.e2!r})'
 
+    def __eq__(self, other):
+        if isinstance(other, Application):
+            return self.e1 == other.e1 and self.e2 == other.e2
+        else:
+            return NotImplemented
+
 
 # We assume (as the Book does) that there are no "translation" errors; i.e
 # that you haven't put a Let where you needed a Letrec.
