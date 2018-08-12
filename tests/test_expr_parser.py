@@ -98,3 +98,11 @@ def test_wfe_float_literals(n):
 def test_wfe_application():
     assert parse('a b') == Application(Identifier('a'), Identifier('b'))
     assert parse('a b c') == parse('(a b) c')
+
+
+def test_wfe_composition():
+    assert parse('a . b') == parse('(.) a b') == Application(
+        Application(Identifier('.'), Identifier('a')),
+        Identifier('b')
+    )
+    assert parse('a . b . c') == parse('a . (b . c)')
