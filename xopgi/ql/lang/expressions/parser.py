@@ -91,14 +91,12 @@ def t_STRING(t):
 
 
 def t_CHAR(t):
-    r'\'([^\n]|\\[ntr])\''
+    r"'([^\n]|(\\[ntr])|(\\[xuU][a-f\d]+))'"
     value = t.value[1:-1]
-    if value == r'\n':
-        value = '\n'
-    elif value == r'\t':
-        value = '\t'
-    elif value == r'\r':
-        value = '\r'
+    if len(value) > 1:
+        assert value.startswith('\\')
+        # \x..., \u...
+        value = eval(f"'{value}'")
     t.value = value
     return t
 
@@ -243,12 +241,12 @@ def p_literals(prod):
 
 def p_char(prod):
     'char : CHAR'
-    prod[0] = Literal(prod[1][1:-1], CharType)  # strip the surrounding ''
+    prod[0] = Literal(prod[1], CharType)
 
 
 def p_string(prod):
     'string : STRING'
-    prod[0] = Literal(prod[1][1:-1], StringType)  # strip the surrounding ''
+    prod[0] = Literal(prod[1], StringType)
 
 
 def p_variable(prod):

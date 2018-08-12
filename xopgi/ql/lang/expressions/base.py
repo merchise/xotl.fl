@@ -7,6 +7,8 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 from typing import Any, Mapping
+from xoutil.objects import validate_attrs
+
 from ..types.base import Type
 
 
@@ -44,6 +46,12 @@ class Literal(AST):
             return f'Literal({self.value!r}, {self.type!r}, {self.annotation!r})'
         else:
             return f'Literal({self.value!r}, {self.type!r})'
+
+    def __eq__(self, other):
+        if isinstance(other, Literal):
+            return validate_attrs(self, other, ('type', 'value', 'annotation'))
+        else:
+            return NotImplemented
 
 
 class Lambda(AST):
