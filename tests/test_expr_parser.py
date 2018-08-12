@@ -9,7 +9,9 @@
 import pytest
 from hypothesis import strategies as s, given
 
-from xopgi.ql.lang.expressions import parse
+from ply import lex
+
+from xopgi.ql.lang.expressions import parse, tokenize
 from xopgi.ql.lang.expressions.base import (
     Identifier,
     Literal,
@@ -78,3 +80,15 @@ def test_wfe_integer_literals_with_under(i, g):
     code = bin(i) + '__' + bin(g)[2:] + '_'
     value = eval(bin(i) + bin(g)[2:] if i else bin(g))
     assert parse(code) == Literal(value, NumberType)
+
+
+@given(s.floats(allow_nan=False, allow_infinity=False))
+def test_wfe_float_literals(n):
+    code = f'{n!r:.60}'
+    assert parse(code) == Literal(n, NumberType)
+
+    assert parse('1_000_.500') == Literal(1000.5, NumberType)
+    with pytest.raises(lex.LexError):
+        tokenize('_1e+10')
+    with pytest.raises(lex.LexError):
+        tokenize('_0.1')

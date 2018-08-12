@@ -168,7 +168,10 @@ def t_RPAREN(t):
 
 
 def t_FLOAT(t):
-    r'[0-9_]*\.[0-9]+'
+    r'([0-9_]*\.[0-9]+([eE][-+]\d+)?|[0-9][0-9_]*[eE][-+]\d+)'
+    if t.value.startswith('_'):
+        raise lex.LexError(f'Illegal float representation {t.value!r}', t.lexpos)
+    t.value = t.value.replace('_', '')
     return t
 
 
