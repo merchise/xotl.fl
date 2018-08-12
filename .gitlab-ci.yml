@@ -1,13 +1,13 @@
 ---
 stages:
   - pre-check
+  - build doc
+  - publish doc
   - unit-test
   - integration-test
   - check
   - build
   - publish
-  - build doc
-  - publish doc
 
 check code smells:
   script: merchise_lint3
