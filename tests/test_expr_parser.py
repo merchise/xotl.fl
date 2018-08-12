@@ -11,7 +11,7 @@ from hypothesis import strategies as s, given
 
 from ply import lex
 
-from xopgi.ql.lang.expressions import parse, tokenize
+from xopgi.ql.lang.expressions import parse, tokenize, find_free_names
 from xopgi.ql.lang.expressions.base import (
     Identifier,
     Literal,
@@ -176,3 +176,11 @@ def test_incorrect_lepexpr_assoc():
 def test_letbasic_letexpr():
     P = parse
     assert P('let id x = x in map id xs') == P('let id x = x in (map id xs)')
+
+
+@pytest.mark.xfail(reason='programming error')
+def test_find_free_names():
+    P = parse
+    res = find_free_names(P('let id x = x in map id xs'))
+    assert all(n in res for n in ('map', 'xs'))
+    assert all(n not in res for n in ('id', 'x'))
