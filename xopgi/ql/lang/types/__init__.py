@@ -26,6 +26,7 @@ Other notable sources:
 
 '''
 from .base import (   # noqa: reexport
+    Type,
     TypeVariable,
     TypeCons,
     FunctionTypeCons,
@@ -34,7 +35,17 @@ from .base import (   # noqa: reexport
 )
 
 
-def parse(code, debug=False, tracking=False):
+def parse(code: str, debug=False, tracking=False) -> Type:
+    '''Parse a single type expression `code`.
+
+    Return a `type expression AST <xopgi.ql.lang.types.base>`:mod:.
+
+    Example:
+
+       >>> parse('a -> b')
+       TypeCons('->', [TypeVariable('a'), TypeVariable('b')])
+
+    '''
     from .parser import parser, lexer
     return parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
 

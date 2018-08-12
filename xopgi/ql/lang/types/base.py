@@ -96,6 +96,11 @@ class TypeCons(Type):
         return 1 + sum(len(st) for st in self.subtypes)
 
 
+#: Shortcut to create function types
 FunctionTypeCons = lambda a, b: TypeCons('->', [a, b], binary=True)
+
+#: Shortcut to create tuple types
 TupleTypeCons = lambda *ts: TypeCons('Tuple', list(ts))
+
+#: Shortcut to create list types
 ListTypeCons = lambda t: TypeCons('List', [t])

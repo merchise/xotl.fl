@@ -6,10 +6,12 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
+from .base import AST
 from .parser import find_free_names  # noqa
 
 
-def parse(source, debug=False, tracking=False):
+def parse(source: str, debug=False, tracking=False) -> AST:
+    '''Parse a single expression.'''
     from .parser import parser, lexer
     return parser.parse(source, lexer=lexer, debug=debug, tracking=tracking)
 
