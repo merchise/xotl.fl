@@ -17,6 +17,8 @@ from xopgi.ql.lang.expressions.base import (
     Literal,
     Application,
     Lambda,
+    Let,
+    Letrec,
 )
 from xopgi.ql.lang.expressions.parser import string_repr
 
@@ -171,9 +173,32 @@ def test_incorrect_lepexpr_assoc():
         assert P('let id x = x in map id xs') == P('(let id x = x in map) id xs')
 
 
-def test_letbasic_letexpr():
+def test_basic_letexpr():
     P = parse
     assert P('let id x = x in map id xs') == P('let id x = x in (map id xs)')
+    assert isinstance(P('let id x = x in id'), Let)
+
+    code = '''
+    let id x    = x
+        prxI c  = c x id
+        p1 x y  = x
+        p2 x y  = y
+    in prxI p2 (prxI p2)
+    '''
+    Id = Identifier
+    App = Application
+    L = Lambda
+    assert isinstance(parse(code), Letrec)
+    assert parse(code) == Letrec(
+        {'id': L('x', Id('x')),
+         'prxI': L('c', App(App(Id('c'), Id('x')), Id('id'))),
+         'p1': L('x', L('y', Id('x'))),
+         'p2': L('x', L('y', Id('y')))},
+        App(
+            App(Id('prxI'), Id('p2')),
+            App(Id('prxI'), Id('p2'))
+        )
+    )
 
 
 def test_find_free_names():

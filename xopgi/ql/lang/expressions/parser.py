@@ -600,8 +600,16 @@ def p_let_expr(prod):
             return equation
 
     equations = [to_lambda(eq) for eq in prod[3]]
+    conses = [eq.pattern.cons for eq in equations]
+    names = set(conses)
+    if len(names) != len(conses):
+        raise SyntaxError('Several definitions for the same name')
+    if any(set(find_free_names(eq.body)) & names for eq in equations):
+        klass = Letrec
+    else:
+        klass = Let
     body = prod[6]
-    prod[0] = Let({eq.pattern.cons: eq.body for eq in equations}, body)
+    prod[0] = klass({eq.pattern.cons: eq.body for eq in equations}, body)
 
 
 def p_error(prod):
