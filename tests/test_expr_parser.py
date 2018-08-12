@@ -115,3 +115,7 @@ def test_wfe_composition():
 
     # Application is stronger than composition
     assert parse('a . b c') == parse('a . (b c)')
+
+
+def test_wfe_infix_func():
+    assert parse('a `f` b') == parse('f a b')

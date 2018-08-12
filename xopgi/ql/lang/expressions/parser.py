@@ -150,7 +150,7 @@ def t_SPACE(t):
         #
         before = t.lexer.lexdata[t.lexpos - 1]
         after = t.lexer.lexdata[t.lexpos + len(t.value)]
-        common = '.,:+-%@!$*^/'
+        common = '`.,:+-%@!$*^/'
         if before in common + '(' or after in common + ')':
             return  # This removes the token entirely.
         else:
@@ -266,7 +266,7 @@ def p_paren_expr(prod):
 
 def p_infix_application(prod):
     'expr : expr TICK IDENTIFIER TICK expr'
-    prod[0] = Application(Application(prod[2], prod[1]), prod[3])
+    prod[0] = Application(Application(Identifier(prod[3]), prod[1]), prod[5])
 
 
 def p_application(prod):
