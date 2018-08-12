@@ -225,7 +225,11 @@ def t_TICK_OPERATOR(t):
     return t
 
 
-t_ANNOTATION = '@'
+# Emit the ANNOTATION only if the '@' surrounded by a possible number and a
+# possible string/char/identifier.
+def t_ANNOTATION(t):
+    r'(?<=[0-9a-fA-F_])@(?=[\'"A-Za-z])'
+    return t
 
 
 def t_OPERATOR(t):

@@ -139,3 +139,19 @@ def test_user_operators(op):
         Application(Identifier(op), Identifier('a')),
         Identifier('b')
     )
+
+
+def test_annotated_numbers():
+    assert parse('1e+10@km') == Literal(1e+10, NumberType, Identifier('km'))
+    assert parse('1e+10@"km"') == Literal(1e+10, NumberType, Literal('km', StringType))
+    assert parse("1e+10@'m'") == Literal(1e+10, NumberType, Literal('m', CharType))
+
+    assert parse('1e+10 @ km') == Application(
+        Application(Identifier('@'), Literal(1e+10, NumberType)),
+        Identifier('km')
+    )
+
+    assert parse('a @ b') == Application(
+        Application(Identifier('@'), Identifier('a')),
+        Identifier('b')
+    )
