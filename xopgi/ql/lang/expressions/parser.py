@@ -567,4 +567,4 @@ def p_error(prod):
     raise ParserError('Invalid expression')
 
 
-parser = yacc.yacc(debug=True, tabmodule='_exprtab', start='st_expr')
+parser = yacc.yacc(debug=True, start='st_expr')
