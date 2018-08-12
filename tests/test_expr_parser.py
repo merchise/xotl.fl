@@ -131,3 +131,11 @@ def test_wfe_infix_func_precedence():
     assert parse('a ++ b `f` c') == parse('(a ++ b) `f` c')
 
     assert parse('a + b `f` c') == parse('(a + b) `f` c')
+
+
+@given(s.text(alphabet='@!<>$+-^/', min_size=1))
+def test_user_operators(op):
+    assert parse(f'a {op} b') == parse(f'({op}) a b') == Application(
+        Application(Identifier(op), Identifier('a')),
+        Identifier('b')
+    )

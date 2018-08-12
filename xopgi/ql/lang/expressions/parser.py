@@ -149,7 +149,7 @@ def t_SPACE(t):
         #
         before = t.lexer.lexdata[t.lexpos - 1]
         after = t.lexer.lexdata[t.lexpos + len(t.value)]
-        common = '`.,:+-%@!$*^/'
+        common = '<>`.,:+-%@!$*^/'
         if before in common + '(' or after in common + ')':
             return  # This removes the token entirely.
         else:
@@ -178,34 +178,44 @@ def t_FLOAT(t):
 # unary +, etc); DOT is right associative.
 
 def t_PLUS(t):
-    r'\+(?![\.\-\+\*<>\$%\^&!@\#=\|])'
+    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])\+(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
     return t
 
 
 def t_MINUS(t):
-    r'\-(?![\.\-\+\*<>\$%\^&!@\#=\|])'
+    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])\-(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
     return t
 
 
 def t_STAR(t):
-    r'\*(?![\.\-\+\*<>\$%\^&!@\#=\|])'
+    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])\*(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
+    return t
+
+
+def t_DOUBLESLASH(t):
+    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])\/\/(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
+    return t
+
+
+def t_SLASH(t):
+    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])\/(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
     return t
 
 
 def t_PERCENT(t):
-    r'%(?![\.\-\+\*<>\$%\^&!@\#=\|])'
+    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])%(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
     return t
 
 
 def t_EQ(t):
-    r'=(?![\.\-\+\*<>\$%\^&!@\#=\|])'
+    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])=(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
     return t
 
 
 # Don't merge this with OPERATOR, we need it to make sure is
 # right-associative.
 def t_DOT_OPERATOR(t):
-    r'\.(?![\.\-\+\*<>\$%\^&!@\#=\|])'
+    r'\.(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
     return t
 
 
@@ -219,7 +229,7 @@ t_ANNOTATION = '@'
 
 
 def t_OPERATOR(t):
-    r'[\.\-\+\*<>\$%\^&!@\#=\|]+'
+    r'[/\.\-\+\*<>\$%\^&!@\#=\|]+'
     return t
 
 
