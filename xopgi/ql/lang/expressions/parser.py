@@ -6,6 +6,9 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
+from typing import List, Union, Deque
+from collections import deque
+
 from xoutil.objects import setdefaultattr
 from ply import lex, yacc
 
@@ -56,12 +59,21 @@ tokens = [
     'EOF',
 ]
 
+# Reserved keywords: pairs of (keyword, regexp).  If the regexp is None, it
+# defaults to '\b{keyword}\b' (case-sensitive).
 reserved = [
-    'letrec', 'let', 'in',
+    ('let', None),
+
+    # We need the KEYWORD_IN to match the preceding spaces to avoid the lexer
+    # to issue a 'SPACE'.  Otherwise, in an expression like 'let id x = x in
+    # ...'; the body of the last equation ('x') is a full expression; and the
+    # parser would be in a state `expr . SPACE KEYWORD_IN ...`; at which it
+    # will try to match the application.
+    ('in', r'\s+in\b'),
 ]
 
 
-for keyword in reserved:
+for keyword, regexp in reserved:
     tk = f'KEYWORD_{keyword.upper()}'
 
     def tkdef(t):
@@ -70,7 +82,7 @@ for keyword in reserved:
         t.lexer.col += len(keyword)
         return t
 
-    tkdef.__doc__ = rf'\b{keyword}\b'
+    tkdef.__doc__ = regexp or rf'\b{keyword}\b'
     tkdef.__name__ = tkname = f't_{tk}'
 
     globals()[tkname] = tkdef
@@ -157,7 +169,7 @@ def t_SPACE(t):
         #
         before = t.lexer.lexdata[t.lexpos - 1]
         after = t.lexer.lexdata[t.lexpos + len(t.value)]
-        common = '<>`.,:+-%@!$*^/'
+        common = '=<>`.,:+-%@!$*^/'
         if before in common + '(' or after in common + ')':
             return  # This removes the token entirely.
         else:
@@ -260,7 +272,7 @@ lexer = lex.lex(debug=False)
 
 precedence = (
     ('right', 'ARROW', ),
-    ('left', 'KEYWORD_LET', 'KEYWORD_LETREC'),
+    ('left', 'KEYWORD_LET', ),
     ('left', 'KEYWORD_IN', ),
 
     ('left', 'TICK_OPERATOR', ),
@@ -300,6 +312,7 @@ def p_literals_and_basic(prod):
              | char
              | identifier
              | enclosed_expr
+             | letexpr
     '''
     prod[0] = prod[1]
 
@@ -444,10 +457,7 @@ def p_lambda_definition(prod):
     '''
     params = prod[2]
     assert params
-    result = prod[4]
-    for varname in reversed(params):
-        result = Lambda(varname, result)
-    prod[0] = result
+    prod[0] = build_lambda(params, prod[4])
 
 
 def p_parameters(prod):
@@ -471,10 +481,29 @@ def p_empty__parameters(prod):
     prod[0] = []
 
 
-class Pattern(AST):
-    def __init__(self, cons, params):
+# Patterns and Equations.  In the final AST, an expression like:
+#
+#     let id x = x in ...
+#
+# would actually be like
+#
+#     let id = \x -> x
+#
+# with some complications if pattern-matching is allowed:
+#
+#     let length [] = 0
+#         lenght (x:xs) = 1 + length xs
+#     in  ...
+#
+# For now, we allows only the SIMPLEST of all definitions (we don't have a
+# 'case' keyword to implement pattern matching.)  But, in any case, having the
+# names of productions be 'pattern' and 'equations' is fit.
+#
+
+class Pattern:
+    def __init__(self, cons, params=None):
         self.cons = cons
-        self.params = params
+        self.params = params or []
 
     def __repr__(self):
         return f'<pattern {self.cons!r} {self.params!r}>'
@@ -491,29 +520,13 @@ class Pattern(AST):
 
 
 def p_pattern(prod):
-    '''pattern : IDENTIFIER _pattern_params'''
-    prod[0] = Pattern(prod[1], prod[2])
+    '''pattern : parameters'''
+    cons, *params = prod[1]
+    prod[0] = Pattern(cons, params)
 
 
-def p_pattern_param(prod):
-    '''
-    _pattern_params : SPACE IDENTIFIER _pattern_params
-    '''
-    params = prod[3]
-    params.insert(0, prod[2])
-    prod[0] = params
-
-
-def p_empty_pattern_param(prod):
-    '''
-    _pattern_params : empty
-    _pattern_params : SPACE
-    '''
-    prod[0] = []
-
-
-class Equation(AST):
-    def __init__(self, pattern, body):
+class Equation:
+    def __init__(self, pattern: Pattern, body: AST) -> None:
         self.pattern = pattern
         self.body = body
 
@@ -557,10 +570,37 @@ def p_equation_set3(prod):
 
 def p_let_expr(prod):
     '''
-    letexpr     : KEYWORD_LET equations KEYWORD_IN expr
-    letrecexpr  : KEYWORD_LETREC equations KEYWORD_IN expr
+    letexpr     : KEYWORD_LET SPACE equations KEYWORD_IN SPACE expr
     '''
-    pass
+    # We need to decide if we issue a Let or a Letrec.
+    #
+    # Rule of thumb, if in the body of any of the equations appear the cons of
+    # one of the patterns; we must issue a Letrec, otherwise issue a Let.
+    #
+    # Also we need to convert function-patterns into Lambda abstractions:
+    #
+    #    let id x = ...
+    #
+    # becomes:
+    #
+    #    led id = \x -> ...
+    #
+    # For the time being (we don't have pattern matching yet), each symbol can
+    # be defined just once.
+    #
+    def to_lambda(equation: Equation):
+        'Convert (if needed) an equation to the equivalent one using lambdas.'
+        if equation.pattern.params:
+            return Equation(
+                Pattern(equation.pattern.cons),
+                build_lambda(equation.pattern.params, equation.body)
+            )
+        else:
+            return equation
+
+    equations = [to_lambda(eq) for eq in prod[3]]
+    body = prod[6]
+    prod[0] = Let({eq.pattern.cons: eq.body for eq in equations}, body)
 
 
 def p_error(prod):
@@ -568,3 +608,19 @@ def p_error(prod):
 
 
 parser = yacc.yacc(debug=True, start='st_expr')
+
+
+def build_lambda(params: List[str], body: AST) -> Lambda:
+    '''Create a Lambda from several parameters.
+
+    Example:
+
+       >>> build_lambda(['a', 'b'], Identifier('a'))
+       Lambda('a', Lambda('b', Identifier('a')))
+
+    '''
+    assert params
+    result = body
+    for param in reversed(params):
+        result = Lambda(param, result)
+    return result  # type: ignore
