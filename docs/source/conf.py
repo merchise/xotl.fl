@@ -31,7 +31,7 @@ author = 'Merchise Autrement [~º/~]'
 #
 # The short X.Y version.
 try:
-    from xoutil.release import VERSION
+    from xopgi.ql.release import VERSION
 except ImportError:
     def up(path, level=1):
         result = path
@@ -42,15 +42,15 @@ except ImportError:
     _current_dir = os.path.dirname(os.path.abspath(__file__))
     _project_dir = os.path.abspath(os.path.join(up(_current_dir, 2)))
     sys.path.append(_project_dir)
-    from xoutil.release import VERSION
+    from xopgi.ql.release import VERSION
 version = VERSION[:VERSION.rfind('.')]
 
 try:
-    from xoutil.release import RELEASE_TAG
+    from xopgi.ql.release import RELEASE_TAG
     release = VERSION
     if RELEASE_TAG:
         release += RELEASE_TAG
-except:
+except:  # noqa
     # The full version, including alpha/beta/rc tags.
     release = VERSION
 
