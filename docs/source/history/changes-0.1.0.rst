@@ -1,1 +1,1 @@
-Initial release with just a simple `xopgi.ql.translate.basic.`
+- Initial release with just a simple `xopgi.ql.translate.basic`:mod:.
