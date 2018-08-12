@@ -11,6 +11,7 @@ from hypothesis import strategies as s, given
 
 from xopgi.ql.lang.expressions import parse
 from xopgi.ql.lang.expressions.base import Identifier, Literal
+from xopgi.ql.lang.expressions.parser import string_repr
 
 from xopgi.ql.lang.builtins import NumberType, CharType, StringType
 
@@ -34,3 +35,9 @@ def test_wfe_char_literals(ch):
     else:
         code = f"{ch!r}"
     assert parse(code) == Literal(ch, CharType)
+
+
+@given(s.text())
+def test_wfe_string_literals(s):
+    code = string_repr(s)
+    assert parse(code) == Literal(s, StringType)

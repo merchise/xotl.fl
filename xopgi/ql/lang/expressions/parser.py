@@ -83,11 +83,26 @@ t_TICK = '`'
 
 
 def t_STRING(t):
-    r'\"[^\n"]*\"'
-    value = t.value[1:-1]
-    value = value.replace(r'\n', '\n').replace(r'\t', '\t').replace(r'\r', '\r')
-    t.value = value
+    r'\"([^\n]|\\["])*\"'
+    # eval is safe because t.value must match the regular expression.  Notice
+    # that you must use `string_repr`:func: to get a string representation
+    # that work in our language.
+    t.value = eval(t.value)
     return t
+
+
+def string_repr(s):
+    result = ['"']
+    for ch in s:
+        if ch == "'":
+            result.append(ch)
+        elif ch == '"':
+            result.append('\\')
+            result.append(ch)
+        else:
+            result.append(repr(ch)[1:-1].replace(r'\\', '\\'))
+    result.append('"')
+    return ''.join(result)
 
 
 def t_CHAR(t):
