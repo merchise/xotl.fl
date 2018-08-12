@@ -34,6 +34,13 @@ from .base import (   # noqa: reexport
 )
 
 
-def parse(code):
+def parse(code, debug=False, tracking=False):
     from .parser import parser, lexer
-    return parser.parse(code, lexer=lexer)
+    return parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
+
+
+def tokenize(source):
+    from .parser import lexer
+    lexer = lexer.clone()
+    lexer.input(source)
+    return [tok for tok in lexer]

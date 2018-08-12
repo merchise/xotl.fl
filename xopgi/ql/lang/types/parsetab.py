@@ -8,9 +8,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'type_exprrightARROWleftSPACEARROW CONS LPAREN RPAREN SPACE TYPEVARtype_expr : TYPEVARtype_expr : CONStype_expr : type_expr SPACE type_exprtype_expr : LPAREN type_expr RPARENtype_expr : type_expr ARROW type_expr'
+_lr_signature = 'type_exprleftLBRACKETrightARROWleftSPACEARROW CONS LBRACKET LPAREN RBRACKET RPAREN SPACE TYPEVARtype_expr : TYPEVARtype_expr : CONStype_expr : type_expr SPACE type_exprtype_expr : LPAREN type_expr RPARENtype_expr : LBRACKET type_expr RBRACKETtype_expr : type_expr ARROW type_expr'
 
-_lr_action_items = {'TYPEVAR':([0,4,5,6,],[2,2,2,2,]),'CONS':([0,4,5,6,],[3,3,3,3,]),'LPAREN':([0,4,5,6,],[4,4,4,4,]),'$end':([1,2,3,8,9,10,],[0,-1,-2,-3,-5,-4,]),'SPACE':([1,2,3,7,8,9,10,],[5,-1,-2,5,-3,5,-4,]),'ARROW':([1,2,3,7,8,9,10,],[6,-1,-2,6,-3,6,-4,]),'RPAREN':([2,3,7,8,9,10,],[-1,-2,10,-3,-5,-4,]),}
+_lr_action_items = {'TYPEVAR':([0,4,5,6,7,],[2,2,2,2,2,]),'CONS':([0,4,5,6,7,],[3,3,3,3,3,]),'LPAREN':([0,4,5,6,7,],[4,4,4,4,4,]),'LBRACKET':([0,4,5,6,7,],[5,5,5,5,5,]),'$end':([1,2,3,10,11,12,13,],[0,-1,-2,-3,-6,-4,-5,]),'SPACE':([1,2,3,8,9,10,11,12,13,],[6,-1,-2,6,6,-3,6,-4,-5,]),'ARROW':([1,2,3,8,9,10,11,12,13,],[7,-1,-2,7,7,-3,7,-4,-5,]),'RPAREN':([2,3,8,10,11,12,13,],[-1,-2,12,-3,-6,-4,-5,]),'RBRACKET':([2,3,9,10,11,12,13,],[-1,-2,13,-3,-6,-4,-5,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -19,7 +19,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'type_expr':([0,4,5,6,],[1,7,8,9,]),}
+_lr_goto_items = {'type_expr':([0,4,5,6,7,],[1,8,9,10,11,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -29,9 +29,10 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> type_expr","S'",1,None,None,None),
-  ('type_expr -> TYPEVAR','type_expr',1,'p_tvar','parser.py',50),
-  ('type_expr -> CONS','type_expr',1,'p_cons','parser.py',55),
-  ('type_expr -> type_expr SPACE type_expr','type_expr',3,'p_application','parser.py',60),
-  ('type_expr -> LPAREN type_expr RPAREN','type_expr',3,'p_paren','parser.py',74),
-  ('type_expr -> type_expr ARROW type_expr','type_expr',3,'p_expression_fntype','parser.py',79),
+  ('type_expr -> TYPEVAR','type_expr',1,'p_tvar','parser.py',60),
+  ('type_expr -> CONS','type_expr',1,'p_cons','parser.py',65),
+  ('type_expr -> type_expr SPACE type_expr','type_expr',3,'p_application','parser.py',70),
+  ('type_expr -> LPAREN type_expr RPAREN','type_expr',3,'p_paren','parser.py',84),
+  ('type_expr -> LBRACKET type_expr RBRACKET','type_expr',3,'p_bracket','parser.py',89),
+  ('type_expr -> type_expr ARROW type_expr','type_expr',3,'p_expression_fntype','parser.py',94),
 ]

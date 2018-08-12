@@ -120,3 +120,16 @@ def test_parse_with_newlines():
 
     with pytest.raises(lex.LexError):
         parse('a \n b')  # You can't break application.
+
+
+def test_parse_of_listtypes():
+    P = parse
+    assert P('[a]') == P('List a')
+    assert P('(a -> b) -> [a] -> [b]') == P('(a -> b) -> List a -> List b')
+    assert P('[a -> b]') == C('List', [F(T('a'), T('b'))])
+
+
+@pytest.mark.xfail(reason='Programming error')
+def test_parse_of_listtypes_broken():
+    P = parse
+    assert P('[a -> b]') == P('List (a -> b)')

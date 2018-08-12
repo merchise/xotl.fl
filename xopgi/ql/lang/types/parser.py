@@ -11,6 +11,7 @@
 '''
 from ply import lex, yacc
 from .base import Type, TypeCons, TypeVariable as TypeVar
+from .base import ListTypeCons
 
 
 class ParserError(SyntaxError):
@@ -24,6 +25,8 @@ tokens = (
     'TYPEVAR',
     'CONS',
     'SPACE',
+    'LBRACKET',
+    'RBRACKET',
 )
 
 t_SPACE = r'[ \t]+'
@@ -33,6 +36,9 @@ t_ARROW = r'[ \t]*->[\s\t]*'   # Don't recognize a \n before the arrow.
 t_LPAREN = r'[\s\t]*\([\s\t]*'
 t_RPAREN = r'[\s\t]*\)[\s\t]*'
 
+t_LBRACKET = r'[\s\t]*\[[\s\t]*'
+t_RBRACKET = r'[\s\t]*\][\s\t]*'
+
 t_TYPEVAR = r'[a-z][\.a-zA-Z0-9]*'
 t_CONS = r'[A-Z][\.a-zA-Z0-9]*'
 
@@ -40,6 +46,8 @@ lexer = lex.lex(debug=False)
 
 # Note: The order of precedence is from lower to higher.
 precedence = (
+    ('left', 'LBRACKET', ),
+
     # function is right-assoc, i.e 'a -> b -> c' means 'a -> (b -> c)'.
     ('right', 'ARROW', ),
 
@@ -75,6 +83,11 @@ def p_application(p):
 def p_paren(p):
     'type_expr : LPAREN type_expr RPAREN'
     p[0] = p[2]
+
+
+def p_bracket(prod):
+    'type_expr : LBRACKET type_expr RBRACKET'
+    prod[0] = ListTypeCons(prod[2])
 
 
 def p_expression_fntype(p):
