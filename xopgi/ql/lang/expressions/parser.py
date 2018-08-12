@@ -73,10 +73,10 @@ for keyword in reserved:
 
 
 t_IDENTIFIER = r'[A-Za-z]\w*'
-t_BASE10_INTEGER = '[0-9_]+'
-t_BASE16_INTEGER = '0[xX][0-9a-fA-F_]+'
-t_BASE8_INTEGER = '0[oO][0-7_]+'
-t_BASE2_INTEGER = '0[bB][01_]+'
+t_BASE10_INTEGER = '[0-9][0-9_]*'
+t_BASE16_INTEGER = '0[xX][0-9a-fA-F][0-9a-fA-F_]*'
+t_BASE8_INTEGER = '0[oO][0-7][0-7_]*'
+t_BASE2_INTEGER = '0[bB][01][01_]*'
 
 t_COLON = r':'
 t_TICK = '`'
