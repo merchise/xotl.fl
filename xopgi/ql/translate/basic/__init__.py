@@ -34,8 +34,8 @@ def filtered(predicate):
        >>> filtered(lambda this: this.debit < this.credit)
        [('debit', '<', 'credit')]
 
-    Odoo sees ``'credit'`` as literal string instead of the name of an
-    attribute.  Attributes are only allowed on the left operand or a
+    Odoo sees ``'credit'`` as the literal string instead of the name of an
+    attribute.  Attributes are only allowed on the left operand of a
     comparison:
 
        >>> filtered(lambda this: 1 < this.age < 10 == 10)

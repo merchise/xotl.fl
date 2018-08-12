@@ -6,5 +6,8 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from setuptools import setup
-setup()
+'''A low-level unification algorithm.
+
+
+
+'''
