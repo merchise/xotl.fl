@@ -163,3 +163,5 @@ def test_lambda_definition():
     assert P(r'\a -> a') == Lambda('a', Identifier('a'))
     assert P(r'\a b -> a') == P(r'\a -> \b -> a') == P(r'\a -> (\b -> a)')
     assert P(r'\a b -> a') == Lambda('a', Lambda('b', Identifier('a')))
+
+    assert P('lambda a b: a + b') == P(r'\a b -> a + b')

@@ -57,7 +57,7 @@ tokens = [
 ]
 
 reserved = [
-    'letrec', 'let', 'in',
+    'letrec', 'let', 'in', 'lambda'
 ]
 
 
@@ -443,6 +443,18 @@ def p_lambda_definition(prod):
     params = prod[2]
     assert params
     result = prod[4]
+    for varname in reversed(params):
+        result = Lambda(varname, result)
+    prod[0] = result
+
+
+def p_lambda_definition_keyword(prod):
+    '''expr : KEYWORD_LAMBDA SPACE parameters ARROW expr
+       expr : KEYWORD_LAMBDA SPACE parameters COLON expr
+    '''
+    params = prod[3]
+    assert params
+    result = prod[5]
     for varname in reversed(params):
         result = Lambda(varname, result)
     prod[0] = result
