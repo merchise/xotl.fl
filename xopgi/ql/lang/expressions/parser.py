@@ -44,6 +44,8 @@ tokens = [
     'MINUS',
     'STAR',
     'SLASH',
+    'BACKSLASH',
+    'ARROW',
     'DOUBLESLASH',
     'PERCENT',
     'OPERATOR',
@@ -64,6 +66,7 @@ for keyword in reserved:
 
     def tkdef(t):
         setdefaultattr(t.lexer, 'col', 0)
+        t.value = t.value.strip()
         t.lexer.col += len(keyword)
         return t
 
@@ -207,6 +210,16 @@ def t_SLASH(t):
     return t
 
 
+def t_ARROW(t):
+    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])\-\>(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
+    return t
+
+
+def t_BACKSLASH(t):
+    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])\\(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
+    return t
+
+
 def t_PERCENT(t):
     r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])%(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
     return t
@@ -246,6 +259,8 @@ lexer = lex.lex(debug=False)
 
 
 precedence = (
+    ('right', 'ARROW'),
+
     ('left', 'TICK_OPERATOR', ),
     ('left', 'OPERATOR', ),
 
@@ -356,6 +371,7 @@ def p_operator(prod):
               | SLASH
               | DOUBLESLASH
               | PERCENT
+              | ARROW
               | OPERATOR
 
     '''
@@ -419,6 +435,38 @@ def p_concrete_number(prod):
 def p_empty(prod):
     '''empty : '''
     pass
+
+
+def p_lambda_definition(prod):
+    '''expr : BACKSLASH parameters ARROW expr
+    '''
+    params = prod[2]
+    assert params
+    result = prod[4]
+    for varname in reversed(params):
+        result = Lambda(varname, result)
+    prod[0] = result
+
+
+def p_parameters(prod):
+    '''parameters : IDENTIFIER _parameters
+    '''
+    names = prod[2]
+    names.insert(0, prod[1])
+    prod[0] = names
+
+
+def p__params(prod):
+    '_parameters : SPACE IDENTIFIER _parameters'
+    names = prod[3]
+    names.insert(0, prod[2])
+    prod[0] = names
+
+
+def p_empty__parameters(prod):
+    '''_parameters : empty
+    '''
+    prod[0] = []
 
 
 class Pattern(AST):

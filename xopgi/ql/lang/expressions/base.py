@@ -62,6 +62,12 @@ class Lambda(AST):
     def __repr__(self):
         return f'Lambda({self.varname!r}, {self.body!r})'
 
+    def __eq__(self, other):
+        if isinstance(other, Lambda):
+            return self.varname == other.varname and self.body == other.body
+        else:
+            return NotImplemented
+
 
 class Application(AST):
     def __init__(self, e1: AST, e2: AST) -> None:

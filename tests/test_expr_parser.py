@@ -16,6 +16,7 @@ from xopgi.ql.lang.expressions.base import (
     Identifier,
     Literal,
     Application,
+    Lambda,
 )
 from xopgi.ql.lang.expressions.parser import string_repr
 
@@ -155,3 +156,10 @@ def test_annotated_numbers():
         Application(Identifier('@'), Identifier('a')),
         Identifier('b')
     )
+
+
+def test_lambda_definition():
+    P = parse
+    assert P(r'\a -> a') == Lambda('a', Identifier('a'))
+    assert P(r'\a b -> a') == P(r'\a -> \b -> a') == P(r'\a -> (\b -> a)')
+    assert P(r'\a b -> a') == Lambda('a', Lambda('b', Identifier('a')))
