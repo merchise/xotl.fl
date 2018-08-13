@@ -294,13 +294,7 @@ def p_standalone_expr(prod):
                | PADDING expr
     '''
     count = len(prod)
-    if count == 2:
-        prod[0] = prod[1]
-    elif count == 4:
-        prod[0] = prod[2]
-    else:
-        assert count == 3
-        prod[0] = next(tk for tk in prod[1:] if isinstance(tk, AST))
+    prod[0] = prod[count - 1]
 
 
 def p_literals_and_basic(prod):
