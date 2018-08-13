@@ -18,4 +18,9 @@ The type expression grammar
 
 .. module:: xopgi.ql.lang.expression.parser
 
-.. todo:: Collect all production rules in a extension.
+.. note:: I have to do some serious work to present the grammar.  For the time
+          being, enjoy the output of the 'ply.yacc.yacc' generator.
+
+          Beware, it's long!
+
+.. literalinclude:: expr-parser.txt
