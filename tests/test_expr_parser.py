@@ -201,6 +201,35 @@ def test_basic_letexpr():
     )
 
 
+def test_nested_let():
+    Id = Identifier
+    App = Application
+    L = Lambda
+    code = '''
+    let f1 = x1 x2 x3
+        f2 = let g1 = y1 in f1 g1
+        f3 = let g2 = y2
+                 g3 = g2 y3
+             in f2 g3
+    in f3
+    '''
+
+    assert parse(code) == parse('''
+    let f1 = x1 x2 x3
+        f2 = (let g1 = y1 in f1 g1)
+        f3 = (let g2 = y2
+                  g3 = g2 y3
+              in f2 g3)
+    in f3
+    ''') == Letrec(
+        {'f1': App(App(Id('x1'), Id('x2')), Id('x3')),
+         'f2': Let({'g1': Id('y1')}, App(Id('f1'), Id('g1'))),
+         'f3': Letrec({'g2': Id('y2'), 'g3': App(Id('g2'), Id('y3'))},
+                      App(Id('f2'), Id('g3')))},
+        Id('f3')
+    )
+
+
 def test_find_free_names():
     P = parse
     res = find_free_names(P('let id x = x in map id xs'))
