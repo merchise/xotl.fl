@@ -56,7 +56,6 @@ tokens = [
     'ANNOTATION',
     'FLOAT',
     'EQ',
-    'EOF',
 ]
 
 # Reserved keywords: pairs of (keyword, regexp).  If the regexp is None, it
@@ -149,12 +148,12 @@ def t_CHAR(t):
 def t_SPACE(t):
     r'[ \t\n]+'
     if '\n' in t.value:
-        if t.lexpos + len(t.value) == len(t.lexer.lexdata):
-            t.type = 'EOF'
-        else:
+        if t.lexpos + len(t.value) != len(t.lexer.lexdata):
             t.type = 'PADDING'
-        t.lexer.lineno += t.value.count('\n')
-        return t
+            t.lexer.lineno += t.value.count('\n')
+            return t
+        else:
+            return  # the end of the file matches no token.
     elif not t.lexpos or t.lexpos + len(t.value) == len(t.lexer.lexdata):
         return  # This removes the token entirely.
     else:
@@ -293,8 +292,6 @@ precedence = (
 def p_standalone_expr(prod):
     '''st_expr : expr
                | PADDING expr
-               | expr EOF
-               | PADDING expr EOF
     '''
     count = len(prod)
     if count == 2:
