@@ -3,6 +3,7 @@ stages:
   - pre-check
   - build doc
   - publish doc
+  - test doc
   - unit-test
   - integration-test
   - check
@@ -91,7 +92,7 @@ run static checks (Odoo 11):
     - branches
 
 run doctests:
-  stage: test
+  stage: test doc
   script:
     - pip install pipenv
     - pipenv install --dev
