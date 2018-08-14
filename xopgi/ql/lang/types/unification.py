@@ -10,8 +10,8 @@ from typing import Callable, List, Tuple, Iterator
 
 from .base import (
     Type,
-    TypeCons as C,
-    TypeVariable as TVar,
+    TypeCons,
+    TypeVariable,
 )
 
 
@@ -25,19 +25,19 @@ Substitution = Callable[[str], Type]
 
 def find_tvars(t: Type) -> List[str]:
     'Get all variables names (possibly repeated) in type `t`.'
-    if isinstance(t, TVar):
+    if isinstance(t, TypeVariable):
         return [t.name]
     else:
-        assert isinstance(t, C)
+        assert isinstance(t, TypeCons)
         return [tv for subt in t.subtypes for tv in find_tvars(subt)]
 
 
 def subtype(phi: Substitution, t: Type) -> Type:
-    if isinstance(t, TVar):
+    if isinstance(t, TypeVariable):
         return phi(t.name)
     else:
-        assert isinstance(t, C)
-        return C(
+        assert isinstance(t, TypeCons)
+        return TypeCons(
             t.cons,
             [subtype(phi, subt) for subt in t.subtypes],
             binary=t.binary
@@ -66,7 +66,7 @@ class scompose:
 class Identity:
     'The identity substitution.'
     def __call__(self, s: str) -> Type:
-        return TVar(s)
+        return TypeVariable(s)
 
     def __repr__(self):
         return f'Indentity()'
@@ -79,8 +79,8 @@ class delta:
     '''A `delta substitution` from a variable name `vname`.
 
     To avoid reusing instances of the same type expression, this function
-    takes the constructor and it's arguments.  If you do want to use the same
-    instance pass an instance wrapped in a lambda.  Example:
+    takes the type constructor and its arguments.  If you do want to use the
+    same instance pass an instance wrapped in a lambda.  Example:
 
        >>> f = delta('a', T, 'id')
        >>> f('a') is f('a')
@@ -89,8 +89,7 @@ class delta:
        >>> f('b') is f('b')
        False
 
-       >>> id = T('id')
-       >>> f = delta('a', lambda: id)
+       >>> f = delta('a', lambda: T('id'))
        >>> f('a') is f('a')
        True
 
@@ -98,34 +97,39 @@ class delta:
        False
 
     '''
-    def __init__(self, vname: str, const, *args) -> None:
+    def __init__(self, vname: str, cons, *args) -> None:
         self.vname = vname
-        self.const = const
+        self.cons = cons
         self.args = args
 
     def __call__(self, s: str) -> Type:
-        return self.result if s == self.vname else TVar(s)
+        return self.result if s == self.vname else TypeVariable(s)
 
     @property
     def result(self) -> Type:
-        return self.const(*self.args)
+        return self.cons(*self.args)
 
     def __repr__(self):
         return f'delta({self.vname!r}, {self.result!r})'
 
 
-class UnificationError(SyntaxError):
+class UnificationError(Exception):
     pass
 
 
-def unify(phi: Substitution, exps: Tuple[Type, Type]) -> Substitution:
-    '''Extend `phi` so that it unifies all expressions.
+def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:
+    '''Extend `phi` so that it unifies `e1` and `e2`.
+
+    If `phi` is None, uses the `identity substitution <Identity>`:class.
+
+    If there's no substitution that unifies the given terms, raise a
+    `UnificationError`:class:.
 
     '''
     # This a combination of the function unifyl and unify in the Book.  I
     # don't see any value in following the Book exactly.
     def extend(phi: Substitution, name: str, t: Type) -> Substitution:
-        if isinstance(t, TVar) and name == t.name:
+        if isinstance(t, TypeVariable) and name == t.name:
             return phi
         elif name in find_tvars(t):
             raise UnificationError(f'Cannot unify {name} with {t}')
@@ -138,22 +142,21 @@ def unify(phi: Substitution, exps: Tuple[Type, Type]) -> Substitution:
         if phitvn == tvar:
             return extend(phi, tvar.name, subtype(phi, t))
         else:
-            return unify(phi, (phitvn, subtype(phi, t)))
+            return unify(phitvn, subtype(phi, t), phi=phi)
 
     def unify_subtypes(p: Substitution,
                        types: Iterator[Tuple[Type, Type]]) -> Substitution:
-        for eqn in types:
-            p = unify(p, eqn)
+        for se1, se2 in types:
+            p = unify(se1, se2, phi=p)
         return p
 
-    t1, t2 = exps
-    if isinstance(t1, TVar):
-        return unify_with_tvar(t1, t2)
-    elif isinstance(t2, TVar):
-        return unify_with_tvar(t2, t1)
+    if isinstance(e1, TypeVariable):
+        return unify_with_tvar(e1, e2)
+    elif isinstance(e2, TypeVariable):
+        return unify_with_tvar(e2, e1)
     else:
-        assert isinstance(t1, C) and isinstance(t2, C)
-        if t1.cons == t2.cons:
-            return unify_subtypes(phi, zip(t1.subtypes, t2.subtypes))
+        assert isinstance(e1, TypeCons) and isinstance(e2, TypeCons)
+        if e1.cons == e2.cons:
+            return unify_subtypes(phi, zip(e1.subtypes, e2.subtypes))
         else:
-            raise UnificationError(f'Cannot unify {t1} with {t2}')
+            raise UnificationError(f'Cannot unify {e1} with {e2}')

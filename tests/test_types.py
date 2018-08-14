@@ -19,7 +19,7 @@ from xopgi.ql.lang.types import (
     ListTypeCons,
 )
 from xopgi.ql.lang.types import parse
-from xopgi.ql.lang.types.unification import scompose, subtype, delta, sidentity
+from xopgi.ql.lang.types.unification import scompose, subtype, delta
 from xopgi.ql.lang.types.unification import unify, UnificationError
 from xopgi.ql.lang.expressions.typecheck import namesupply
 
@@ -61,33 +61,33 @@ def test_namesupply():
 def test_unify_basic_vars():
     t1 = T('a')
     t2 = T('b')
-    unification = unify(sidentity, (t1, t2))
+    unification = unify(t1, t2)
     assert subtype(unification, t1) == subtype(unification, t2)
 
     assert unification(t1.name) == t2
     assert unification(t2.name) != t1
 
-    unification = unify(sidentity, (t2, t1))
+    unification = unify(t2, t1)
     assert unification(t1.name) == unification(t2.name)
 
 
 def test_unify_vars_with_cons():
     t1 = T('a')
     t2 = parse('x -> y')
-    unification = unify(sidentity, (t1, t2))
+    unification = unify(t1, t2)
     assert subtype(unification, t1) == subtype(unification, t2)
-    unification = unify(sidentity, (t2, t1))
+    unification = unify(t2, t1)
     assert subtype(unification, t1) == subtype(unification, t2)
 
 
 def test_unify_cons():
     t1 = parse('a -> b -> c')
     t2 = parse('x -> y')
-    unification = unify(sidentity, (t1, t2))
+    unification = unify(t1, t2)
     assert subtype(unification, t1) == subtype(unification, t2)
     # TODO: dig in the result, 'unification' must make a = x, and (b -> c) = y
     with pytest.raises(UnificationError):
-        unify(sidentity, (C('Int'), C('Num')))
+        unify(C('Int'), C('Num'))
 
     aa = I
     ab = parse('a -> b')
@@ -95,18 +95,18 @@ def test_unify_cons():
     # 'b -> a' and 'a -> b' unify because we can do a = b.  Also 'a -> a' and
     # 'b -> a' for the same reason; notice that 'b -> a' does not imply
     # they must be different.
-    unification = unify(sidentity, (ab, ba))
+    unification = unify(ab, ba)
     assert subtype(unification, ab) == subtype(unification, ba)
 
-    unification = unify(sidentity, (aa, ba))
+    unification = unify(aa, ba)
     assert subtype(unification, aa) == subtype(unification, ba)
 
     # We can't unify 'Int -> b' with 'b -> Num', because b can't be both Int
     # and Num...
     with pytest.raises(UnificationError):
-        unify(sidentity, (parse('Int -> b'), parse('b -> Num')))
+        unify(parse('Int -> b'), parse('b -> Num'))
     # But we can unify 'Int -> b' with 'b -> a'...
-    unify(sidentity, (parse('Int -> b'), ba))
+    unify(parse('Int -> b'), ba)
 
 
 def test_parse_with_newlines():
