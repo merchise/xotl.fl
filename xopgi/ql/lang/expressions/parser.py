@@ -97,6 +97,18 @@ t_BASE2_INTEGER = '0[bB][01][01_]*'
 t_COLON = r':'
 
 
+# t_NL and tNLE remove runs of empty spaces at the beginning or end of the
+# code, this simplifies the treatment of t_SPACE.  t_STRING needs to appear
+# before t_SPACE to ensure the tokenizer captures all spaces in a string as
+# part of the string.
+def t_NL(t):
+    r'^\s+'
+
+
+def t_NLE(t):
+    r'\s+$'
+
+
 def t_STRING(t):
     r'\"([^\n]|\\["])*\"'
     # eval is safe because t.value must match the regular expression.  Notice
@@ -139,23 +151,19 @@ def t_CHAR(t):
 # We disallow to break applications with a new line; so 'f \n a' won't a emit
 # SPACE token but a PADDING (because \n).
 #
-# In the malformed expression '+ a b' the first space is ignore and the second
-# is emitted; but in the well-formed expression '(+) a b' both spaces are
-# emitted.
+# SPACE won't be emitted around any operator.  But after a right parenthesis
+# or before an left parenthesis, it will be kept.  In the malformed expression
+# '+ a b' the first space is ignore and the second is emitted; but in the
+# well-formed expression '(+) a b' both spaces are emitted.
 #
 # In expressions like 'let x ...' the space after the keyword is not ignored
 # but required.
 def t_SPACE(t):
     r'[ \t\n]+'
     if '\n' in t.value:
-        if t.lexpos + len(t.value) != len(t.lexer.lexdata):
-            t.type = 'PADDING'
-            t.lexer.lineno += t.value.count('\n')
-            return t
-        else:
-            return  # the end of the file matches no token.
-    elif not t.lexpos or t.lexpos + len(t.value) == len(t.lexer.lexdata):
-        return  # This removes the token entirely.
+        t.type = 'PADDING'
+        t.lexer.lineno += t.value.count('\n')
+        return t
     else:
         # In the expression:
         #
