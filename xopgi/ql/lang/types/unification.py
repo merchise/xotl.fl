@@ -126,8 +126,6 @@ def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:
     `UnificationError`:class:.
 
     '''
-    # This a combination of the function unifyl and unify in the Book.  I
-    # don't see any value in following the Book exactly.
     def extend(phi: Substitution, name: str, t: Type) -> Substitution:
         if isinstance(t, TypeVariable) and name == t.name:
             return phi
@@ -144,12 +142,6 @@ def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:
         else:
             return unify(phitvn, subtype(phi, t), phi=phi)
 
-    def unify_subtypes(p: Substitution,
-                       types: Iterator[Tuple[Type, Type]]) -> Substitution:
-        for se1, se2 in types:
-            p = unify(se1, se2, phi=p)
-        return p
-
     if isinstance(e1, TypeVariable):
         return unify_with_tvar(e1, e2)
     elif isinstance(e2, TypeVariable):
@@ -157,6 +149,17 @@ def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:
     else:
         assert isinstance(e1, TypeCons) and isinstance(e2, TypeCons)
         if e1.cons == e2.cons:
-            return unify_subtypes(phi, zip(e1.subtypes, e2.subtypes))
+            return unify_exprs(zip(e1.subtypes, e2.subtypes), p=phi)
         else:
             raise UnificationError(f'Cannot unify {e1} with {e2}')
+
+
+TypePairs = Iterator[Tuple[Type, Type]]
+
+
+# This is the unifyl in the Book.
+def unify_exprs(exprs: TypePairs, *, p: Substitution = sidentity) -> Substitution:
+    '''Extend `p` to unify all pairs of type expressions in `exprs`.'''
+    for se1, se2 in exprs:
+        p = unify(se1, se2, phi=p)
+    return p
