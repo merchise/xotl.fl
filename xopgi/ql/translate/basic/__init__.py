@@ -22,7 +22,6 @@ def filtered(predicate):
     argument.  The name of the positional argument is used to know if we must
     translate an attribute or not:
 
-       >>> from xopgi.ql.translate.basic import filtered
        >>> filtered(lambda this: this.age < 10)
        [('age', '<', 10)]
 

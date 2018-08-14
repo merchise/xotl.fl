@@ -4,3 +4,7 @@
 
 .. automodule:: xopgi.ql.translate.basic
    :members: filtered
+
+.. testsetup::
+
+   from xopgi.ql.translate.basic import *

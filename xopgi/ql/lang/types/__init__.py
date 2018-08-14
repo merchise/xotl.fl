@@ -42,7 +42,6 @@ def parse(code: str, debug=False, tracking=False) -> Type:
 
     Example:
 
-       >>> from xopgi.ql.lang.types import parse
        >>> parse('a -> b')
        TypeCons('->', [TypeVariable('a'), TypeVariable('b')])
 

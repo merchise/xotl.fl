@@ -5,6 +5,11 @@
 .. automodule:: xopgi.ql.lang.expressions
    :members: parse, find_free_names
 
+.. testsetup::
+
+   from xopgi.ql.lang.expressions.base import *
+   from xopgi.ql.lang.expressions import *
+
 
 The AST of the type expressions
 ===============================

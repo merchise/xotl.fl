@@ -126,7 +126,7 @@ class Let(_LetExpr):
 class Letrec(_LetExpr):
     '''A recursive Let expression.
 
-    .. sealso:: `Let`:class:
+    .. seealso:: `Let`:class:
 
     '''
     def __repr__(self):

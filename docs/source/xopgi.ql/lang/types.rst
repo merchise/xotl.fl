@@ -5,6 +5,12 @@
 .. automodule:: xopgi.ql.lang.types
    :members: parse
 
+.. testsetup::
+
+   from xopgi.ql.lang.types.base import *
+   from xopgi.ql.lang.types import *
+
+
 
 The AST of the type expressions
 ===============================
@@ -29,7 +35,6 @@ constructor.
 
 Examples:
 
-  >>> from xopgi.ql.lang.types import parse
   >>> parse('a')
   TypeVariable('a')
 
@@ -69,7 +74,6 @@ There's no syntactical support to express tuples yet.  The
 `~xopgi.ql.lang.types.base.TupleTypeCons`:func: uses the syntax-friendly name
 'Tuple':
 
-  >>> from xopgi.ql.lang.types.base import TupleTypeCons, TypeVariable
   >>> TupleTypeCons(TypeVariable('a'), TypeVariable('a'))
   TypeCons('Tuple', [TypeVariable('a'), TypeVariable('a')])
 

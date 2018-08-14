@@ -636,7 +636,6 @@ def find_free_names(expr: AST) -> List[str]:
 
     Example:
 
-      >>> from xopgi.ql.lang.expressions import parse, find_free_names
       >>> set(find_free_names(parse('let id x = x in map id xs')))  # doctest: +LITERAL_EVAL
       {'map', 'xs'}
 
