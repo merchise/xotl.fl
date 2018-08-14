@@ -119,8 +119,8 @@ the type arguments any given constructor admits.  This is the job of the
 semantic analyzer.  This also means that the parser has a very liberal rule
 about type arguments in a constructor:
 
-  Any type constructor to the **left** of a space and an another type
-  expression admits it as an argument.
+  Any type expression to the **left** of a space and another type expression
+  admits it as an argument.
 
 This makes the parser to recognize funny, unusual types expressions:
 
