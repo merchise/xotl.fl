@@ -16,6 +16,7 @@ from xopgi.ql.lang.types import (
     TypeVariable as T,
     FunctionTypeCons as F,
     TypeCons as C,
+    ListTypeCons,
 )
 from xopgi.ql.lang.types import parse
 from xopgi.ql.lang.types.unification import scompose, subtype, delta, sidentity
@@ -115,8 +116,8 @@ def test_parse_with_newlines():
     with pytest.raises(lex.LexError):
         parse('a \n -> b')  # You can't just break the arrow like that!
 
-    assert parse('a -> \n b') == parse('(a) \n -> b')
-    assert parse('(a -> \n b -> c) \n -> (\n a -> b\n) -> \n a -> c') == S
+    assert parse('a -> \n b') == parse('a -> b')
+    assert parse('(a -> \n b -> c) -> (\n a -> b\n) -> \n a -> c') == S
 
     with pytest.raises(lex.LexError):
         parse('a \n b')  # You can't break application.
@@ -124,12 +125,18 @@ def test_parse_with_newlines():
 
 def test_parse_of_listtypes():
     P = parse
-    assert P('[a]') == P('List a')
-    assert P('(a -> b) -> [a] -> [b]') == P('(a -> b) -> List a -> List b')
-    assert P('[a -> b]') == C('List', [F(T('a'), T('b'))])
+    assert P('[a]') == ListTypeCons(parse('a'))
+    assert P('(a -> b) -> [a] -> [b]') == F(
+        parse('(a -> b)'),
+        F(ListTypeCons(T('a')), ListTypeCons(T('b')))
+    )
+    assert P('[a -> b]') == ListTypeCons(F(T('a'), T('b')))
 
 
-@pytest.mark.xfail(reason='Programming error')
-def test_parse_of_listtypes_broken():
-    P = parse
-    assert P('[a -> b]') == P('List (a -> b)')
+def test_parse_application():
+    assert parse('a (f b)') == C('a', [C('f', [T('b')])])
+    assert parse('A (B b) (C c)') == C('A', [C('B', [T('b')]),
+                                             C('C', [T('c')])])
+
+    # Is this ok?
+    assert parse('(f b) a') == parse('f b a')

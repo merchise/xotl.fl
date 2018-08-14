@@ -1,1 +1,0 @@
-../../../../xopgi/ql/lang/types/parser.out

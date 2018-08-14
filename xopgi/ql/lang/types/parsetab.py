@@ -29,10 +29,10 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> type_expr","S'",1,None,None,None),
-  ('type_expr -> TYPEVAR','type_expr',1,'p_tvar','parser.py',60),
-  ('type_expr -> CONS','type_expr',1,'p_cons','parser.py',65),
-  ('type_expr -> type_expr SPACE type_expr','type_expr',3,'p_application','parser.py',70),
-  ('type_expr -> LPAREN type_expr RPAREN','type_expr',3,'p_paren','parser.py',84),
-  ('type_expr -> LBRACKET type_expr RBRACKET','type_expr',3,'p_bracket','parser.py',89),
-  ('type_expr -> type_expr ARROW type_expr','type_expr',3,'p_expression_fntype','parser.py',94),
+  ('type_expr -> TYPEVAR','type_expr',1,'p_tvar','parser.py',103),
+  ('type_expr -> CONS','type_expr',1,'p_cons','parser.py',108),
+  ('type_expr -> type_expr SPACE type_expr','type_expr',3,'p_application','parser.py',113),
+  ('type_expr -> LPAREN type_expr RPAREN','type_expr',3,'p_paren','parser.py',127),
+  ('type_expr -> LBRACKET type_expr RBRACKET','type_expr',3,'p_bracket','parser.py',132),
+  ('type_expr -> type_expr ARROW type_expr','type_expr',3,'p_expression_fntype','parser.py',137),
 ]

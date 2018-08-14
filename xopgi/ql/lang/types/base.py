@@ -103,4 +103,4 @@ FunctionTypeCons = lambda a, b: TypeCons('->', [a, b], binary=True)
 TupleTypeCons = lambda *ts: TypeCons('Tuple', list(ts))
 
 #: Shortcut to create list types
-ListTypeCons = lambda t: TypeCons('List', [t])
+ListTypeCons = lambda t: TypeCons('[]', [t])

@@ -29,18 +29,67 @@ tokens = (
     'RBRACKET',
 )
 
-t_SPACE = r'[ \t]+'
-
-t_ARROW = r'[ \t]*->[\s\t]*'   # Don't recognize a \n before the arrow.
-
-t_LPAREN = r'[\s\t]*\([\s\t]*'
-t_RPAREN = r'[\s\t]*\)[\s\t]*'
-
-t_LBRACKET = r'[\s\t]*\[[\s\t]*'
-t_RBRACKET = r'[\s\t]*\][\s\t]*'
+t_ARROW = r'->[\t\s]*'
 
 t_TYPEVAR = r'[a-z][\.a-zA-Z0-9]*'
 t_CONS = r'[A-Z][\.a-zA-Z0-9]*'
+
+
+# t_NL and tNLE remove runs of empty spaces at the beginning or end of the
+# code, this simplifies the treatment of t_SPACE
+def t_NL(t):
+    r'^\s+'
+
+
+def t_NLE(t):
+    r'\s+$'
+
+
+# We need to treat space specially in this grammar because it can have a
+# semantical value: the application of expressions 'e1 e2'.
+#
+# We want to emit a SPACE token only when type application is **not
+# impossible**.
+#
+def t_SPACE(t):
+    r'[ \t]+'
+    # In the expression:
+    #
+    #    e0   (   e1   e2   )   e3
+    #       ^   !    ^    !   ^
+    #
+    # The run of spaces marked with '^' are important and must be kept,
+    # but the spaces above the '!' are just padding and can be ignored
+    # (don't create a token for them).
+    #
+    before = t.lexer.lexdata[t.lexpos - 1]
+    after = t.lexer.lexdata[t.lexpos + len(t.value)]
+    common = '\n->,'
+    if before in common + '([' or after in common + ')]':
+        return
+    else:
+        return t
+
+
+def t_LPAREN(t):
+    r'\(\s*'
+    return t
+
+
+def t_RPAREN(t):
+    r'\s*\)'
+    return t
+
+
+def t_LBRACKET(t):
+    r'\[[ \t]*'
+    return t
+
+
+def t_RBRACKET(t):
+    r'[ \t]*\]'
+    return t
+
 
 lexer = lex.lex(debug=False)
 
