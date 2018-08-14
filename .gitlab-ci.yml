@@ -90,6 +90,18 @@ run static checks (Odoo 11):
   only:
     - branches
 
+run doctests:
+  stage: test
+  script:
+    - pip install pipenv
+    - pipenv install --dev
+    - pipenv run sphinx-build -M doctest docs/source docs/build
+  tags:
+    - python3.6
+  except:
+    - tags
+
+
 check signature of tag:
   stage: check
   script:
