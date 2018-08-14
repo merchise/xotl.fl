@@ -92,8 +92,10 @@ def test_wfe_float_literals(n):
     assert parse(code) == Literal(n, NumberType)
 
     assert parse('1_000_.500') == Literal(1000.5, NumberType)
-    with pytest.raises(lex.LexError):
-        tokenize('_1e+10')
+    assert parse('_1e+10') == Application(
+        Application(Identifier('+'), Identifier('_1e')),
+        Literal(10, NumberType)
+    )
     with pytest.raises(lex.LexError):
         tokenize('_0.1')
 

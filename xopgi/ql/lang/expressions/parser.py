@@ -89,7 +89,7 @@ for keyword, regexp in reserved:
     tokens.append(tk)
 
 
-t_IDENTIFIER = r'[A-Za-z]\w*'
+t_IDENTIFIER = r'[A-Za-z_]\w*'
 t_BASE10_INTEGER = '[0-9][0-9_]*'
 t_BASE16_INTEGER = '0[xX][0-9a-fA-F][0-9a-fA-F_]*'
 t_BASE8_INTEGER = '0[oO][0-7][0-7_]*'
