@@ -22,7 +22,12 @@ from xopgi.ql.lang.expressions.base import (
 )
 from xopgi.ql.lang.expressions.parser import string_repr
 
-from xopgi.ql.lang.builtins import NumberType, CharType, StringType
+from xopgi.ql.lang.builtins import (
+    NumberType,
+    CharType,
+    StringType,
+    UnitType,
+)
 
 
 def test_trivially_malformed():
@@ -272,3 +277,7 @@ def test_where_expr():
                                      phitvn = phi tvn
                                      phit   = sub_type phi t)
     ''')
+
+
+def test_unit_value():
+    assert parse('(   )') == parse('()')  == Literal((), UnitType)

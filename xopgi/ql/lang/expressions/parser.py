@@ -22,7 +22,12 @@ from .base import (
     Letrec
 )
 
-from ..builtins import StringType, CharType, NumberType
+from xopgi.ql.lang.builtins import (
+    StringType,
+    CharType,
+    NumberType,
+    UnitType,
+)
 
 
 class ParserError(SyntaxError):
@@ -316,8 +321,15 @@ def p_literals_and_basic(prod):
              | enclosed_expr
              | letexpr
              | where_expr
+             | unit_value
     '''
     prod[0] = prod[1]
+
+
+def p_unit_value(prod):
+    '''unit_value : LPAREN RPAREN
+    '''
+    prod[0] = Literal((), UnitType)
 
 
 def p_char(prod):
@@ -634,7 +646,6 @@ def _build_let(equations, body):
     else:
         klass = Let
     return klass({eq.pattern.cons: eq.body for eq in equations}, body)
-
 
 
 def p_error(prod):
