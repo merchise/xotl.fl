@@ -134,7 +134,7 @@ def string_repr(s):
 
 
 def t_CHAR(t):
-    r"'([^\n]|(\\[ntr])|(\\[xuU][a-f\d]+))'"
+    r"'(\\[ntr\\']|\\[xuU][a-f\d]+|[^\n])'"
     value = t.value[1:-1]
     if len(value) > 1:
         assert value.startswith('\\')
