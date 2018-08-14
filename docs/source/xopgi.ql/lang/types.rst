@@ -25,6 +25,8 @@ The type expression language (and grammar)
 
 .. module:: xopgi.ql.lang.types.parser
 
+.. note:: The purpose of the parsing module for type expressions is just to
+   ease experimentation (and tests).  Keep this mind.
 
 In the type expression language we use *identifiers* starting with a
 lower-case letter to indicate a `type variable
@@ -74,11 +76,6 @@ There's no syntactical support to express tuples yet.  The
 `~xopgi.ql.lang.types.base.TupleTypeCons`:func: uses the syntax-friendly name
 'Tuple':
 
-  >>> TupleTypeCons(TypeVariable('a'), TypeVariable('a'))
-  TypeCons('Tuple', [TypeVariable('a'), TypeVariable('a')])
-
-You can use the general type constructors syntax:
-
   >>> parse('Tuple a a')
   TypeCons('Tuple', [TypeVariable('a'), TypeVariable('a')])
 
@@ -112,3 +109,27 @@ Valid examples:
   >>> # Breaks just after an opening '(', or just before a closing ')'.
   >>> parse('a (\nb c\n)') == parse('a (b c)')
   True
+
+
+Quirks
+------
+
+`~xopgi.ql.lang.types.base.TypeCons`:class: does not have an implicit limit to
+the type arguments any given constructor admits.  This is the job of the
+semantic analyzer.  This also means that the parser has a very liberal rule
+about type arguments in a constructor:
+
+  Any type constructor to the **left** of a space and an another type
+  expression admits it as an argument.
+
+This makes the parser to recognize funny, unusual types expressions:
+
+
+  >>> parse('[a] b')
+  TypeCons('[]', [TypeVariable('a'), TypeVariable('b')])
+
+  >>> parse('(a -> b) c')
+  TypeCons('->', [TypeVariable('a'), TypeVariable('b'), TypeVariable('c')])
+
+Those types have no semantics assigned but the parser recognizes them.  It's
+the job of another component (kinds?) to recognize those errors.
