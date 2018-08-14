@@ -235,3 +235,38 @@ def test_find_free_names():
     res = find_free_names(P('let id x = x in map id xs'))
     assert all(n in res for n in ('map', 'xs'))
     assert all(n not in res for n in ('id', 'x'))
+
+
+def test_where_expr():
+    assert parse('''
+    let unify phi tvn t = unify phi phitvn phit
+                          where
+                             phitvn = phi tvn
+                             phit   = sub_type phi t
+    in unify
+    ''') == parse('''
+    let unify phi tvn t = (unify phi phitvn phit
+                           where
+                             phitvn = phi tvn
+                             phit   = sub_type phi t)
+    in unify
+    ''') == parse('''
+    let unify phi tvn t = let phitvn = phi tvn
+                              phit   = sub_type phi t
+                          in unify phi phitvn phit
+    in unify
+    ''') == parse('''
+    unify where unify phi tvn t = let phitvn = phi tvn
+                                      phit   = sub_type phi t
+                                  in unify phi phitvn phit
+    ''') == parse('''
+    unify where unify phi tvn t = unify phi phitvn phit
+                                  where
+                                     phitvn = phi tvn
+                                     phit   = sub_type phi t
+    ''') == parse('''
+    unify where unify phi tvn t = (unify phi phitvn phit
+                                   where
+                                     phitvn = phi tvn
+                                     phit   = sub_type phi t)
+    ''')

@@ -61,6 +61,7 @@ tokens = [
 # Reserved keywords: pairs of (keyword, regexp).  If the regexp is None, it
 # defaults to '\b{keyword}\b' (case-sensitive).
 reserved = [
+    ('where', r'\s+where\b'),
     ('let', None),
 
     # We need the KEYWORD_IN to match the preceding spaces to avoid the lexer
@@ -283,6 +284,8 @@ precedence = (
     ('left', 'KEYWORD_LET', ),
     ('left', 'KEYWORD_IN', ),
 
+    ('left', 'KEYWORD_WHERE', ),
+
     ('left', 'TICK_OPERATOR', ),
     ('left', 'OPERATOR', ),
 
@@ -313,6 +316,7 @@ def p_literals_and_basic(prod):
              | identifier
              | enclosed_expr
              | letexpr
+             | where_expr
     '''
     prod[0] = prod[1]
 
@@ -574,25 +578,40 @@ def p_equation_set3(prod):
 
 
 def p_let_expr(prod):
-    '''letexpr : KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
+    '''
+    letexpr : KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
     '''
-    #
-    # We need to decide if we issue a Let or a Letrec: if any of declared
-    # names appear in the any of the bodies we must issue a Letrec, otherwise
-    # issue a Let.
-    #
-    # Also we need to convert function-patterns into Lambda abstractions:
-    #
-    #    let id x = ...
-    #
-    # becomes:
-    #
-    #    led id = \x -> ...
-    #
-    # For the time being (we don't have pattern matching yet), each symbol can
-    # be defined just once.
-    #
+    prod[0] = _build_let(prod[3], prod[6])
+
+
+def p_where_expr(prod):
+    '''
+    where_expr : expr KEYWORD_WHERE SPACE equations
+    where_expr : expr KEYWORD_WHERE PADDING equations
+    '''
+    prod[0] = _build_let(prod[4], prod[1])
+
+
+def _build_let(equations, body):
+    r'''Build a Let/Letrec from a set of equations and a body.
+
+    We need to decide if we issue a Let or a Letrec: if any of declared
+    names appear in the any of the bodies we must issue a Letrec, otherwise
+    issue a Let.
+
+    Also we need to convert function-patterns into Lambda abstractions::
+
+       let id x = ...
+
+    becomes::
+
+       led id = \x -> ...
+
+    For the time being (we don't have pattern matching yet), each symbol can
+    be defined just once.
+
+    '''
     def to_lambda(equation: Equation):
         'Convert (if needed) an equation to the equivalent one using lambdas.'
         if equation.pattern.params:
@@ -603,7 +622,7 @@ def p_let_expr(prod):
         else:
             return equation
 
-    equations = [to_lambda(eq) for eq in prod[3]]
+    equations = [to_lambda(eq) for eq in equations]
     conses = [eq.pattern.cons for eq in equations]
     names = set(conses)
     if len(names) != len(conses):
@@ -612,8 +631,8 @@ def p_let_expr(prod):
         klass = Letrec
     else:
         klass = Let
-    body = prod[6]
-    prod[0] = klass({eq.pattern.cons: eq.body for eq in equations}, body)
+    return klass({eq.pattern.cons: eq.body for eq in equations}, body)
+
 
 
 def p_error(prod):
