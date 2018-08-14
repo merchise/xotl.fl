@@ -302,7 +302,6 @@ precedence = (
 
 def p_standalone_expr(prod):
     '''st_expr : expr
-               | PADDING expr
     '''
     count = len(prod)
     prod[0] = prod[count - 1]
@@ -577,6 +576,9 @@ def p_equation_set3(prod):
     prod[0] = []
 
 
+# We need to have st_expr in the body of the letexpr because having 'expr'
+# directly creates problems: 'let ... in f x' would be regarded as '(let
+# ... in f) x'.  So st_expr can never be at the left of SPACE in any rule.
 def p_let_expr(prod):
     '''
     letexpr : KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
