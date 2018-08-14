@@ -93,13 +93,29 @@ run static checks (Odoo 11):
     - branches
 
 run doctests:
+  variables:
+    PYTHON: python3.6
+    ODOO_WORKTREE: odoo11
   stage: test doc
   script:
-    - pip install pipenv
-    - pipenv install --dev
-    - pipenv run sphinx-build -M doctest docs/source docs/build
+    - export CWD=`pwd`
+    - cd ~/src/$ODOO_WORKTREE
+    - git pull
+    - mkdir -p ~/virtualenvs
+    - rm -rf ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE || true
+    - virtualenv -p `which $PYTHON` ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE
+    - source ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE/bin/activate
+    - pip install -r requirements.txt
+    - pip install "futures<3.2.0"
+    - pip install "six>=1.9.0" "decorator>=4.0,<4.2" "hypothesis>=3.24"
+    - pip install -e .
+    - cd $CWD
+    - pip install -e .
+    - pip install sphinx sphinx_rtd_theme
+    - make -C docs/ doctest
   tags:
-    - python3.6
+    - virtualenv
+    - xoeuf-tester
   except:
     - tags
 
