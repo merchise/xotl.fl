@@ -280,4 +280,8 @@ def test_where_expr():
 
 
 def test_unit_value():
-    assert parse('(   )') == parse('()')  == Literal((), UnitType)
+    assert parse('(   )') == parse('()') == Literal((), UnitType)
+
+
+def test_regression_confusing_unary_plus():
+    assert parse('f a + c') == parse('(f a) + c')
