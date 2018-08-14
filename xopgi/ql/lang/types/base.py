@@ -99,8 +99,9 @@ class TypeCons(Type):
 #: Shortcut to create function types
 FunctionTypeCons = lambda a, b: TypeCons('->', [a, b], binary=True)
 
-#: Shortcut to create tuple types
+#: Shortcut to create a tuple type from types `ts`.  The Unit type can be
+#: regarded as the tuple type without arguments.
 TupleTypeCons = lambda *ts: TypeCons('Tuple', list(ts))
 
-#: Shortcut to create list types
+#: Shortcut to create a list type from type `t`.
 ListTypeCons = lambda t: TypeCons('[]', [t])

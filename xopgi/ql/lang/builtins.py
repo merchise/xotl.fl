@@ -9,7 +9,7 @@
 '''The *type* objects of builtins types.
 
 '''
-from .types.base import TypeCons, ListTypeCons
+from .types.base import TypeCons, ListTypeCons, TupleTypeCons
 
 # This is the type of all numbers in our language.  The expression language
 # will assign this type to every literal that matches a number; we don't
@@ -23,3 +23,7 @@ NumberType = TypeCons('Number', [])
 # strings.  The Char type is a single Unicode character.
 CharType = TypeCons('Char', [])
 StringType = ListTypeCons(CharType)
+
+
+# The unit type is the type that its inhabited by a single value ``()``.
+UnitType = TupleTypeCons()
