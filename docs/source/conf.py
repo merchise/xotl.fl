@@ -14,6 +14,30 @@
 #
 import os
 import sys
+import ast
+import doctest
+from sphinx.ext.doctest import SphinxDocTestRunner
+
+
+def _runner_init(self, checker=None, verbose=None, optionflags=0):
+    super(SphinxDocTestRunner, self).__init__(CheckWithEval(), verbose, optionflags)
+
+
+SphinxDocTestRunner.__init__ = _runner_init
+
+
+class CheckWithEval(doctest.OutputChecker):
+    def check_output(self, want, got, optionflags):
+        if optionflags & LITERAL_EVAL:
+            want = ast.literal_eval(want)
+            got = ast.literal_eval(got)
+            return want == got
+        return super().check_output(want, got, optionflags)
+
+
+LITERAL_EVAL = doctest.register_optionflag('LITERAL_EVAL')
+
+
 sys.path.insert(0, os.path.abspath('../'))
 
 

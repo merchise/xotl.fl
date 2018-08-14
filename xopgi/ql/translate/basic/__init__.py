@@ -46,10 +46,10 @@ def filtered(predicate):
 
     Arbitrary expressions can be either fail or be incorrectly translated:
 
-       >>> filtered(lambda this: this.sum/this.count == average)  # doctest: +ELLIPSIS
-       Traceback (...)
-       ...
-       AssertionError: Not just one item the in stack...
+       >>> filtered(lambda this: this.sum/this.count == average)  # doctest :+ELLIPSIS
+       Traceback (most recent call last):
+          ...
+       AssertionError: Not just one item the in stack ...
 
     '''
     from xotl.ql.revenge import Uncompyled
