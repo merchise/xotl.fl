@@ -26,7 +26,7 @@ check code smells:
     - git pull
     - mkdir -p ~/virtualenvs
     - rm -rf ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE || true
-    - virtualenv -p `which $PYTHON` ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE
+    - virtualenv -p `which python"$PYTHON"` ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE
     - source ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE/bin/activate
     - pip install -r requirements.txt
     - pip install "futures<3.2.0"
@@ -44,7 +44,7 @@ check code smells:
 run all Odoo 11 tests:
   <<: *run_tests
   variables:
-    PYTHON: python3.6
+    PYTHON: 3.6
     ODOO_WORKTREE: odoo11
   only:
     - branches
@@ -57,7 +57,7 @@ run all Odoo 11 tests:
     - cd ~/src/$ODOO_WORKTREE
     - git pull
     - cd $CWD
-    - tox -e system-$ODOO_WORKTREE-unit
+    - tox -e $PYTHON-unit
   tags:
     - tox
     - xoeuf-tester
@@ -72,7 +72,7 @@ run all Odoo 11 tests:
     - cd ~/src/$ODOO_WORKTREE
     - git pull
     - cd $CWD
-    - tox -e system-$ODOO_WORKTREE-staticcheck
+    - tox -e 3.6-staticcheck
   tags:
     - tox
     - xoeuf-tester
@@ -85,18 +85,29 @@ run all Odoo 11 tests:
     - cd ~/src/$ODOO_WORKTREE
     - git pull
     - cd $CWD
-    - tox -e system-$ODOO_WORKTREE-unit
+    - tox -e 3.6-doctest
   tags:
     - virtualenv
     - xoeuf-tester
 
 
-run tox Odoo 11 tests:
+run tox Odoo 11 tests with Python 3.6:
   <<: *run_tox_tests
   variables:
+    PYTHON: 3.6
     ODOO_WORKTREE: odoo11
   only:
     - branches
+
+run tox Odoo 11 tests with Python 3.7:
+  <<: *run_tox_tests
+  variables:
+    PYTHON: 3.7
+    ODOO_WORKTREE: odoo11
+  allow_failure: true
+  only:
+    - branches
+
 
 run static checks (Odoo 11):
   <<: *run_tox_staticcheck
@@ -108,7 +119,6 @@ run static checks (Odoo 11):
 run doctests:
   <<: *run_tox_doctest
   variables:
-    PYTHON: python3.6
     ODOO_WORKTREE: odoo11
   only:
     - branches
@@ -187,7 +197,7 @@ publish_pypi:
 
 build documentation:
   variables:
-    PYTHON: python3.6
+    PYTHON: 3.6
     ODOO_WORKTREE: odoo11
   stage: build doc
   script:
@@ -196,7 +206,7 @@ build documentation:
     - git pull
     - mkdir -p ~/virtualenvs
     - rm -rf ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE || true
-    - virtualenv -p `which $PYTHON` ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE
+    - virtualenv -p `which python"$PYTHON"` ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE
     - source ~/virtualenvs/$CI_PROJECT_NAME-$ODOO_WORKTREE/bin/activate
     - pip install -r requirements.txt
     - pip install "futures<3.2.0"
