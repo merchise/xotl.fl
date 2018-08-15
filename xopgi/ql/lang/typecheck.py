@@ -194,10 +194,31 @@ class TypeScheme:
         return ' '.join(self.generics)
 
     def __str__(self):
-        return f'forall {self.names!s}. {self.t!s}'
+        if self.generics:
+            return f'forall {self.names!s}. {self.t!s}'
+        else:
+            return str(self.t)
 
     def __repr__(self):
         return f'<TypeScheme: {self!s}>'
+
+    @classmethod
+    def from_typeexpr(cls, type_, *, generics=None):
+        # type: (Type, *, Optional[List[str]]) -> TypeScheme
+        '''Create a type scheme from a type expression assuming all type
+        variables are generic.'''
+        if not generics:
+            generics = list(set(find_tvars(type_)))  # avoid repetitions.
+        return cls(generics, type_)
+
+    @classmethod
+    def from_str(cls, source, *, generics=None):
+        # type: (str, *, Optional[List[str]]) -> TypeScheme
+        '''Create a type scheme from a type expression (given a string)
+        assuming all type variables are generic.'''
+        from xopgi.ql.lang.types import parse
+        type_ = parse(source)
+        return cls.from_typeexpr(type_, generics=generics)
 
 
 def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
