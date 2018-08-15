@@ -626,6 +626,7 @@ def _build_let(equations, body):
     be defined just once.
 
     '''
+    from . import find_free_names
     def to_lambda(equation: Equation):
         'Convert (if needed) an equation to the equivalent one using lambdas.'
         if equation.pattern.params:
