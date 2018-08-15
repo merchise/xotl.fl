@@ -7,9 +7,18 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 from typing import Any, List, Tuple, Iterator, Callable
+from typing import Optional  # noqa
 
 from xopgi.ql.lang.types.base import Type, TypeVariable, TypeCons
-from xopgi.ql.lang.expressions.base import AST
+from xopgi.ql.lang.expressions.base import (
+    AST,
+    Identifier,
+    Literal,
+    Lambda,
+    Application,
+    Let,
+    Letrec,
+)
 
 
 # `Substitution` is a type; `scompose`:class: is a substitution by
@@ -305,17 +314,64 @@ class namesupply:
             raise StopIteration
 
 
-class TypeChecker:
-    def __init__(self, env: TypeEnvironment, ns: Iterator[TypeVariable]) -> None:
-        self.env = env
-        self.ns = ns
-
-    def __call__(self, exp: AST) -> None:
-        typecheck(self.env, self.ns, exp)
+NameSupply = Iterator[TypeVariable]
+TCResult = Tuple[Substitution, Type]
 
 
-def typecheck(env: TypeEnvironment, ns: Iterator[TypeVariable], exp: AST):
+def typecheck(env: TypeEnvironment, ns: NameSupply, exp: AST) -> TCResult:
     '''Check the type of `exp` in a given type environment.
 
     '''
-    pass
+    def typecheck_var(env, ns, exp: Identifier) -> TCResult:
+        pass
+
+    def typecheck_literal(env, ns, exp: Literal) -> TCResult:
+        pass
+
+    def typecheck_app(env, ns, exp: Application) -> TCResult:
+        pass
+
+    def typecheck_lambda(env, ns, exp: Lambda) -> TCResult:
+        pass
+
+    def typecheck_let(env, ns, exp: Let) -> TCResult:
+        pass
+
+    def typecheck_letrec(env, ns, exp: Letrec) -> TCResult:
+        pass
+
+    if isinstance(exp, Identifier):
+        return typecheck_var(env, ns, exp)
+    elif isinstance(exp, Literal):
+        return typecheck_literal(env, ns, exp)
+    elif isinstance(exp, Application):
+        return typecheck_app(env, ns, exp)
+    elif isinstance(exp, Lambda):
+        return typecheck_lambda(env, ns, exp)
+    elif isinstance(exp, Let):
+        return typecheck_let(env, ns, exp)
+    elif isinstance(exp, Letrec):
+        return typecheck_letrec(env, ns, exp)
+    else:
+        assert False, f'Unknown AST node {exp!r}'
+
+
+TCLResult = Tuple[Substitution, List[Type]]
+
+
+def tcl(env: TypeEnvironment, ns: NameSupply, exprs: List[AST]) -> TCLResult:
+    def tcl2(phi, t, tcs):
+        # type: (Substitution, Type, TCLResult) -> TCLResult
+        psi, ts = tcs
+        return scompose(psi, phi), [subtype(psi, t)] + ts
+
+    def tcl1(env, ns, exprs, tc):
+        # type: (TypeEnvironment, NameSupply, List[AST], TCResult) -> TCLResult
+        phi, t = tc
+        return tcl2(phi, t, tcl(sub_typeenv(phi, env), ns, exprs))
+
+    if not exprs:
+        return sidentity, []
+    else:
+        expr, *exprs = exprs
+        return tcl1(env, ns, exprs, typecheck(env, ns, expr))
