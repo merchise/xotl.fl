@@ -44,7 +44,7 @@ check code smells:
 run all Odoo 11 tests:
   <<: *run_tests
   variables:
-    PYTHON: 3.6
+    PYTHON: "3.6"
     ODOO_WORKTREE: odoo11
   only:
     - branches
@@ -94,7 +94,7 @@ run all Odoo 11 tests:
 run tox Odoo 11 tests with Python 3.6:
   <<: *run_tox_tests
   variables:
-    PYTHON: 3.6
+    PYTHON: "3.6"
     ODOO_WORKTREE: odoo11
   only:
     - branches
@@ -102,7 +102,7 @@ run tox Odoo 11 tests with Python 3.6:
 run tox Odoo 11 tests with Python 3.7:
   <<: *run_tox_tests
   variables:
-    PYTHON: 3.7
+    PYTHON: "3.7"
     ODOO_WORKTREE: odoo11
   allow_failure: true
   only:
@@ -197,7 +197,7 @@ publish_pypi:
 
 build documentation:
   variables:
-    PYTHON: 3.6
+    PYTHON: "3.6"
     ODOO_WORKTREE: odoo11
   stage: build doc
   script:
