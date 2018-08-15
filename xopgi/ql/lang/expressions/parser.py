@@ -6,8 +6,7 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import List, Union, Deque
-from collections import deque
+from typing import List
 
 from xoutil.objects import setdefaultattr
 from ply import lex, yacc
@@ -627,6 +626,7 @@ def _build_let(equations, body):
 
     '''
     from . import find_free_names
+
     def to_lambda(equation: Equation):
         'Convert (if needed) an equation to the equivalent one using lambdas.'
         if equation.pattern.params:
