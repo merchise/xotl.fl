@@ -10,6 +10,7 @@
 
 '''
 from .types.base import TypeCons, ListTypeCons, TupleTypeCons
+from .typecheck import TypeScheme
 
 # This is the type of all numbers in our language.  The expression language
 # will assign this type to every literal that matches a number; we don't
@@ -27,3 +28,36 @@ StringType = ListTypeCons(CharType)
 
 # The unit type is the type that its inhabited by a single value ``()``.
 UnitType = TupleTypeCons()
+
+
+BoolType = TypeCons('Bool', [])
+
+
+gamma = {
+    '$': TypeScheme.from_str('(a -> b) -> a -> b'),
+    '.': TypeScheme.from_str('(b -> c) -> (a -> b) -> a -> c'),
+
+    'id': TypeScheme.from_str('a -> a'),
+    'map': TypeScheme.from_str('(a -> b) -> [a] -> [b]'),
+    'foldr': TypeScheme.from_str('(a -> b -> b) -> b -> [a] -> b'),
+
+    'and': TypeScheme.from_str('Bool -> Bool -> Bool'),
+    'or': TypeScheme.from_str('Bool -> Bool -> Bool'),
+    'xor': TypeScheme.from_str('Bool -> Bool -> Bool'),
+    'not': TypeScheme.from_str('Bool -> Bool'),
+    'true': TypeScheme.from_typeexpr(BoolType),
+    'false': TypeScheme.from_typeexpr(BoolType),
+
+    '//': TypeScheme.from_str('Number -> Number -> Number'),
+}
+
+for op in '+-*/%^':
+    gamma[op] = TypeScheme.from_str('Number -> Number -> Number')
+
+
+for op in ('==', '!='):
+    gamma[op] = TypeScheme.from_str('Eq a -> Eq a -> Bool')
+
+
+for op in ('<', '>', '<=', '>='):
+    gamma[op] = TypeScheme.from_str('Ord a -> Ord a -> Bool')
