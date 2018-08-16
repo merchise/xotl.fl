@@ -308,3 +308,14 @@ def test_datetime_literals(d):
 @pytest.mark.xfail(reason='bad parsing')
 def test_regression_confusing_unary_plus():
     assert parse('f a + c') == parse('(f a) + c')
+
+
+@pytest.mark.xfail(reason='bad parsing')
+def test_regression_greedy_where():
+    assert parse(
+        'let a1 = id a in a1 + 1'
+    ) == parse(
+        'a1 + 1 where a1 = id a'
+    ) == parse(
+        '(a1 + 1) where a1 = id a'
+    )
