@@ -428,7 +428,12 @@ def typecheck_app(env, ns, exp: Application) -> TCResult:
     phi, types = tcl(env, ns, [exp.e1, exp.e2])
     t1, t2 = types
     t: TypeVariable = next(ns)
-    result = unify(t1, FuncCons(t2, t), phi=phi)
+    try:
+        result = unify(t1, FuncCons(t2, t), phi=phi)
+    except UnificationError as error:
+        raise UnificationError(
+            f'Cannot type-check ({exp!s}) :: {t1!s} ~ {t2!s} -> {t!s}'
+        )
     return result, result(t.name)
 
 

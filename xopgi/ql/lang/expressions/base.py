@@ -24,6 +24,9 @@ class Identifier(AST):
     def __repr__(self):
         return f'Identifier({self.name!r})'
 
+    def __str__(self):
+        return self.name
+
     def __hash__(self):
         return hash((Identifier, self.name))
 
@@ -57,6 +60,9 @@ class Literal(AST):
         else:
             return f'Literal({self.value!r}, {self.type!r})'
 
+    def __str__(self):
+        return str(self.value)
+
     def __eq__(self, other):
         if isinstance(other, Literal):
             return validate_attrs(self, other, ('type', 'value', 'annotation'))
@@ -73,6 +79,9 @@ class Lambda(AST):
     def __repr__(self):
         return f'Lambda({self.varname!r}, {self.body!r})'
 
+    def __str__(self):
+        return f'\{self.varname!s} -> {self.body!s}'
+
     def __eq__(self, other):
         if isinstance(other, Lambda):
             return self.varname == other.varname and self.body == other.body
@@ -88,6 +97,9 @@ class Application(AST):
 
     def __repr__(self):
         return f'Application({self.e1!r}, {self.e2!r})'
+
+    def __str__(self):
+        return f'{self.e1!s} {self.e2!s}'
 
     def __eq__(self, other):
         if isinstance(other, Application):

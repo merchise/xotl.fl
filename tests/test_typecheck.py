@@ -19,12 +19,14 @@ from xopgi.ql.lang.builtins import (
     builtins_env,
 )
 from xopgi.ql.lang.expressions import parse
+from xopgi.ql.lang.types import parse as type_parse
 
 from xopgi.ql.lang.typecheck import (
     typecheck,
     namesupply,
     sidentity,
     TypeScheme,
+    unify,
 )
 
 
@@ -52,6 +54,24 @@ def test_from_literals():
                        parse(r"let x = false in x"))
     assert phi is sidentity
     assert t == BoolType
+
+
+def test_combinators():
+    # Since they're closed expressions they should type-check
+    K = parse(r'\a b -> a')
+    TK = type_parse('a -> b -> a')
+    phi, t = typecheck([], namesupply(), K)
+    unify(TK, t)  # we can't ensure TK == t, but they must unify, in fact they
+                  # must be same type with alpha-renaming.
+
+    S = parse(r'\x y z -> x z (y z)')
+    TS = type_parse('(a -> b -> c) -> (a -> b) -> a -> c')
+    phi, t = typecheck([], namesupply(), S)
+    unify(TS, t)
+
+    # But the paradoxical combinator doesn't type-check
+    Y = parse(r'\f -> (\x -> f (x x))(\x -> f (x x))')
+    phi, t = typecheck([], namesupply(), Y)
 
 
 def test_paradox_omega():
