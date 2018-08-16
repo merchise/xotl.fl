@@ -71,7 +71,8 @@ def test_combinators():
 
     # But the paradoxical combinator doesn't type-check
     Y = parse(r'\f -> (\x -> f (x x))(\x -> f (x x))')
-    phi, t = typecheck([], namesupply(), Y)
+    with pytest.raises(TypeError):
+        phi, t = typecheck([], namesupply(), Y)
 
 
 def test_paradox_omega():

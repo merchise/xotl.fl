@@ -51,6 +51,7 @@ gamma = {
     'or': TypeScheme.from_str('Bool -> Bool -> Bool'),
     'xor': TypeScheme.from_str('Bool -> Bool -> Bool'),
     'not': TypeScheme.from_str('Bool -> Bool'),
+
     'true': TypeScheme.from_typeexpr(BoolType),
     'false': TypeScheme.from_typeexpr(BoolType),
 
