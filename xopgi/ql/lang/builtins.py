@@ -56,6 +56,38 @@ gamma = {
     'false': TypeScheme.from_typeexpr(BoolType),
 
     '//': TypeScheme.from_str('Number -> Number -> Number'),
+
+    # I'm putting Left, Right and (,) not because they are necessarily
+    # built-in; but to show that data constructors have the same type as
+    # functions.
+    #
+    # However, there's no way you can't actually write those functions in the
+    # expression language, because you would not be able to *build* the
+    # values.  This reveals the need for a data type language would allow the
+    # classical:
+    #
+    #    data Either a b = Left a | Right b
+    #
+    # and it would create the Left and Right functions.
+    #
+    # The case of tuples do require some parsing extensions if we're two allow
+    # triplets, 4-tuples, etc..
+    #
+    # Notice however, we don't have any execution model in the language and no
+    # real values beyond what literals allow.  I presume that we will use
+    # Python values while executing; but that would have to revised in order
+    # to make non-strict Python referentially transparent.
+    #
+    ',': TypeScheme.from_str('a -> b -> Tuple a b'),
+    ',,': TypeScheme.from_str('a -> b -> c Tuple a b c'),
+    ',,,': TypeScheme.from_str('a -> b -> c -> d -> Tuple a b c d'),
+    ',,,,': TypeScheme.from_str('a -> b -> c -> d -> e -> Tuple a b c d e'),
+    ',,,,,': TypeScheme.from_str('a -> b -> c -> d -> e -> f -> Tuple a b c d e f'),
+
+    'Left': TypeScheme.from_str('a -> Either a b'),
+    'Right': TypeScheme.from_str('b -> Either a b'),
+
+    'either': TypeScheme.from_str('(a -> c) -> (b -> c) -> Either a b -> c')
 }
 
 for op in '+-*/%^':
