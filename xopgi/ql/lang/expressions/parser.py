@@ -6,7 +6,7 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import List
+from typing import Reversible
 
 from xoutil.objects import setdefaultattr
 from xoutil.future.datetime import TimeSpan
@@ -734,7 +734,7 @@ def p_error(prod):
 parser = yacc.yacc(debug=True, start='st_expr')
 
 
-def build_lambda(params: List[str], body: AST) -> Lambda:
+def build_lambda(params: Reversible[str], body: AST) -> Lambda:
     '''Create a Lambda from several parameters.
 
     Example:

@@ -15,7 +15,7 @@ Implementation of Functional Programming Languages'.
           appropriate.
 
 '''
-from typing import List
+from typing import List, Iterable
 from itertools import zip_longest
 
 
@@ -55,12 +55,12 @@ class TypeVariable(Type):
 
 
 class TypeCons(Type):
-    def __init__(self, constructor: str, subtypes: List[Type] = None,
+    def __init__(self, constructor: str, subtypes: Iterable[Type] = None,
                  *, binary=False) -> None:
         assert not subtypes or all(isinstance(t, Type) for t in subtypes), \
             f'Invalid subtypes: {subtypes!r}'
         self.cons = constructor
-        self.subtypes = subtypes or []
+        self.subtypes: List[Type] = list(subtypes or [])
         self.binary = binary
 
     def __str__(self):

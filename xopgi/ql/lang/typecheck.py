@@ -6,7 +6,15 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Any, Sequence, List, Tuple, Iterator, Iterable, Callable
+from typing import (
+    Any,
+    Sequence,
+    List,
+    Tuple,
+    Iterator,
+    Iterable,
+    Callable,
+)
 from typing import Optional  # noqa
 
 from xopgi.ql.lang.types.base import (
@@ -202,7 +210,7 @@ class TypeScheme:
     '''
     # I choose the word 'generic' instead of schematic (and thus non-generic
     # instead of unknown), because that's probably more widespread.
-    def __init__(self, generics: List[str], t: Type) -> None:
+    def __init__(self, generics: Sequence[str], t: Type) -> None:
         self.generics = generics
         self.t = t
 
@@ -229,7 +237,7 @@ class TypeScheme:
 
     @classmethod
     def from_typeexpr(cls, type_, *, generics=None):
-        # type: (Type, *, Optional[List[str]]) -> TypeScheme
+        # type: (Type, *, Optional[Sequence[str]]) -> TypeScheme
         '''Create a type scheme from a type expression assuming all type
         variables are generic.'''
         if generics is None:
@@ -238,7 +246,7 @@ class TypeScheme:
 
     @classmethod
     def from_str(cls, source, *, generics=None):
-        # type: (str, *, Optional[List[str]]) -> TypeScheme
+        # type: (str, *, Optional[Sequence[str]]) -> TypeScheme
         '''Create a type scheme from a type expression (given a string)
         assuming all type variables are generic.'''
         from xopgi.ql.lang.types import parse
@@ -305,7 +313,7 @@ class namesupply:
        [TypeVariable('.a0'), TypeVariable('.a1')]
 
     '''
-    def __init__(self, prefix='a', exclude: List[str] = None,
+    def __init__(self, prefix='a', exclude: Sequence[str] = None,
                  *, limit: int = None) -> None:
         self.prefix = prefix
         self.exclude = exclude
@@ -357,14 +365,14 @@ def typecheck(env: TypeEnvironment, ns: NameSupply, exp: AST) -> TCResult:
 TCLResult = Tuple[Substitution, List[Type]]
 
 
-def tcl(env: TypeEnvironment, ns: NameSupply, exprs: List[AST]) -> TCLResult:
+def tcl(env: TypeEnvironment, ns: NameSupply, exprs: Iterable[AST]) -> TCLResult:
     def tcl2(phi, t, tcs):
         # type: (Substitution, Type, TCLResult) -> TCLResult
         psi, ts = tcs
         return scompose(psi, phi), [subtype(psi, t)] + ts
 
     def tcl1(env, ns, exprs, tc):
-        # type: (TypeEnvironment, NameSupply, List[AST], TCResult) -> TCLResult
+        # type: (TypeEnvironment, NameSupply, Iterable[AST], TCResult) -> TCLResult
         phi, t = tc
         return tcl2(phi, t, tcl(sub_typeenv(phi, env), ns, exprs))
 
@@ -460,7 +468,7 @@ def typecheck_let(env, ns, exp: Let) -> TCResult:
     return scompose(psi, phi), t
 
 
-def add_decls(env, ns, names: List[str], types: List[Type]) -> TypeEnvironment:
+def add_decls(env, ns, names: Sequence[str], types: Iterable[Type]) -> TypeEnvironment:
 
     def genbar(unknowns, names, type_):
         schvars = list({
