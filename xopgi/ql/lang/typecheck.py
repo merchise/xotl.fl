@@ -58,6 +58,17 @@ class scompose:
        subtype (scompose f g) = (subtype f) . (subtype g)
 
     '''
+    def __new__(cls, f, g):
+        # type: (Substitution, Substitution) -> Substitution
+        if f is sidentity:
+            return g
+        elif g is sidentity:
+            return f
+        else:
+            res = super().__new__(cls)
+            res.__init__(f, g)
+            return res
+
     def __init__(self, f: Substitution, g: Substitution) -> None:
         self.f = f
         self.g = g
