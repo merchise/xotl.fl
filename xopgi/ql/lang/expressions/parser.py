@@ -9,6 +9,8 @@
 from typing import List
 
 from xoutil.objects import setdefaultattr
+from xoutil.future.datetime import TimeSpan
+
 from ply import lex, yacc
 
 from .base import (
@@ -26,6 +28,9 @@ from xopgi.ql.lang.builtins import (
     CharType,
     NumberType,
     UnitType,
+    DateType,
+    DateTimeType,
+    DateIntervalType,
 )
 
 
@@ -60,6 +65,10 @@ tokens = [
     'ANNOTATION',
     'FLOAT',
     'EQ',
+    'DATETIME',
+    'DATE',
+    'DATETIME_INTERVAL',
+    'DATE_INTERVAL',
 ]
 
 # Reserved keywords: pairs of (keyword, regexp).  If the regexp is None, it
@@ -274,6 +283,41 @@ def t_ANNOTATION(t):
     return t
 
 
+def t_DATETIME(t):
+    r'<\d{4,}-\d\d-\d\d[ T]\d\d:\d\d(:\d\d)?(\.\d+)?>'
+    import dateutil.parser
+    val = t.value[1:-1]
+    res = dateutil.parser.parse(val)
+    t.value = res
+    return t
+
+
+def t_DATE(t):
+    r'<\d{4,}-\d\d-\d\d>'
+    import dateutil.parser
+    val = t.value[1:-1]
+    res = dateutil.parser.parse(val).date()
+    t.value = res
+    return t
+
+
+def t_DATETIME_INTERVAL(t):
+    (r'<from[ \t]+\d{4,}-\d\d-\d\d[ T]\d\d:\d\d(:\d\d)?(\.\d+)?'
+     r'[ \t]+to[ \t]+\d{4,}-\d\d-\d\d[ T]\d\d:\d\d(:\d\d)?(\.\d+)?>')
+    raise NotImplementedError
+
+
+def t_DATE_INTERVAL(t):
+    r'<from[ \t]+\d{4,}-\d\d-\d\d[ \t]+to[ \t]+\d{4,}-\d\d-\d\d>'
+    import dateutil.parser
+    source = t.value[1:-1]
+    _, start, _, end = source.split()
+    start = dateutil.parser.parse(start)
+    end = dateutil.parser.parse(end)
+    t.value = TimeSpan(start, end)
+    return t
+
+
 def t_OPERATOR(t):
     r'[/\.\-\+\*<>\$%\^&!@\#=\|]+'
     return t
@@ -312,15 +356,49 @@ def p_standalone_expr(prod):
 
 
 def p_literals_and_basic(prod):
-    '''expr :  number
-             | concrete_number
-             | string
-             | char
+    '''expr :  literal
              | identifier
              | enclosed_expr
              | letexpr
              | where_expr
              | unit_value
+    '''
+    prod[0] = prod[1]
+
+
+def p_literals(prod):
+    '''literal : number
+             | concrete_number
+             | string
+             | char
+             | date
+             | datetime
+             | date_interval
+             | datetime_interval
+    '''
+    prod[0] = prod[1]
+
+
+def p_date(prod):
+    '''date : DATE
+    '''
+    prod[0] = Literal(prod[1], DateType)
+
+
+def p_datetime(prod):
+    '''datetime : DATETIME
+    '''
+    prod[0] = Literal(prod[1], DateTimeType)
+
+
+def p_date_interval(prod):
+    '''date_interval : DATE_INTERVAL
+    '''
+    prod[0] = Literal(prod[1], DateIntervalType)
+
+
+def p_datetime_interval(prod):
+    '''datetime_interval : DATETIME_INTERVAL
     '''
     prod[0] = prod[1]
 

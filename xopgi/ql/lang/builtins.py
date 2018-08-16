@@ -33,6 +33,12 @@ UnitType = TupleTypeCons()
 BoolType = TypeCons('Bool', [])
 
 
+DateType = TypeCons('Date', [])
+DateTimeType = TypeCons('Datetime', [])
+DateIntervalType = TypeCons('DateInterval')
+DateTimeIntervalType = TypeCons('DateTimeInterval')
+
+
 gamma = {
     '$': TypeScheme.from_str('(a -> b) -> a -> b'),
     '.': TypeScheme.from_str('(b -> c) -> (a -> b) -> a -> c'),

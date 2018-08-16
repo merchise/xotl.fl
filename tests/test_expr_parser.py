@@ -20,13 +20,15 @@ from xopgi.ql.lang.expressions.base import (
     Let,
     Letrec,
 )
-from xopgi.ql.lang.expressions.parser import string_repr
-
+from xopgi.ql.lang.expressions.parser import string_repr, ParserError
 from xopgi.ql.lang.builtins import (
     NumberType,
     CharType,
     StringType,
     UnitType,
+    DateType,
+    DateTimeType,
+    DateIntervalType,
 )
 
 
@@ -281,6 +283,26 @@ def test_where_expr():
 
 def test_unit_value():
     assert parse('(   )') == parse('()') == Literal((), UnitType)
+
+
+@given(s.dates())
+def test_date_literals(d):
+    code = f'<{d!s}>'
+    try:
+        res = parse(code)
+    except (lex.LexError, ParserError):
+        raise AssertionError(f'Unexpected parsing error: {code}')
+    assert res == Literal(d, DateType)
+
+
+@given(s.datetimes())
+def test_datetime_literals(d):
+    code = f'<{d!s}>'
+    try:
+        res = parse(code)
+    except (lex.LexError, ParserError):
+        raise AssertionError(f'Unexpected parsing error: {code}')
+    assert res == Literal(d, DateTimeType)
 
 
 @pytest.mark.xfail(reason='bad parsing')
