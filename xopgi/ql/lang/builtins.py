@@ -61,3 +61,6 @@ for op in ('==', '!='):
 
 for op in ('<', '>', '<=', '>='):
     gamma[op] = TypeScheme.from_str('Ord a -> Ord a -> Bool')
+
+
+builtins_env = list(gamma.items())

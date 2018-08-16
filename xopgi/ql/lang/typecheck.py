@@ -6,10 +6,15 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Any, List, Tuple, Iterator, Callable
+from typing import Any, Sequence, List, Tuple, Iterator, Iterable, Callable
 from typing import Optional  # noqa
 
-from xopgi.ql.lang.types.base import Type, TypeVariable, TypeCons
+from xopgi.ql.lang.types.base import (
+    Type,
+    TypeVariable,
+    TypeCons,
+    FunctionTypeCons as FuncCons,
+)
 from xopgi.ql.lang.expressions.base import (
     AST,
     Identifier,
@@ -65,7 +70,7 @@ class scompose:
         elif g is sidentity:
             return f
         else:
-            res = super().__new__(cls)
+            res = super().__new__(cls)  # type: ignore
             res.__init__(f, g)
             return res
 
@@ -83,10 +88,10 @@ class scompose:
 class Identity:
     'The identity substitution.'
     def __call__(self, s: str) -> Type:
-        return TypeVariable(s)
+        return TypeVariable(s, check=False)
 
     def __repr__(self):
-        return f'Indentity()'
+        return 'Identity()'
 
 
 sidentity = Identity()
@@ -120,7 +125,7 @@ class delta:
         self.args = args
 
     def __call__(self, s: str) -> Type:
-        return self.result if s == self.vname else TypeVariable(s)
+        return self.result if s == self.vname else TypeVariable(s, check=False)
 
     @property
     def result(self) -> Type:
@@ -130,7 +135,7 @@ class delta:
         return f'delta({self.vname!r}, {self.result!r})'
 
 
-class UnificationError(Exception):
+class UnificationError(TypeError):
     pass
 
 
@@ -147,7 +152,7 @@ def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:
         if isinstance(t, TypeVariable) and name == t.name:
             return phi
         elif name in find_tvars(t):
-            raise UnificationError(f'Cannot unify {name} with {t}')
+            raise UnificationError(f'Cannot unify {name!s} with {t!s}')
         else:
             # TODO: Make the result *descriptible*
             return scompose(delta(name, lambda: t), phi)
@@ -168,10 +173,10 @@ def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:
         if e1.cons == e2.cons:
             return unify_exprs(zip(e1.subtypes, e2.subtypes), p=phi)
         else:
-            raise UnificationError(f'Cannot unify {e1} with {e2}')
+            raise UnificationError(f'Cannot unify {e1!s} with {e2!s}')
 
 
-TypePairs = Iterator[Tuple[Type, Type]]
+TypePairs = Iterable[Tuple[Type, Type]]
 
 
 # This is the unifyl in the Book.
@@ -227,7 +232,7 @@ class TypeScheme:
         # type: (Type, *, Optional[List[str]]) -> TypeScheme
         '''Create a type scheme from a type expression assuming all type
         variables are generic.'''
-        if not generics:
+        if generics is None:
             generics = list(set(find_tvars(type_)))  # avoid repetitions.
         return cls(generics, type_)
 
@@ -243,7 +248,7 @@ class TypeScheme:
 
 def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
     '''Apply a substitution to a type scheme.'''
-    exclude: Substitution = lambda s: phi(s) if s not in ts.generics else TypeVariable(s)
+    exclude: Substitution = lambda s: phi(s) if s not in ts.generics else TypeVariable(s, check=False)
     return TypeScheme(ts.generics, subtype(exclude, ts.t))
 
 
@@ -254,8 +259,8 @@ def dom(al: AssocList) -> List[Any]:
     return [k for k, _ in al]
 
 
-def val(al: AssocList, key: Any) -> List[Any]:
-    return [v for k, v in al if k == key]
+def val(al: AssocList, key: Any) -> Any:
+    return [v for k, v in al if k == key][0]
 
 
 def rng(al: AssocList) -> List[Any]:
@@ -333,24 +338,6 @@ def typecheck(env: TypeEnvironment, ns: NameSupply, exp: AST) -> TCResult:
     '''Check the type of `exp` in a given type environment.
 
     '''
-    def typecheck_var(env, ns, exp: Identifier) -> TCResult:
-        pass
-
-    def typecheck_literal(env, ns, exp: Literal) -> TCResult:
-        pass
-
-    def typecheck_app(env, ns, exp: Application) -> TCResult:
-        pass
-
-    def typecheck_lambda(env, ns, exp: Lambda) -> TCResult:
-        pass
-
-    def typecheck_let(env, ns, exp: Let) -> TCResult:
-        pass
-
-    def typecheck_letrec(env, ns, exp: Letrec) -> TCResult:
-        pass
-
     if isinstance(exp, Identifier):
         return typecheck_var(env, ns, exp)
     elif isinstance(exp, Literal):
@@ -386,3 +373,99 @@ def tcl(env: TypeEnvironment, ns: NameSupply, exprs: List[AST]) -> TCLResult:
     else:
         expr, *exprs = exprs
         return tcl1(env, ns, exprs, typecheck(env, ns, expr))
+
+
+def newinstance(ns: NameSupply, ts: TypeScheme) -> Type:
+    'Create an instance of `ts` drawing names from the supply `ns`.'
+    newvars: List[Tuple[str, TypeVariable]] = list(zip(ts.generics, ns))
+    phi: Substitution = build_substitution(newvars)
+    return subtype(phi, ts.t)
+
+
+def build_substitution(alist: Sequence[Tuple[str, Type]]) -> Substitution:
+    '''Build a substitution from an association list.
+
+    This is the standard *interpretation* of a mapping from names to types.
+    The substitution, when called upon, will look the from beginning to end
+    for an item with the same key and return the associated type.
+
+    If the same name is assigned more than once, return the first one.
+
+    We keep an internal copy of the `alist`.  So, it's safe to change the
+    argument afterwards.
+
+    '''
+    lst = list(alist)
+
+    def result(name: str) -> Type:
+        missing = object()
+        restype: Type = missing  # type: ignore
+        pos = 0
+        while restype is missing and pos < len(lst):
+            generic, newvar = lst[pos]
+            pos += 1
+            if generic == name:
+                restype = newvar
+        if restype is missing:
+            return TypeVariable(name, check=False)
+        else:
+            return restype
+    return result
+
+
+def typecheck_literal(env, ns, exp: Literal) -> TCResult:
+    # Extension to the original algorithm but easy: a literal always type
+    # check with its type.
+    return sidentity, exp.type
+
+
+def typecheck_var(env, ns, exp: Identifier) -> TCResult:
+    name = exp.name
+    return sidentity, newinstance(ns, val(env, name))
+
+
+def typecheck_app(env, ns, exp: Application) -> TCResult:
+    phi, types = tcl(env, ns, [exp.e1, exp.e2])
+    t1, t2 = types
+    t: TypeVariable = next(ns)
+    result = unify(t1, FuncCons(t2, t), phi=phi)
+    return result, result(t.name)
+
+
+def typecheck_lambda(env, ns, exp: Lambda) -> TCResult:
+    # \x -> ...; the type of 'x' can be anything.  Thus, create a type
+    # scheme with a new non-generic type variable Tx.  We extend the
+    # environment to say 'x :: Tx' and typecheck the body of the lambda in
+    # this new environment.
+    newvar = next(ns)
+    argtype = TypeScheme.from_typeexpr(newvar, generics=[])
+    phi, type_ = typecheck([(exp.varname, argtype)] + env, ns, exp.body)
+    return phi, FuncCons(phi(newvar.name), type_)
+
+
+def typecheck_let(env, ns, exp: Let) -> TCResult:
+    exprs: List[AST] = exp.bindings.values()  # type: ignore
+    phi, types = tcl(env, ns, exprs)
+    names: List[str] = exp.bindings.keys()    # type: ignore
+    psi, t = typecheck(
+        add_decls(sub_typeenv(phi, env), ns, names, types),
+        ns,
+        exp.body,
+    )
+    return scompose(psi, phi), t
+
+
+def add_decls(env, ns, names: List[str], types: List[Type]) -> TypeEnvironment:
+
+    def genbar(unknowns, names, type_):
+        schvars = list({
+            var for var in find_tvars(type_) if var not in unknowns
+        })
+        alist: List[Tuple[str, TypeVariable]] = list(zip(schvars, ns))
+        restype = subtype(build_substitution(alist), type_)
+        return TypeScheme([v.name for _, v in alist], restype)
+
+    unknowns = get_typeenv_unknowns(env)
+    schemes = [genbar(unknowns, names, t) for t in types]
+    return list(zip(names, schemes)) + env
+
