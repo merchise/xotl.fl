@@ -42,13 +42,11 @@ class TypeVariable(Type):
     def __eq__(self, other):
         if isinstance(other, TypeVariable):
             return self.name == other.name
-        elif isinstance(other, Type):
-            return False
         else:
             return NotImplemented
 
     def __hash__(self):
-        return hash(self.name)
+        return hash((TypeVariable, self.name))
 
     def __len__(self):
         return 0   # So that 'Int' has a bigger size than 'a'.
@@ -84,13 +82,11 @@ class TypeCons(Type):
                 t1 == t2
                 for t1, t2 in zip_longest(self.subtypes, other.subtypes)
             )
-        elif isinstance(other, Type):
-            return False
         else:
             return NotImplemented
 
     def __hash__(self):
-        return hash((self.cons, self.subtypes))
+        return hash((TypeCons, self.cons, self.subtypes))
 
     def __len__(self):
         return 1 + sum(len(st) for st in self.subtypes)

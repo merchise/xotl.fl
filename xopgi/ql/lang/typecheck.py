@@ -222,6 +222,9 @@ class TypeScheme:
             if name not in self.generics
         ]
 
+    def __hash__(self):
+        return hash((TypeScheme, self.generics, self.t))
+
     @property
     def names(self):
         return ' '.join(self.generics)

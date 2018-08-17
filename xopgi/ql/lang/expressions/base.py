@@ -69,6 +69,9 @@ class Literal(AST):
         else:
             return NotImplemented
 
+    def __hash__(self):
+        return hash((Literal, self.value, self.type_, self.annotation))
+
 
 class Lambda(AST):
     '''A lambda abstraction over a single parameter. '''
@@ -88,6 +91,9 @@ class Lambda(AST):
         else:
             return NotImplemented
 
+    def __hash__(self):
+        return hash((Lambda, self.varname, self.body))
+
 
 class Application(AST):
     '''The application of `e1` to its *argument* e2.'''
@@ -106,6 +112,9 @@ class Application(AST):
             return self.e1 == other.e1 and self.e2 == other.e2
         else:
             return NotImplemented
+
+    def __hash__(self):
+        return hash((Application, self.e1, self.e2))
 
 
 # We assume (as the Book does) that there are no "translation" errors; i.e
