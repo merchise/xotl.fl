@@ -16,6 +16,7 @@ from typing import (
     Callable,
 )
 from typing import Optional  # noqa
+from xoutil.fp.tools import fst
 
 from xopgi.ql.lang.types.base import (
     Type,
@@ -360,6 +361,9 @@ class namesupply:
         return self
 
     def __next__(self) -> TypeVariable:
+        assert self.count < 20000, \
+            'No expression should be so complex to require 20 000 new type variables'
+
         if not self.limit or self.count < self.limit:
             result = None
             while not result:
@@ -484,9 +488,9 @@ def typecheck_lambda(env, ns, exp: Lambda) -> TCResult:
 
 
 def typecheck_let(env, ns, exp: Let) -> TCResult:
-    exprs: List[AST] = list(exp.values())
+    exprs: Sequence[AST] = tuple(exp.values())
     phi, types = tcl(env, ns, exprs)
-    names: List[str] = list(exp.keys())
+    names: Sequence[str] = tuple(exp.keys())
     psi, t = typecheck(
         add_decls(sub_typeenv(phi, env), ns, names, types),
         ns,
@@ -495,7 +499,7 @@ def typecheck_let(env, ns, exp: Let) -> TCResult:
     return scompose(psi, phi), t
 
 
-def add_decls(env, ns, names: Sequence[str], types: Iterable[Type]) -> TypeEnvironment:
+def add_decls(env, ns, names: Iterable[str], types: Iterable[Type]) -> TypeEnvironment:
 
     def genbar(unknowns, names, type_):
         schvars = list({
@@ -509,3 +513,45 @@ def add_decls(env, ns, names: Sequence[str], types: Iterable[Type]) -> TypeEnvir
     schemes = [genbar(unknowns, names, t) for t in types]
     return list(zip(names, schemes)) + env
 
+
+def typecheck_letrec(env, ns, exp: Letrec) -> TCResult:
+    # This algorithm is quite elaborate.
+    #
+    # We expected that at least one of exprs is defined in terms of a name.
+    # So, we must type-check all of exprs in a type environment where there's
+    # non-generic type associated to each of the names defined in the 'let'.
+    #
+    #     let x1 = e1
+    #         x2 = e2
+    #        ...
+    #     in body
+    #
+    # We make a new type scheme for each 'x'; x1 :: Tx1, x2 :: Tx2, etc...
+    # and type-check of the 'exprs' in this extended environment.
+    exprs: Sequence[AST] = tuple(exp.values())
+    names: Sequence[str] = tuple(exp.keys())
+    nbvs = [(name, TypeScheme.from_typeexpr(var, generics=[]))
+            for name, var in zip(names, ns)]
+    phi, ts = tcl(nbvs + env, ns, exprs)
+
+    # At this point `phi` is the substitution that makes all the bindings in
+    # the letrec type-check; and `ts` is the list of the types inferred for
+    # each expr.
+    #
+    # Now we must unify the types inferred with the types of the names in the
+    # non-extended environment, but taking the `phi` into account.  Also
+    gamma = sub_typeenv(phi, env)
+    nbvs1 = sub_typeenv(phi, nbvs)
+    ts1 = [sch.t for _, sch in nbvs1]
+    psi = unify_exprs(zip(ts, ts1), p=phi)
+
+    # Now we have type-checked the definitions, so we can now typecheck the
+    # body in the **proper** environment.
+    nbvs1 = sub_typeenv(psi, nbvs)
+    ts = [sch.t for _, sch in nbvs1]
+    psi1, t = typecheck(
+        add_decls(sub_typeenv(psi, gamma), ns, map(fst, nbvs), ts),
+        ns,
+        exp.body
+    )
+    return scompose(psi1, psi), t

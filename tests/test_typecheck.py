@@ -81,7 +81,6 @@ def test_paradox_omega():
         typecheck([], namesupply(), parse(r'\x -> x x'))
 
 
-@pytest.mark.xfail(reason='I have not complete the letrec')
 def test_hidden_paradox_omega():
     code = '''
     let id x    = x
@@ -92,3 +91,14 @@ def test_hidden_paradox_omega():
     '''
     typecheck([('x', TypeScheme.from_str('a', generics=[]))],
               namesupply(), parse(code))
+
+    code = '''
+    let id x    = x
+        prxI c  = c x id
+        p1 x y  = x
+        p2 x y  = y
+    in prxI p1 (prxI p1)
+    '''
+    with pytest.raises(TypeError):
+        typecheck([('x', TypeScheme.from_str('a', generics=[]))],
+                  namesupply(), parse(code))
