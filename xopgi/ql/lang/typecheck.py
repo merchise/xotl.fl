@@ -52,7 +52,11 @@ def find_tvars(t: Type) -> List[str]:
 
 
 def subtype(phi: Substitution, t: Type) -> Type:
-    if isinstance(t, TypeVariable):
+    # 'subtype(sidentity, t) == t'; and since Type, TypeVariables and TypeCons
+    # are treated immutably we should be safe to return the same type.
+    if phi is sidentity:
+        return t
+    elif isinstance(t, TypeVariable):
         return phi(t.name)
     else:
         assert isinstance(t, TypeCons)
