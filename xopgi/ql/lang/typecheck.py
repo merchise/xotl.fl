@@ -258,8 +258,37 @@ class TypeScheme:
 
 def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
     '''Apply a substitution to a type scheme.'''
-    exclude: Substitution = lambda s: phi(s) if s not in ts.generics else TypeVariable(s, check=False)
-    return TypeScheme(ts.generics, subtype(exclude, ts.t))
+    return TypeScheme(ts.generics, subtype(Exclude(phi, ts), ts.t))
+
+
+class Exclude:
+    '''A substitution over the non-generics in a type scheme.
+
+    Applies `phi` only if the variable name is a non-generic of the type
+    scheme `ts`.
+
+    '''
+    def __new__(cls, phi, ts):
+        # type: (Any, Substitution, TypeScheme) -> Substitution
+        if not ts.generics:
+            return phi
+        else:
+            res = super().__new__(cls)  # type: ignore
+            res.__init__(phi, ts)
+            return res
+
+    def __init__(self, phi: Substitution, ts: TypeScheme) -> None:
+        self.phi = phi
+        self.ts = ts
+
+    def __call__(self, s: str) -> Type:
+        if s not in self.ts.generics:
+            return self.phi(s)
+        else:
+            return TypeVariable(s, check=False)
+
+    def __repr__(self):
+        return f'Exclude({self.phi!r}, {self.ts!r})'
 
 
 AssocList = List[Tuple[Any, Any]]
