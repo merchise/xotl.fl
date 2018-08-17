@@ -15,7 +15,7 @@ Implementation of Functional Programming Languages'.
           appropriate.
 
 '''
-from typing import List, Iterable
+from typing import Iterable, Sequence
 from itertools import zip_longest
 
 
@@ -58,7 +58,7 @@ class TypeCons(Type):
         assert not subtypes or all(isinstance(t, Type) for t in subtypes), \
             f'Invalid subtypes: {subtypes!r}'
         self.cons = constructor
-        self.subtypes: List[Type] = list(subtypes or [])
+        self.subtypes: Sequence[Type] = tuple(subtypes or [])
         self.binary = binary
 
     def __str__(self):

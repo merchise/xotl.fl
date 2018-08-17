@@ -125,8 +125,7 @@ def p_application(p):
         assert isinstance(e1, TypeCons)
         f = e1
     assert isinstance(e2, Type), f'@ {e1!r} {e2!r}'
-    f.subtypes.append(e2)
-    p[0] = f
+    p[0] = TypeCons(f.cons, f.subtypes + (e2, ), binary=f.binary)
 
 
 def p_paren(p):
