@@ -488,9 +488,9 @@ def typecheck_lambda(env, ns, exp: Lambda) -> TCResult:
 
 
 def typecheck_let(env, ns, exp: Let) -> TCResult:
-    exprs: List[AST] = exp.bindings.values()  # type: ignore
+    exprs: List[AST] = list(exp.values())
     phi, types = tcl(env, ns, exprs)
-    names: List[str] = exp.bindings.keys()    # type: ignore
+    names: List[str] = list(exp.keys())
     psi, t = typecheck(
         add_decls(sub_typeenv(phi, env), ns, names, types),
         ns,

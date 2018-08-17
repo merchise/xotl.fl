@@ -75,9 +75,9 @@ def find_free_names(expr: AST) -> List[str]:
             # look at all the definitions.
             #
             # We push several POPFRAME at the to account for that.
-            bindings.extend(node.bindings.keys())
-            nodes.extend(POPFRAME for _ in node.bindings.keys())
-            nodes.extend(node.bindings.values())
+            bindings.extend(node.keys())
+            nodes.extend(POPFRAME for _ in node.keys())
+            nodes.extend(node.values())
             nodes.append(node.body)
         else:
             assert False, f'Unknown AST node: {node!r}'

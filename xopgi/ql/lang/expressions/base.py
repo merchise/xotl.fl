@@ -6,8 +6,9 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Any, Mapping
+from typing import Any, Mapping, Iterator
 from xoutil.objects import validate_attrs
+from xoutil.fp.tools import fst
 
 from ..types.base import Type
 
@@ -121,7 +122,10 @@ class Application(AST):
 # that you haven't put a Let where you needed a Letrec.
 class _LetExpr(AST):
     def __init__(self, bindings: Mapping[str, AST], body: AST) -> None:
-        self.bindings = bindings
+        # Sort by names (in a _LetExpr names can't be repeated, repetition for
+        # pattern-matching should be translated to a lambda using the MATCH
+        # operator).
+        self.bindings = tuple(sorted(bindings.items(), key=fst))
         self.body = body
 
     def __eq__(self, other):
@@ -129,6 +133,15 @@ class _LetExpr(AST):
             return self.bindings == other.bindings and self.body == self.body
         else:
             return NotImplemented
+
+    def __hash__(self):
+        return hash((type(self), self.keys(), self.values(), self.body))
+
+    def keys(self) -> Iterator[str]:
+        return (k for k, _ in self.bindings)
+
+    def values(self) -> Iterator[AST]:
+        return (v for _, v in self.bindings)
 
 
 class Let(_LetExpr):
