@@ -401,21 +401,13 @@ TCLResult = Tuple[Substitution, List[Type]]
 
 
 def tcl(env: TypeEnvironment, ns: NameSupply, exprs: Iterable[AST]) -> TCLResult:
-    def tcl2(phi, t, tcs):
-        # type: (Substitution, Type, TCLResult) -> TCLResult
-        psi, ts = tcs
-        return scompose(psi, phi), [subtype(psi, t)] + ts
-
-    def tcl1(env, ns, exprs, tc):
-        # type: (TypeEnvironment, NameSupply, Iterable[AST], TCResult) -> TCLResult
-        phi, t = tc
-        return tcl2(phi, t, tcl(sub_typeenv(phi, env), ns, exprs))
-
     if not exprs:
         return sidentity, []
     else:
         expr, *exprs = exprs
-        return tcl1(env, ns, exprs, typecheck(env, ns, expr))
+        phi, t = typecheck(env, ns, expr)
+        psi, ts = tcl(sub_typeenv(phi, env), ns, exprs)
+        return scompose(psi, phi), [subtype(psi, t)] + ts
 
 
 def newinstance(ns: NameSupply, ts: TypeScheme) -> Type:
