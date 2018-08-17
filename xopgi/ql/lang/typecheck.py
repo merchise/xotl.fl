@@ -63,26 +63,25 @@ def subtype(phi: Substitution, t: Type) -> Type:
         )
 
 
-class scompose:
+def scompose(f: Substitution, g: Substitution) -> Substitution:
     '''Compose two substitutions.
 
-    The crucial property of scompose is that::
+    The crucial property of `scompose`:func: is that::
 
        subtype (scompose f g) = (subtype f) . (subtype g)
 
     '''
-    def __new__(cls, f, g):
-        # type: (Substitution, Substitution) -> Substitution
-        if f is sidentity:
-            return g
-        elif g is sidentity:
-            return f
-        else:
-            res = super().__new__(cls)  # type: ignore
-            res.__init__(f, g)
-            return res
+    if f is sidentity:
+        return g
+    elif g is sidentity:
+        return f
+    else:
+        return Composition(f, g)
 
+
+class Composition:
     def __init__(self, f: Substitution, g: Substitution) -> None:
+        assert self is not f
         self.f = f
         self.g = g
 
@@ -90,7 +89,7 @@ class scompose:
         return subtype(self.f, self.g(s))
 
     def __repr__(self):
-        return f'scompose({self.f!r}, {self.g!r})'
+        return f'Composition({self.f!r}, {self.g!r})'
 
 
 class Identity:
