@@ -27,6 +27,7 @@ from xopgi.ql.lang.typecheck import (
     sidentity,
     TypeScheme,
     unify,
+    find_tvars
 )
 
 
@@ -102,3 +103,23 @@ def test_hidden_paradox_omega():
     with pytest.raises(TypeError):
         typecheck([('x', TypeScheme.from_str('a', generics=[]))],
                   namesupply(), parse(code))
+
+
+def test_basic_builtin_types():
+    with pytest.raises(TypeError):
+        # not :: Bool -> Bool, but passed a Number
+        typecheck(builtins_env, namesupply(), parse('not 0'))
+
+    phi, t = typecheck(builtins_env, namesupply(), parse('not true'))
+    assert t == BoolType
+    phi, t = typecheck(builtins_env, namesupply(), parse('not false'))
+    assert t == BoolType
+
+    userfuncs = [('toString', TypeScheme.from_str('a -> String'))]
+    phi, t = typecheck(
+        userfuncs + builtins_env,
+        namesupply(),
+        parse('either toString id')
+    )
+    assert len(find_tvars(t)) == 1
+    unify(type_parse('Either a String -> String'), t)
