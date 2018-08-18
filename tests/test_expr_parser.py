@@ -7,7 +7,7 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
-from hypothesis import strategies as s, given
+from hypothesis import strategies as s, given, example
 
 from ply import lex
 
@@ -45,15 +45,17 @@ def test_wfe_identifier():
 
 
 @given(s.characters())
+@example(r"'")
 def test_wfe_char_literals(ch):
     if ch == "'":
-        code = r"'''"
+        code = r"'\''"
     else:
         code = f"{ch!r}"
     assert parse(code) == Literal(ch, CharType)
 
 
 @given(s.text())
+@example(r'"\\"')
 def test_wfe_string_literals(s):
     code = string_repr(s)
     assert parse(code) == Literal(s, StringType)

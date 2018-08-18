@@ -141,7 +141,7 @@ def string_repr(s):
             result.append('\\')
             result.append(ch)
         else:
-            result.append(repr(ch)[1:-1].replace(r'\\', '\\'))
+            result.append(repr(ch)[1:-1])
     result.append('"')
     return ''.join(result)
 
