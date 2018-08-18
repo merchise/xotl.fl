@@ -178,12 +178,6 @@ def test_lambda_definition():
     assert P(r'\a b -> a') == Lambda('a', Lambda('b', Identifier('a')))
 
 
-def test_incorrect_lepexpr_assoc():
-    P = parse
-    with pytest.raises(AssertionError):
-        assert P('let id x = x in map id xs') == P('(let id x = x in map) id xs')
-
-
 def test_basic_letexpr():
     P = parse
     assert P('let id x = x in map id xs') == P('let id x = x in (map id xs)')
