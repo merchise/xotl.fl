@@ -6,8 +6,9 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Any, Mapping
+from typing import Any, Mapping, Iterator
 from xoutil.objects import validate_attrs
+from xoutil.fp.tools import fst
 
 from ..types.base import Type
 
@@ -23,6 +24,9 @@ class Identifier(AST):
 
     def __repr__(self):
         return f'Identifier({self.name!r})'
+
+    def __str__(self):
+        return self.name
 
     def __hash__(self):
         return hash((Identifier, self.name))
@@ -57,11 +61,17 @@ class Literal(AST):
         else:
             return f'Literal({self.value!r}, {self.type!r})'
 
+    def __str__(self):
+        return str(self.value)
+
     def __eq__(self, other):
         if isinstance(other, Literal):
             return validate_attrs(self, other, ('type', 'value', 'annotation'))
         else:
             return NotImplemented
+
+    def __hash__(self):
+        return hash((Literal, self.value, self.type_, self.annotation))
 
 
 class Lambda(AST):
@@ -73,11 +83,17 @@ class Lambda(AST):
     def __repr__(self):
         return f'Lambda({self.varname!r}, {self.body!r})'
 
+    def __str__(self):
+        return f'\{self.varname!s} -> {self.body!s}'
+
     def __eq__(self, other):
         if isinstance(other, Lambda):
             return self.varname == other.varname and self.body == other.body
         else:
             return NotImplemented
+
+    def __hash__(self):
+        return hash((Lambda, self.varname, self.body))
 
 
 class Application(AST):
@@ -89,18 +105,27 @@ class Application(AST):
     def __repr__(self):
         return f'Application({self.e1!r}, {self.e2!r})'
 
+    def __str__(self):
+        return f'{self.e1!s} {self.e2!s}'
+
     def __eq__(self, other):
         if isinstance(other, Application):
             return self.e1 == other.e1 and self.e2 == other.e2
         else:
             return NotImplemented
 
+    def __hash__(self):
+        return hash((Application, self.e1, self.e2))
+
 
 # We assume (as the Book does) that there are no "translation" errors; i.e
 # that you haven't put a Let where you needed a Letrec.
 class _LetExpr(AST):
     def __init__(self, bindings: Mapping[str, AST], body: AST) -> None:
-        self.bindings = bindings
+        # Sort by names (in a _LetExpr names can't be repeated, repetition for
+        # pattern-matching should be translated to a lambda using the MATCH
+        # operator).
+        self.bindings = tuple(sorted(bindings.items(), key=fst))
         self.body = body
 
     def __eq__(self, other):
@@ -108,6 +133,15 @@ class _LetExpr(AST):
             return self.bindings == other.bindings and self.body == self.body
         else:
             return NotImplemented
+
+    def __hash__(self):
+        return hash((type(self), self.keys(), self.values(), self.body))
+
+    def keys(self) -> Iterator[str]:
+        return (k for k, _ in self.bindings)
+
+    def values(self) -> Iterator[AST]:
+        return (v for _, v in self.bindings)
 
 
 class Let(_LetExpr):

@@ -6,10 +6,33 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Any, List, Tuple, Iterator, Callable
+from typing import (
+    Any,
+    Sequence,
+    List,
+    Tuple,
+    Iterator,
+    Iterable,
+    Callable,
+)
+from typing import Optional  # noqa
+from xoutil.fp.tools import fst
 
-from xopgi.ql.lang.types.base import Type, TypeVariable, TypeCons
-from xopgi.ql.lang.expressions.base import AST
+from xopgi.ql.lang.types.base import (
+    Type,
+    TypeVariable,
+    TypeCons,
+    FunctionTypeCons as FuncCons,
+)
+from xopgi.ql.lang.expressions.base import (
+    AST,
+    Identifier,
+    Literal,
+    Lambda,
+    Application,
+    Let,
+    Letrec,
+)
 
 
 # `Substitution` is a type; `scompose`:class: is a substitution by
@@ -30,7 +53,11 @@ def find_tvars(t: Type) -> List[str]:
 
 
 def subtype(phi: Substitution, t: Type) -> Type:
-    if isinstance(t, TypeVariable):
+    # 'subtype(sidentity, t) == t'; and since Type, TypeVariables and TypeCons
+    # are treated immutably we should be safe to return the same type.
+    if phi is sidentity:
+        return t
+    elif isinstance(t, TypeVariable):
         return phi(t.name)
     else:
         assert isinstance(t, TypeCons)
@@ -41,15 +68,25 @@ def subtype(phi: Substitution, t: Type) -> Type:
         )
 
 
-class scompose:
+def scompose(f: Substitution, g: Substitution) -> Substitution:
     '''Compose two substitutions.
 
-    The crucial property of scompose is that::
+    The crucial property of `scompose`:func: is that::
 
        subtype (scompose f g) = (subtype f) . (subtype g)
 
     '''
+    if f is sidentity:
+        return g
+    elif g is sidentity:
+        return f
+    else:
+        return Composition(f, g)
+
+
+class Composition:
     def __init__(self, f: Substitution, g: Substitution) -> None:
+        assert self is not f
         self.f = f
         self.g = g
 
@@ -57,16 +94,16 @@ class scompose:
         return subtype(self.f, self.g(s))
 
     def __repr__(self):
-        return f'scompose({self.f!r}, {self.g!r})'
+        return f'Composition({self.f!r}, {self.g!r})'
 
 
 class Identity:
     'The identity substitution.'
     def __call__(self, s: str) -> Type:
-        return TypeVariable(s)
+        return TypeVariable(s, check=False)
 
     def __repr__(self):
-        return f'Indentity()'
+        return 'Identity()'
 
 
 sidentity = Identity()
@@ -100,7 +137,7 @@ class delta:
         self.args = args
 
     def __call__(self, s: str) -> Type:
-        return self.result if s == self.vname else TypeVariable(s)
+        return self.result if s == self.vname else TypeVariable(s, check=False)
 
     @property
     def result(self) -> Type:
@@ -110,7 +147,7 @@ class delta:
         return f'delta({self.vname!r}, {self.result!r})'
 
 
-class UnificationError(Exception):
+class UnificationError(TypeError):
     pass
 
 
@@ -127,7 +164,7 @@ def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:
         if isinstance(t, TypeVariable) and name == t.name:
             return phi
         elif name in find_tvars(t):
-            raise UnificationError(f'Cannot unify {name} with {t}')
+            raise UnificationError(f'Cannot unify {name!s} with {t!s}')
         else:
             # TODO: Make the result *descriptible*
             return scompose(delta(name, lambda: t), phi)
@@ -148,10 +185,10 @@ def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:
         if e1.cons == e2.cons:
             return unify_exprs(zip(e1.subtypes, e2.subtypes), p=phi)
         else:
-            raise UnificationError(f'Cannot unify {e1} with {e2}')
+            raise UnificationError(f'Cannot unify {e1!s} with {e2!s}')
 
 
-TypePairs = Iterator[Tuple[Type, Type]]
+TypePairs = Iterable[Tuple[Type, Type]]
 
 
 # This is the unifyl in the Book.
@@ -177,7 +214,7 @@ class TypeScheme:
     '''
     # I choose the word 'generic' instead of schematic (and thus non-generic
     # instead of unknown), because that's probably more widespread.
-    def __init__(self, generics: List[str], t: Type) -> None:
+    def __init__(self, generics: Sequence[str], t: Type) -> None:
         self.generics = generics
         self.t = t
 
@@ -188,6 +225,9 @@ class TypeScheme:
             for name in find_tvars(self.t)
             if name not in self.generics
         ]
+
+    def __hash__(self):
+        return hash((TypeScheme, self.generics, self.t))
 
     @property
     def names(self):
@@ -204,16 +244,16 @@ class TypeScheme:
 
     @classmethod
     def from_typeexpr(cls, type_, *, generics=None):
-        # type: (Type, *, Optional[List[str]]) -> TypeScheme
+        # type: (Type, *, Optional[Sequence[str]]) -> TypeScheme
         '''Create a type scheme from a type expression assuming all type
         variables are generic.'''
-        if not generics:
+        if generics is None:
             generics = list(set(find_tvars(type_)))  # avoid repetitions.
         return cls(generics, type_)
 
     @classmethod
     def from_str(cls, source, *, generics=None):
-        # type: (str, *, Optional[List[str]]) -> TypeScheme
+        # type: (str, *, Optional[Sequence[str]]) -> TypeScheme
         '''Create a type scheme from a type expression (given a string)
         assuming all type variables are generic.'''
         from xopgi.ql.lang.types import parse
@@ -223,8 +263,37 @@ class TypeScheme:
 
 def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
     '''Apply a substitution to a type scheme.'''
-    exclude: Substitution = lambda s: phi(s) if s not in ts.generics else TypeVariable(s)
-    return TypeScheme(ts.generics, subtype(exclude, ts.t))
+    return TypeScheme(ts.generics, subtype(Exclude(phi, ts), ts.t))
+
+
+class Exclude:
+    '''A substitution over the non-generics in a type scheme.
+
+    Applies `phi` only if the variable name is a non-generic of the type
+    scheme `ts`.
+
+    '''
+    def __new__(cls, phi, ts):
+        # type: (Any, Substitution, TypeScheme) -> Substitution
+        if not ts.generics:
+            return phi
+        else:
+            res = super().__new__(cls)  # type: ignore
+            res.__init__(phi, ts)
+            return res
+
+    def __init__(self, phi: Substitution, ts: TypeScheme) -> None:
+        self.phi = phi
+        self.ts = ts
+
+    def __call__(self, s: str) -> Type:
+        if s not in self.ts.generics:
+            return self.phi(s)
+        else:
+            return TypeVariable(s, check=False)
+
+    def __repr__(self):
+        return f'Exclude({self.phi!r}, {self.ts!r})'
 
 
 AssocList = List[Tuple[Any, Any]]
@@ -234,8 +303,8 @@ def dom(al: AssocList) -> List[Any]:
     return [k for k, _ in al]
 
 
-def val(al: AssocList, key: Any) -> List[Any]:
-    return [v for k, v in al if k == key]
+def val(al: AssocList, key: Any) -> Any:
+    return [v for k, v in al if k == key][0]
 
 
 def rng(al: AssocList) -> List[Any]:
@@ -280,7 +349,7 @@ class namesupply:
        [TypeVariable('.a0'), TypeVariable('.a1')]
 
     '''
-    def __init__(self, prefix='a', exclude: List[str] = None,
+    def __init__(self, prefix='a', exclude: Sequence[str] = None,
                  *, limit: int = None) -> None:
         self.prefix = prefix
         self.exclude = exclude
@@ -292,6 +361,9 @@ class namesupply:
         return self
 
     def __next__(self) -> TypeVariable:
+        assert self.count < 20000, \
+            'No expression should be so complex to require 20 000 new type variables'
+
         if not self.limit or self.count < self.limit:
             result = None
             while not result:
@@ -305,17 +377,181 @@ class namesupply:
             raise StopIteration
 
 
-class TypeChecker:
-    def __init__(self, env: TypeEnvironment, ns: Iterator[TypeVariable]) -> None:
-        self.env = env
-        self.ns = ns
-
-    def __call__(self, exp: AST) -> None:
-        typecheck(self.env, self.ns, exp)
+NameSupply = Iterator[TypeVariable]
+TCResult = Tuple[Substitution, Type]
 
 
-def typecheck(env: TypeEnvironment, ns: Iterator[TypeVariable], exp: AST):
+def typecheck(env: TypeEnvironment, ns: NameSupply, exp: AST) -> TCResult:
     '''Check the type of `exp` in a given type environment.
 
     '''
-    pass
+    if isinstance(exp, Identifier):
+        return typecheck_var(env, ns, exp)
+    elif isinstance(exp, Literal):
+        return typecheck_literal(env, ns, exp)
+    elif isinstance(exp, Application):
+        return typecheck_app(env, ns, exp)
+    elif isinstance(exp, Lambda):
+        return typecheck_lambda(env, ns, exp)
+    elif isinstance(exp, Let):
+        return typecheck_let(env, ns, exp)
+    elif isinstance(exp, Letrec):
+        return typecheck_letrec(env, ns, exp)
+    else:
+        assert False, f'Unknown AST node {exp!r}'
+
+
+TCLResult = Tuple[Substitution, List[Type]]
+
+
+def tcl(env: TypeEnvironment, ns: NameSupply, exprs: Iterable[AST]) -> TCLResult:
+    if not exprs:
+        return sidentity, []
+    else:
+        expr, *exprs = exprs
+        phi, t = typecheck(env, ns, expr)
+        psi, ts = tcl(sub_typeenv(phi, env), ns, exprs)
+        return scompose(psi, phi), [subtype(psi, t)] + ts
+
+
+def newinstance(ns: NameSupply, ts: TypeScheme) -> Type:
+    'Create an instance of `ts` drawing names from the supply `ns`.'
+    newvars: List[Tuple[str, TypeVariable]] = list(zip(ts.generics, ns))
+    phi: Substitution = build_substitution(newvars)
+    return subtype(phi, ts.t)
+
+
+def build_substitution(alist: Sequence[Tuple[str, Type]]) -> Substitution:
+    '''Build a substitution from an association list.
+
+    This is the standard *interpretation* of a mapping from names to types.
+    The substitution, when called upon, will look the from beginning to end
+    for an item with the same key and return the associated type.
+
+    If the same name is assigned more than once, return the first one.
+
+    We keep an internal copy of the `alist`.  So, it's safe to change the
+    argument afterwards.
+
+    '''
+    lst = list(alist)
+
+    def result(name: str) -> Type:
+        missing = object()
+        restype: Type = missing  # type: ignore
+        pos = 0
+        while restype is missing and pos < len(lst):
+            generic, newvar = lst[pos]
+            pos += 1
+            if generic == name:
+                restype = newvar
+        if restype is missing:
+            return TypeVariable(name, check=False)
+        else:
+            return restype
+    return result
+
+
+def typecheck_literal(env, ns, exp: Literal) -> TCResult:
+    # Extension to the original algorithm but easy: a literal always type
+    # check with its type.
+    return sidentity, exp.type
+
+
+def typecheck_var(env, ns, exp: Identifier) -> TCResult:
+    name = exp.name
+    return sidentity, newinstance(ns, val(env, name))
+
+
+def typecheck_app(env, ns, exp: Application) -> TCResult:
+    phi, types = tcl(env, ns, [exp.e1, exp.e2])
+    t1, t2 = types
+    t: TypeVariable = next(ns)
+    try:
+        result = unify(t1, FuncCons(t2, t), phi=phi)
+    except UnificationError as error:
+        raise UnificationError(
+            f'Cannot type-check ({exp!s}) :: {t1!s} ~ {t2!s} -> {t!s}'
+        )
+    return result, result(t.name)
+
+
+def typecheck_lambda(env, ns, exp: Lambda) -> TCResult:
+    # \x -> ...; the type of 'x' can be anything.  Thus, create a type
+    # scheme with a new non-generic type variable Tx.  We extend the
+    # environment to say 'x :: Tx' and typecheck the body of the lambda in
+    # this new environment.
+    newvar = next(ns)
+    argtype = TypeScheme.from_typeexpr(newvar, generics=[])
+    phi, type_ = typecheck([(exp.varname, argtype)] + env, ns, exp.body)
+    return phi, FuncCons(phi(newvar.name), type_)
+
+
+def typecheck_let(env, ns, exp: Let) -> TCResult:
+    exprs: Sequence[AST] = tuple(exp.values())
+    phi, types = tcl(env, ns, exprs)
+    names: Sequence[str] = tuple(exp.keys())
+    psi, t = typecheck(
+        add_decls(sub_typeenv(phi, env), ns, names, types),
+        ns,
+        exp.body,
+    )
+    return scompose(psi, phi), t
+
+
+def add_decls(env, ns, names: Iterable[str], types: Iterable[Type]) -> TypeEnvironment:
+
+    def genbar(unknowns, names, type_):
+        schvars = list({
+            var for var in find_tvars(type_) if var not in unknowns
+        })
+        alist: List[Tuple[str, TypeVariable]] = list(zip(schvars, ns))
+        restype = subtype(build_substitution(alist), type_)
+        return TypeScheme([v.name for _, v in alist], restype)
+
+    unknowns = get_typeenv_unknowns(env)
+    schemes = [genbar(unknowns, names, t) for t in types]
+    return list(zip(names, schemes)) + env
+
+
+def typecheck_letrec(env, ns, exp: Letrec) -> TCResult:
+    # This algorithm is quite elaborate.
+    #
+    # We expected that at least one of exprs is defined in terms of a name.
+    # So, we must type-check all of exprs in a type environment where there's
+    # non-generic type associated to each of the names defined in the 'let'.
+    #
+    #     let x1 = e1
+    #         x2 = e2
+    #        ...
+    #     in body
+    #
+    # We make a new type scheme for each 'x'; x1 :: Tx1, x2 :: Tx2, etc...
+    # and type-check of the 'exprs' in this extended environment.
+    exprs: Sequence[AST] = tuple(exp.values())
+    names: Sequence[str] = tuple(exp.keys())
+    nbvs = [(name, TypeScheme.from_typeexpr(var, generics=[]))
+            for name, var in zip(names, ns)]
+    phi, ts = tcl(nbvs + env, ns, exprs)
+
+    # At this point `phi` is the substitution that makes all the bindings in
+    # the letrec type-check; and `ts` is the list of the types inferred for
+    # each expr.
+    #
+    # Now we must unify the types inferred with the types of the names in the
+    # non-extended environment, but taking the `phi` into account.  Also
+    gamma = sub_typeenv(phi, env)
+    nbvs1 = sub_typeenv(phi, nbvs)
+    ts1 = [sch.t for _, sch in nbvs1]
+    psi = unify_exprs(zip(ts, ts1), p=phi)
+
+    # Now we have type-checked the definitions, so we can now typecheck the
+    # body in the **proper** environment.
+    nbvs1 = sub_typeenv(psi, nbvs)
+    ts = [sch.t for _, sch in nbvs1]
+    psi1, t = typecheck(
+        add_decls(sub_typeenv(psi, gamma), ns, map(fst, nbvs), ts),
+        ns,
+        exp.body
+    )
+    return scompose(psi1, psi), t

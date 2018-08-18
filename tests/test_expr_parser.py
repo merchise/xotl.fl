@@ -7,7 +7,7 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
-from hypothesis import strategies as s, given
+from hypothesis import strategies as s, given, example
 
 from ply import lex
 
@@ -20,13 +20,15 @@ from xopgi.ql.lang.expressions.base import (
     Let,
     Letrec,
 )
-from xopgi.ql.lang.expressions.parser import string_repr
-
+from xopgi.ql.lang.expressions.parser import string_repr, ParserError
 from xopgi.ql.lang.builtins import (
     NumberType,
     CharType,
     StringType,
     UnitType,
+    DateType,
+    DateTimeType,
+    DateIntervalType,
 )
 
 
@@ -43,15 +45,17 @@ def test_wfe_identifier():
 
 
 @given(s.characters())
+@example(r"'")
 def test_wfe_char_literals(ch):
     if ch == "'":
-        code = r"'''"
+        code = r"'\''"
     else:
         code = f"{ch!r}"
     assert parse(code) == Literal(ch, CharType)
 
 
 @given(s.text())
+@example(r'"\\"')
 def test_wfe_string_literals(s):
     code = string_repr(s)
     assert parse(code) == Literal(s, StringType)
@@ -174,12 +178,6 @@ def test_lambda_definition():
     assert P(r'\a b -> a') == Lambda('a', Lambda('b', Identifier('a')))
 
 
-def test_incorrect_lepexpr_assoc():
-    P = parse
-    with pytest.raises(AssertionError):
-        assert P('let id x = x in map id xs') == P('(let id x = x in map) id xs')
-
-
 def test_basic_letexpr():
     P = parse
     assert P('let id x = x in map id xs') == P('let id x = x in (map id xs)')
@@ -283,5 +281,37 @@ def test_unit_value():
     assert parse('(   )') == parse('()') == Literal((), UnitType)
 
 
+@given(s.dates())
+def test_date_literals(d):
+    code = f'<{d!s}>'
+    try:
+        res = parse(code)
+    except (lex.LexError, ParserError):
+        raise AssertionError(f'Unexpected parsing error: {code}')
+    assert res == Literal(d, DateType)
+
+
+@given(s.datetimes())
+def test_datetime_literals(d):
+    code = f'<{d!s}>'
+    try:
+        res = parse(code)
+    except (lex.LexError, ParserError):
+        raise AssertionError(f'Unexpected parsing error: {code}')
+    assert res == Literal(d, DateTimeType)
+
+
+@pytest.mark.xfail(reason='bad parsing')
 def test_regression_confusing_unary_plus():
     assert parse('f a + c') == parse('(f a) + c')
+
+
+@pytest.mark.xfail(reason='bad parsing')
+def test_regression_greedy_where():
+    assert parse(
+        'let a1 = id a in a1 + 1'
+    ) == parse(
+        'a1 + 1 where a1 = id a'
+    ) == parse(
+        '(a1 + 1) where a1 = id a'
+    )

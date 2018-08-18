@@ -122,6 +122,7 @@ run doctests:
     ODOO_WORKTREE: odoo11
   only:
     - branches
+  allow_failure: true
 
 
 check signature of tag:

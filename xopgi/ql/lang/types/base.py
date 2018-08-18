@@ -15,7 +15,7 @@ Implementation of Functional Programming Languages'.
           appropriate.
 
 '''
-from typing import List
+from typing import Iterable, Sequence
 from itertools import zip_longest
 
 
@@ -42,25 +42,23 @@ class TypeVariable(Type):
     def __eq__(self, other):
         if isinstance(other, TypeVariable):
             return self.name == other.name
-        elif isinstance(other, Type):
-            return False
         else:
             return NotImplemented
 
     def __hash__(self):
-        return hash(self.name)
+        return hash((TypeVariable, self.name))
 
     def __len__(self):
         return 0   # So that 'Int' has a bigger size than 'a'.
 
 
 class TypeCons(Type):
-    def __init__(self, constructor: str, subtypes: List[Type] = None,
+    def __init__(self, constructor: str, subtypes: Iterable[Type] = None,
                  *, binary=False) -> None:
         assert not subtypes or all(isinstance(t, Type) for t in subtypes), \
             f'Invalid subtypes: {subtypes!r}'
         self.cons = constructor
-        self.subtypes = subtypes or []
+        self.subtypes: Sequence[Type] = tuple(subtypes or [])
         self.binary = binary
 
     def __str__(self):
@@ -84,13 +82,11 @@ class TypeCons(Type):
                 t1 == t2
                 for t1, t2 in zip_longest(self.subtypes, other.subtypes)
             )
-        elif isinstance(other, Type):
-            return False
         else:
             return NotImplemented
 
     def __hash__(self):
-        return hash((self.cons, self.subtypes))
+        return hash((TypeCons, self.cons, self.subtypes))
 
     def __len__(self):
         return 1 + sum(len(st) for st in self.subtypes)
