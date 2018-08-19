@@ -95,11 +95,11 @@ for op in '+-*/%^':
 
 
 for op in ('==', '!='):
-    gamma[op] = TypeScheme.from_str('Eq a -> Eq a -> Bool')
+    gamma[op] = TypeScheme.from_str('a -> a -> Bool')
 
 
 for op in ('<', '>', '<=', '>='):
-    gamma[op] = TypeScheme.from_str('Ord a -> Ord a -> Bool')
+    gamma[op] = TypeScheme.from_str('a -> a -> Bool')
 
 
 builtins_env = list(gamma.items())
