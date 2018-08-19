@@ -19,7 +19,7 @@ from xopgi.ql.lang.builtins import (
     builtins_env,
 )
 from xopgi.ql.lang.expressions import parse
-from xopgi.ql.lang.types import parse as type_parse
+from xopgi.ql.lang.types import Type
 
 from xopgi.ql.lang.typecheck import (
     typecheck,
@@ -60,13 +60,13 @@ def test_from_literals():
 def test_combinators():
     # Since they're closed expressions they should type-check
     K = parse(r'\a b -> a')
-    TK = type_parse('a -> b -> a')
+    TK = Type.from_str('a -> b -> a')
     phi, t = typecheck([], namesupply(), K)
     unify(TK, t)  # we can't ensure TK == t, but they must unify, in fact they
                   # must be same type with alpha-renaming.
 
     S = parse(r'\x y z -> x z (y z)')
-    TS = type_parse('(a -> b -> c) -> (a -> b) -> a -> c')
+    TS = Type.from_str('(a -> b -> c) -> (a -> b) -> a -> c')
     phi, t = typecheck([], namesupply(), S)
     unify(TS, t)
 
@@ -122,4 +122,43 @@ def test_basic_builtin_types():
         parse('either toString id')
     )
     assert len(find_tvars(t)) == 1
-    unify(type_parse('Either a [Char] -> [Char]'), t)
+    unify(Type.from_str('Either a [Char] -> [Char]'), t)
+
+
+def test_composition():
+    phi, t = typecheck(
+        builtins_env,
+        namesupply(),
+        parse('let id x = x in id . id')
+    )
+    unify(Type.from_str('a -> a'), t)
+    unify(Type.from_str('(a -> a) -> (a -> a)'), t)
+
+    phi, t = typecheck(
+        builtins_env,
+        namesupply(),
+        parse('Left . Right')
+    )
+    unify(Type.from_str('a -> Either (Either b a) c'), t)
+
+    # In our case, (+) is not polymorphic (Number is not a type-class), so it
+    # can't be composed with Either.
+    with pytest.raises(TypeError):
+        typecheck(
+            builtins_env,
+            namesupply(),
+            parse('(+) . Left')
+        )
+    # If we had a polymorphic (+), it would be composable
+    phi, t = typecheck(
+        [('+', TypeScheme.from_str('a -> a -> a'))] + builtins_env,
+        namesupply(),
+        parse('(+) . Left')
+    )
+    unify(Type.from_str('a -> Either a b -> Either a b'), t)
+    phi, t = typecheck(
+        [('+', TypeScheme.from_str('a -> a -> a'))] + builtins_env,
+        namesupply(),
+        parse('(+) . Right')
+    )
+    unify(Type.from_str('b -> Either a b -> Either a b'), t)

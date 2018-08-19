@@ -20,7 +20,15 @@ from itertools import zip_longest
 
 
 class Type:
-    pass
+    @classmethod
+    def from_str(cls, source):
+        '''Parse a single type expression `code`.
+
+        Return a `type expression AST <xopgi.ql.lang.types.base>`:mod:.
+
+        '''
+        from .parser import parser, lexer
+        return parser.parse(source, lexer=lexer)
 
 
 class TypeVariable(Type):
