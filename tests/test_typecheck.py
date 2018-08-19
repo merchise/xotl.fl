@@ -115,11 +115,11 @@ def test_basic_builtin_types():
     phi, t = typecheck(builtins_env, namesupply(), parse('not false'))
     assert t == BoolType
 
-    userfuncs = [('toString', TypeScheme.from_str('a -> String'))]
+    userfuncs = [('toString', TypeScheme.from_str('a -> [Char]'))]
     phi, t = typecheck(
         userfuncs + builtins_env,
         namesupply(),
         parse('either toString id')
     )
     assert len(find_tvars(t)) == 1
-    unify(type_parse('Either a String -> String'), t)
+    unify(type_parse('Either a [Char] -> [Char]'), t)
