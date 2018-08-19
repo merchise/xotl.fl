@@ -86,8 +86,45 @@ gamma = {
 
     'Left': TypeScheme.from_str('a -> Either a b'),
     'Right': TypeScheme.from_str('b -> Either a b'),
+    'either': TypeScheme.from_str('(a -> c) -> (b -> c) -> Either a b -> c'),
 
-    'either': TypeScheme.from_str('(a -> c) -> (b -> c) -> Either a b -> c')
+
+    'Nothing': TypeScheme.from_str('Maybe a'),
+    'Just': TypeScheme.from_str('a -> Maybe a'),
+    'maybe': TypeScheme.from_str('a -> (a -> b) -> Maybe a -> b'),
+    'isJust': TypeScheme.from_str('Maybe a -> Bool'),
+    'isNothing': TypeScheme.from_str('Maybe a -> Bool'),
+    'fromMaybe': TypeScheme.from_str('a -> Maybe a -> a'),
+
+    # Common operations on lists.
+
+    'head': TypeScheme.from_str('[a] -> a'),
+    'tail': TypeScheme.from_str('[a] -> [a]'),
+
+    'safe_head': TypeScheme.from_str('[a] -> Maybe a'),
+    'safe_tail': TypeScheme.from_str('[a] -> Maybe [a]'),
+
+    'append': TypeScheme.from_str('a -> [a] -> [a]'),
+    'insert': TypeScheme.from_str('a -> [a] -> [a]'),
+
+    'is_member': TypeScheme.from_str('a -> [a] -> Bool'),
+    'is_null': TypeScheme.from_str('[a] -> Bool'),
+
+    '++': TypeScheme.from_str('[a] -> [a] -> [a]'),
+
+    # Date operations.  It's quite evident that I will need type-classes and
+    # instances; otherwise, writing the simplest formulae may get really
+    # involved.
+    'date_to_datetime': TypeScheme.from_str('Date -> DateTime'),
+    'is_earlier': TypeScheme.from_str('DateTime -> DateTime -> Bool'),
+    'is_later': TypeScheme.from_str('DateTime -> DateTime -> Bool'),
+
+    'interval_overlap': TypeScheme.from_str(
+        'DateInterval -> DateInterval -> DateInterval'
+    ),
+    'is_fully_contained': TypeScheme.from_str('DateInterval -> DateInterval -> Bool'),
+    'is_interval_empty': TypeScheme.from_str('DateInterval -> Bool'),
+    'interval': TypeScheme.from_str('Maybe Date -> Maybe Date -> DateInterval'),
 }
 
 for op in '+-*/%^':
