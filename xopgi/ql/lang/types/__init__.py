@@ -43,7 +43,7 @@ def parse(code: str, debug=False, tracking=False) -> Type:
     Example:
 
        >>> parse('a -> b')
-       TypeCons('->', [TypeVariable('a'), TypeVariable('b')])
+       TypeCons('->', (TypeVariable('a'), TypeVariable('b')))
 
     '''
     from .parser import parser, lexer
