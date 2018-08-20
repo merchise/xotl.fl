@@ -304,7 +304,10 @@ def dom(al: AssocList) -> List[Any]:
 
 
 def val(al: AssocList, key: Any) -> Any:
-    return [v for k, v in al if k == key][0]
+    try:
+        return [v for k, v in al if k == key][0]
+    except IndexError:
+        raise KeyError(key)
 
 
 def rng(al: AssocList) -> List[Any]:
