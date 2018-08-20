@@ -73,13 +73,13 @@ are just three builtin types which have a literal representation.
   Example:
 
      >>> parse('""')
-     Literal('', TypeCons('[]', (TypeCons('Char', []),)))
+     Literal('', TypeCons('[]', (TypeCons('Char', ()),)))
 
      >>> parse(r'"\""')
-     Literal('"', TypeCons('[]', (TypeCons('Char', []),)))
+     Literal('"', TypeCons('[]', (TypeCons('Char', ()),)))
 
      >>> parse(r'"\\"')
-     Literal('\\', TypeCons('[]', (TypeCons('Char', []),)))
+     Literal('\\', TypeCons('[]', (TypeCons('Char', ()),)))
 
   Notice the String type is just the list of Char.
 
