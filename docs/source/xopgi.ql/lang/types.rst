@@ -41,29 +41,29 @@ Examples:
   TypeVariable('a')
 
   >>> parse('a b')
-  TypeCons('a', [TypeVariable('b')])
+  TypeCons('a', (TypeVariable('b'),))
 
   >>> parse('a B c')
-  TypeCons('a', [TypeCons('B', []), TypeVariable('c')])
+  TypeCons('a', (TypeCons('B', ()), TypeVariable('c')))
 
 
 Notice that the type variable 'c' is an argument for the type constructor 'a',
 and not for 'B'.  You can use parenthesis to make it so:
 
   >>> parse('a (B c)')
-  TypeCons('a', [TypeCons('B', [TypeVariable('c')])])
+  TypeCons('a', (TypeCons('B', (TypeVariable('c'),)),))
 
 
 The function type constructor is the arrow '->':
 
   >>> parse('a -> B')
-  TypeCons('->', [TypeVariable('a'), TypeCons('B', [])])
+  TypeCons('->', (TypeVariable('a'), TypeCons('B', ())))
 
 
 The list type constructor is the pair of brackets '[]':
 
   >>> parse('[a]')
-  TypeCons('[]', [TypeVariable('a')])
+  TypeCons('[]', (TypeVariable('a'),))
 
 
 Even though the type expression language recognizes those type constructions
@@ -77,7 +77,7 @@ There's no syntactical support to express tuples yet.  The
 'Tuple':
 
   >>> parse('Tuple a a')
-  TypeCons('Tuple', [TypeVariable('a'), TypeVariable('a')])
+  TypeCons('Tuple', (TypeVariable('a'), TypeVariable('a')))
 
 
 New lines
@@ -126,10 +126,10 @@ This makes the parser to recognize funny, unusual types expressions:
 
 
   >>> parse('[a] b')
-  TypeCons('[]', [TypeVariable('a'), TypeVariable('b')])
+  TypeCons('[]', (TypeVariable('a'), TypeVariable('b')))
 
   >>> parse('(a -> b) c')
-  TypeCons('->', [TypeVariable('a'), TypeVariable('b'), TypeVariable('c')])
+  TypeCons('->', (TypeVariable('a'), TypeVariable('b'), TypeVariable('c')))
 
 Those types have no semantics assigned but the parser recognizes them.  It's
 the job of another component (kinds?) to recognize those errors.

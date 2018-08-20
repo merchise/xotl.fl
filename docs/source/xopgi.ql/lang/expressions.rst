@@ -51,16 +51,16 @@ are just three builtin types which have a literal representation.
   Examples:
 
      >>> parse(r"'\\'")
-     Literal('\\', TypeCons('Char', []))
+     Literal('\\', TypeCons('Char', ()))
 
      >>> parse(r"'\''")
-     Literal("'", TypeCons('Char', []))
+     Literal("'", TypeCons('Char', ()))
 
      >>> parse(r"'\x20'")
-     Literal(' ', TypeCons('Char', []))
+     Literal(' ', TypeCons('Char', ()))
 
      >>> parse(r"'\u0020'")
-     Literal(' ', TypeCons('Char', []))
+     Literal(' ', TypeCons('Char', ()))
 
   Notice that the value in the
   `~xopgi.ql.lang.expressions.base.Literal`:class: object is a Python string;
@@ -73,13 +73,13 @@ are just three builtin types which have a literal representation.
   Example:
 
      >>> parse('""')
-     Literal('', TypeCons('[]', [TypeCons('Char', [])]))
+     Literal('', TypeCons('[]', (TypeCons('Char', []),)))
 
      >>> parse(r'"\""')
-     Literal('"', TypeCons('[]', [TypeCons('Char', [])]))
+     Literal('"', TypeCons('[]', (TypeCons('Char', []),)))
 
      >>> parse(r'"\\"')
-     Literal('\\', TypeCons('[]', [TypeCons('Char', [])]))
+     Literal('\\', TypeCons('[]', (TypeCons('Char', []),)))
 
   Notice the String type is just the list of Char.
 
@@ -112,7 +112,7 @@ are just three builtin types which have a literal representation.
   `~xopgi.ql.lang.builtins.UnitType`:object:\ :
 
     >>> parse('()')
-    Literal((), TypeCons('Tuple', []))
+    Literal((), TypeCons('Tuple', ()))
 
 
 Application
