@@ -162,3 +162,38 @@ def test_composition():
         parse('(+) . Right')
     )
     unify(Type.from_str('b -> Either a b -> Either a b'), t)
+
+
+def test_typecheck_recursion():
+    then = TypeScheme.from_str('a -> Then a')
+    else_ = TypeScheme.from_str('a -> Else a')
+    if_then_else = TypeScheme.from_str('Bool -> Then a -> Else a -> a')
+    Nil = TypeScheme.from_str('[a]')
+    tail = TypeScheme.from_str('[a] -> [a]')
+    matches = TypeScheme.from_str('a -> b -> Bool')
+    add = TypeScheme.from_str('a -> a -> a')
+    env = [('if', if_then_else),
+           ('then', then),
+           ('else', else_),
+           ('matches', matches),
+           ('Nil', Nil),
+           ('+', add),
+           ('tail', tail)]
+    phi, t = typecheck(
+        env,
+        namesupply(),
+        # I need to put parenthesis because of the failure of precedence we
+        # have; otherwise we could use $ to connect if then and else (they are
+        # still functions): 'if cond $ then result $ else other_result'.
+        # `matches` would be a simple pattern matching function.  The real
+        # function would have to operate on values and patterns (which are no
+        # representable here.)
+        parse('''
+            let count xs = if (xs `matches` Nil) \
+                              (then 0) \
+                              (else let ts = tail xs in 1 + (count ts))
+            in count
+        ''')
+    )
+    # The count functions counts the number of elements.
+    unify(Type.from_str('[a] -> Number'), t)
