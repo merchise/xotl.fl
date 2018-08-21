@@ -35,6 +35,9 @@ from xopgi.ql.lang.expressions.base import (
 )
 
 
+_STR_PADDING = ' ' * 4
+
+
 # `Substitution` is a type; `scompose`:class: is a substitution by
 # composition, `delta`:class: creates the simplest non-empty substitution.
 #
@@ -96,6 +99,44 @@ class Composition:
     def __repr__(self):
         return f'Composition({self.f!r}, {self.g!r})'
 
+    def __str__(self):
+        import textwrap
+        if self._composes_deltas:
+            deltas = '\n'.join(
+                textwrap.indent(str(dl), _STR_PADDING)
+                for dl in self._deltas
+            )
+            return f'Composition of\n{deltas}'
+        else:
+            f = textwrap.indent(str(self.f), _STR_PADDING)
+            g = textwrap.indent(str(self.g), _STR_PADDING)
+            return f'Composition of\n{f}and\n{g}'
+
+    @property
+    def _composes_deltas(self):
+        first = (isinstance(self.f, delta) or
+                 isinstance(self.f, Composition) and self.f._composes_deltas)
+        if first:
+            second = (isinstance(self.g, delta) or
+                      isinstance(self.g, Composition) and self.g._composes_deltas)
+        else:
+            second = True   # it doesn't really matter
+        return first and second
+
+    @property
+    def _deltas(self):
+        from collections import deque
+        stack = deque([self.g, self.f])
+        while stack:
+            node = stack.pop()
+            if isinstance(node, delta):
+                yield node
+            elif isinstance(node, Composition):
+                stack.append(node.g)
+                stack.append(node.f)
+            else:
+                assert False
+
 
 class Identity:
     'The identity substitution.'
@@ -145,6 +186,9 @@ class delta:
 
     def __repr__(self):
         return f'delta({self.vname!r}, {self.result!r})'
+
+    def __str__(self):
+        return f'delta: {self.vname.ljust(20)}{self.result!s}'
 
 
 class UnificationError(TypeError):
@@ -294,6 +338,11 @@ class Exclude:
 
     def __repr__(self):
         return f'Exclude({self.phi!r}, {self.ts!r})'
+
+    def __str__(self):
+        import textwrap
+        sub = textwrap.indent(str(self.phi), _STR_PADDING)
+        return f'exclude all {self.ts.generics} in \n{sub}'
 
 
 AssocList = List[Tuple[Any, Any]]
