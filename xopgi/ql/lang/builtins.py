@@ -104,6 +104,7 @@ gamma = {
     'safe_head': TypeScheme.from_str('[a] -> Maybe a'),
     'safe_tail': TypeScheme.from_str('[a] -> Maybe [a]'),
 
+    'nil': TypeScheme.from_str('[a]'),
     'append': TypeScheme.from_str('a -> [a] -> [a]'),
     'insert': TypeScheme.from_str('a -> [a] -> [a]'),
 
@@ -111,6 +112,10 @@ gamma = {
     'is_null': TypeScheme.from_str('[a] -> Bool'),
 
     '++': TypeScheme.from_str('[a] -> [a] -> [a]'),
+
+    'pair': TypeScheme.from_str('a -> b -> Tuple a b'),
+    'fst': TypeScheme.from_str('Tuple a b -> a'),
+    'snd': TypeScheme.from_str('Tuple a b -> b'),
 
     # Date operations.  It's quite evident that I will need type-classes and
     # instances; otherwise, writing the simplest formulae may get really
