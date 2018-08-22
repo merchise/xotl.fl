@@ -307,6 +307,23 @@ class TypeScheme:
 
 def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
     '''Apply a substitution to a type scheme.'''
+    # From the book:
+    #
+    # We must take care that the expression
+    #
+    #     sub_scheme phi (SCHEME scvs t)
+    #
+    # is only evaluated when the schematic variables scvs are distinct from
+    # any variables occurring in the result of applying the substitution phi
+    # to any of the unknowns of t.  Otherwise a type variable in the range of
+    # the substitution (which is always an unknown) might surreptitiously be
+    # changed into a schematic variable.  The way in which we ensure this is
+    # to guarantee that the names of the schematic type variables in the type
+    # scheme are always distinct from those which can occur in the range of
+    # the substitution (which are always unknowns).
+    assert all(not bool(scvs & set(find_tvars(phi(unk))))
+               for scvs in (set(ts.generics), )
+               for unk in ts.nongenerics)
     return TypeScheme(ts.generics, subtype(Exclude(phi, ts), ts.t))
 
 
