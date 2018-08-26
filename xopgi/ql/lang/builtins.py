@@ -100,6 +100,7 @@ gamma = {
 
     'head': TypeScheme.from_str('[a] -> a'),
     'tail': TypeScheme.from_str('[a] -> [a]'),
+    'single': TypeScheme.from_str('a -> [a]'),
 
     'safe_head': TypeScheme.from_str('[a] -> Maybe a'),
     'safe_tail': TypeScheme.from_str('[a] -> Maybe [a]'),
