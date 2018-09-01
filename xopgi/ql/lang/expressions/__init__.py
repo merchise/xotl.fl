@@ -30,7 +30,7 @@ def find_free_names(expr: AST) -> List[str]:
 
     Example:
 
-      >>> set(find_free_names(parse('let id x = x in map id xs')))  # doctest: +LITERAL_EVAL  # noqa
+      >>> set(find_free_names(parse('let id x = x in map id xs')))  # doctest: +LITERAL_EVAL
       {'map', 'xs'}
 
     Names can be repeated:
