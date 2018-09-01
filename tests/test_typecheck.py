@@ -27,20 +27,21 @@ from xopgi.ql.lang.typecheck import (
     sidentity,
     TypeScheme,
     unify,
-    find_tvars
+    find_tvars,
+    EMPTY_TYPE_ENV,
 )
 
 
 def test_from_literals():
-    phi, t = typecheck([], namesupply(), parse(r'let x = 1 in x'))
+    phi, t = typecheck(EMPTY_TYPE_ENV, namesupply(), parse(r'let x = 1 in x'))
     assert phi is sidentity
     assert t == NumberType
 
-    phi, t = typecheck([], namesupply(), parse(r'let x = "1" in x'))
+    phi, t = typecheck(EMPTY_TYPE_ENV, namesupply(), parse(r'let x = "1" in x'))
     assert phi is sidentity
     assert t == StringType
 
-    phi, t = typecheck([], namesupply(), parse(r"let x = '1' in x"))
+    phi, t = typecheck(EMPTY_TYPE_ENV, namesupply(), parse(r"let x = '1' in x"))
     assert phi is sidentity
     assert t == CharType
 
@@ -61,25 +62,25 @@ def test_combinators():
     # Since they're closed expressions they should type-check
     K = parse(r'\a b -> a')
     TK = Type.from_str('a -> b -> a')
-    phi, t = typecheck([], namesupply(), K)
+    phi, t = typecheck(EMPTY_TYPE_ENV, namesupply(), K)
     unify(TK, t)  # we can't ensure TK == t, but they must unify, in fact they
                   # must be same type with alpha-renaming.
 
     S = parse(r'\x y z -> x z (y z)')
     TS = Type.from_str('(a -> b -> c) -> (a -> b) -> a -> c')
-    phi, t = typecheck([], namesupply(), S)
+    phi, t = typecheck(EMPTY_TYPE_ENV, namesupply(), S)
     unify(TS, t)
 
     # But the paradoxical combinator doesn't type-check
     Y = parse(r'\f -> (\x -> f (x x))(\x -> f (x x))')
     with pytest.raises(TypeError):
-        phi, t = typecheck([], namesupply(), Y)
+        phi, t = typecheck(EMPTY_TYPE_ENV, namesupply(), Y)
 
 
 def test_paradox_omega():
     r'Test `(\x -> x x)` does not type-check'
     with pytest.raises(TypeError):
-        typecheck([], namesupply(), parse(r'\x -> x x'))
+        typecheck(EMPTY_TYPE_ENV, namesupply(), parse(r'\x -> x x'))
 
 
 def test_hidden_paradox_omega():
@@ -90,7 +91,7 @@ def test_hidden_paradox_omega():
         p2 x y  = y
     in prxI p2 (prxI p2)
     '''
-    typecheck([('x', TypeScheme.from_str('a', generics=[]))],
+    typecheck({'x': TypeScheme.from_str('a', generics=[])},
               namesupply(), parse(code))
 
     code = '''
@@ -101,7 +102,7 @@ def test_hidden_paradox_omega():
     in prxI p1 (prxI p1)
     '''
     with pytest.raises(TypeError):
-        typecheck([('x', TypeScheme.from_str('a', generics=[]))],
+        typecheck({'x': TypeScheme.from_str('a', generics=[])},
                   namesupply(), parse(code))
 
 
@@ -115,9 +116,9 @@ def test_basic_builtin_types():
     phi, t = typecheck(builtins_env, namesupply(), parse('not false'))
     assert t == BoolType
 
-    userfuncs = [('toString', TypeScheme.from_str('a -> [Char]'))]
+    userfuncs = {'toString': TypeScheme.from_str('a -> [Char]')}
     phi, t = typecheck(
-        userfuncs + builtins_env,
+        dict(builtins_env, **userfuncs),
         namesupply(),
         parse('either toString id')
     )
@@ -151,13 +152,13 @@ def test_composition():
         )
     # If we had a polymorphic (+), it would be composable
     phi, t = typecheck(
-        [('+', TypeScheme.from_str('a -> a -> a'))] + builtins_env,
+        dict(builtins_env, **{'+': TypeScheme.from_str('a -> a -> a')}),
         namesupply(),
         parse('(+) . Left')
     )
     unify(Type.from_str('a -> Either a b -> Either a b'), t)
     phi, t = typecheck(
-        [('+', TypeScheme.from_str('a -> a -> a'))] + builtins_env,
+        dict(builtins_env, **{'+': TypeScheme.from_str('a -> a -> a')}),
         namesupply(),
         parse('(+) . Right')
     )
@@ -172,13 +173,13 @@ def test_typecheck_recursion():
     tail = TypeScheme.from_str('[a] -> [a]')
     matches = TypeScheme.from_str('a -> b -> Bool')
     add = TypeScheme.from_str('a -> a -> a')
-    env = [('if', if_then_else),
-           ('then', then),
-           ('else', else_),
-           ('matches', matches),
-           ('Nil', Nil),
-           ('+', add),
-           ('tail', tail)]
+    env = {'if': if_then_else,
+           'then': then,
+           'else': else_,
+           'matches': matches,
+           'Nil': Nil,
+           '+': add,
+           'tail': tail}
     phi, t = typecheck(
         env,
         namesupply(),

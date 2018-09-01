@@ -7,16 +7,16 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 from typing import (
-    Any,
     Sequence,
     List,
     Tuple,
     Iterator,
     Iterable,
     Callable,
+    Mapping,
 )
-from typing import Optional  # noqa
-from xoutil.fp.tools import fst
+from typing import Any, Optional  # noqa
+from collections import ChainMap
 
 from xopgi.ql.lang.types.base import (
     Type,
@@ -362,47 +362,16 @@ class Exclude:
         return f'exclude all {self.ts.generics} in \n{sub}'
 
 
-AssocList = List[Tuple[Any, Any]]
-
-
-def dom(al: AssocList) -> List[Any]:
-    return [k for k, _ in al]
-
-
-def val(al: AssocList, key: Any) -> Any:
-    try:
-        return [v for k, v in al if k == key][0]
-    except IndexError:
-        raise KeyError(key)
-
-
-def rng(al: AssocList) -> List[Any]:
-    # The provided implementation in the Book (``map (val al) (dom al)``) is
-    # rather inefficient (O(n^2), because for each key it takes all its
-    # values).
-    return [v for _, v in al]
-
-
-def install_al(al: AssocList, key: Any, val: Any) -> AssocList:
-    # This is inefficient!!!
-    return [(key, val)] + al
-
-
-def insert_al(al: AssocList, key: Any, val: Any) -> AssocList:
-    al.insert(0, (key, val))
-    return al
-
-
-#: A subtype of AssocList from names to TypeSchemes.
-TypeEnvironment = List[Tuple[str, TypeScheme]]
+TypeEnvironment = Mapping[str, TypeScheme]
+EMPTY_TYPE_ENV: TypeEnvironment = {}
 
 
 def get_typeenv_unknowns(te: TypeEnvironment) -> List[str]:
-    return sum((t.nongenerics for _, t in te), [])
+    return sum((t.nongenerics for _, t in te.items()), [])
 
 
 def sub_typeenv(phi: Substitution, te: TypeEnvironment) -> TypeEnvironment:
-    return [(x, subscheme(phi, st)) for x, st in te]
+    return {x: subscheme(phi, st) for x, st in te.items()}
 
 
 class namesupply:
@@ -521,18 +490,18 @@ def build_substitution(alist: Sequence[Tuple[str, Type]]) -> Substitution:
     return result
 
 
-def typecheck_literal(env, ns, exp: Literal) -> TCResult:
+def typecheck_literal(env: TypeEnvironment, ns, exp: Literal) -> TCResult:
     # Extension to the original algorithm but easy: a literal always type
     # check with its type.
     return sidentity, exp.type
 
 
-def typecheck_var(env, ns, exp: Identifier) -> TCResult:
+def typecheck_var(env: TypeEnvironment, ns, exp: Identifier) -> TCResult:
     name = exp.name
-    return sidentity, newinstance(ns, val(env, name))
+    return sidentity, newinstance(ns, env[name])
 
 
-def typecheck_app(env, ns, exp: Application) -> TCResult:
+def typecheck_app(env: TypeEnvironment, ns, exp: Application) -> TCResult:
     phi, types = tcl(env, ns, [exp.e1, exp.e2])
     t1, t2 = types
     t: TypeVariable = next(ns)
@@ -545,18 +514,22 @@ def typecheck_app(env, ns, exp: Application) -> TCResult:
     return result, result(t.name)
 
 
-def typecheck_lambda(env, ns, exp: Lambda) -> TCResult:
+def typecheck_lambda(env: TypeEnvironment, ns, exp: Lambda) -> TCResult:
     # \x -> ...; the type of 'x' can be anything.  Thus, create a type
     # scheme with a new non-generic type variable Tx.  We extend the
     # environment to say 'x :: Tx' and typecheck the body of the lambda in
     # this new environment.
     newvar = next(ns)
     argtype = TypeScheme.from_typeexpr(newvar, generics=[])
-    phi, type_ = typecheck([(exp.varname, argtype)] + env, ns, exp.body)
+    phi, type_ = typecheck(
+        ChainMap({exp.varname: argtype}, env),
+        ns,
+        exp.body
+    )
     return phi, FuncCons(phi(newvar.name), type_)
 
 
-def typecheck_let(env, ns, exp: Let) -> TCResult:
+def typecheck_let(env: TypeEnvironment, ns, exp: Let) -> TCResult:
     exprs: Sequence[AST] = tuple(exp.values())
     phi, types = tcl(env, ns, exprs)
     names: Sequence[str] = tuple(exp.keys())
@@ -568,7 +541,8 @@ def typecheck_let(env, ns, exp: Let) -> TCResult:
     return scompose(psi, phi), t
 
 
-def add_decls(env, ns, names: Iterable[str], types: Iterable[Type]) -> TypeEnvironment:
+def add_decls(env: TypeEnvironment,
+              ns, names: Iterable[str], types: Iterable[Type]) -> TypeEnvironment:
 
     def genbar(unknowns, names, type_):
         schvars = list({
@@ -580,10 +554,11 @@ def add_decls(env, ns, names: Iterable[str], types: Iterable[Type]) -> TypeEnvir
 
     unknowns = get_typeenv_unknowns(env)
     schemes = [genbar(unknowns, names, t) for t in types]
-    return list(zip(names, schemes)) + env
+    return ChainMap(dict(zip(names, schemes)), env)
 
 
-def typecheck_letrec(env, ns, exp: Letrec) -> TCResult:
+def typecheck_letrec(env: TypeEnvironment,
+                     ns, exp: Letrec) -> TCResult:
     # This algorithm is quite elaborate.
     #
     # We expected that at least one of exprs is defined in terms of a name.
@@ -599,9 +574,9 @@ def typecheck_letrec(env, ns, exp: Letrec) -> TCResult:
     # and type-check of the 'exprs' in this extended environment.
     exprs: Sequence[AST] = tuple(exp.values())
     names: Sequence[str] = tuple(exp.keys())
-    nbvs = [(name, TypeScheme.from_typeexpr(var, generics=[]))
-            for name, var in zip(names, ns)]
-    phi, ts = tcl(nbvs + env, ns, exprs)
+    nbvs = {name: TypeScheme.from_typeexpr(var, generics=[])
+            for name, var in zip(names, ns)}
+    phi, ts = tcl(ChainMap(nbvs, env), ns, exprs)
 
     # At this point `phi` is the substitution that makes all the bindings in
     # the letrec type-check; and `ts` is the list of the types inferred for
@@ -611,15 +586,15 @@ def typecheck_letrec(env, ns, exp: Letrec) -> TCResult:
     # non-extended environment, but taking the `phi` into account.  Also
     gamma = sub_typeenv(phi, env)
     nbvs1 = sub_typeenv(phi, nbvs)
-    ts1 = [sch.t for _, sch in nbvs1]
+    ts1 = [sch.t for _, sch in nbvs1.items()]
     psi = unify_exprs(zip(ts, ts1), p=phi)
 
     # Now we have type-checked the definitions, so we can now typecheck the
     # body in the **proper** environment.
     nbvs1 = sub_typeenv(psi, nbvs)
-    ts = [sch.t for _, sch in nbvs1]
+    ts = [sch.t for _, sch in nbvs1.items()]
     psi1, t = typecheck(
-        add_decls(sub_typeenv(psi, gamma), ns, map(fst, nbvs), ts),
+        add_decls(sub_typeenv(psi, gamma), ns, nbvs.keys(), ts),
         ns,
         exp.body
     )

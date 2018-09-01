@@ -10,7 +10,7 @@
 
 '''
 from .types.base import TypeCons, ListTypeCons, TupleTypeCons
-from .typecheck import TypeScheme
+from .typecheck import TypeScheme, TypeEnvironment
 
 # This is the type of all numbers in our language.  The expression language
 # will assign this type to every literal that matches a number; we don't
@@ -145,4 +145,4 @@ for op in ('<', '>', '<=', '>='):
     gamma[op] = TypeScheme.from_str('a -> a -> Bool')
 
 
-builtins_env = list(gamma.items())
+builtins_env: TypeEnvironment = gamma
