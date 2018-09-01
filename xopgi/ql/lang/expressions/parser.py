@@ -74,6 +74,11 @@ tokens = [
 # Reserved keywords: pairs of (keyword, regexp).  If the regexp is None, it
 # defaults to '\b{keyword}\b' (case-sensitive).
 reserved = [
+    # These are just to avoid the expression to (re)define them.
+    ('data', None),
+    ('class', None),
+    ('instance', None),
+
     ('where', r'\s+where\b'),
     ('let', None),
 
