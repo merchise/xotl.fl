@@ -41,13 +41,10 @@ class Identifier(AST):
 # An extension to the algorithm.  Literals are allowed, but have a the
 # most specific type possible.
 class Literal(AST):
-    '''A literal value with is type.
+    '''A literal value with its type.
 
     The `~xopgi.ql.lang.expressions.parser`:mod: only recognizes strings,
     chars, and numbers (integers and floats are represented by a single type).
-
-    .. note:: This is an extension to the algorithm, but you can easily that
-       we may replace literals by identifiers with a predefined type.
 
     '''
     def __init__(self, value: Any, type_: Type, annotation: Any = None) -> None:
@@ -149,8 +146,7 @@ class Let(_LetExpr):
 
     The `~xopgi.ql.lang.expressions.parser`:mod: automatically selects between
     `Let`:class: and `Letrec`:class.  If you're creating the program by hand
-    you should choose appropriately.  (But the type-checker doesn't really
-    care.)
+    you should choose appropriately.
 
     '''
     def __repr__(self):

@@ -494,8 +494,8 @@ def build_substitution(alist: Sequence[Tuple[str, Type]]) -> Substitution:
     '''Build a substitution from an association list.
 
     This is the standard *interpretation* of a mapping from names to types.
-    The substitution, when called upon, will look the from beginning to end
-    for an item with the same key and return the associated type.
+    The substitution, when called upon, will look the list from beginning to
+    end for an item with the same key and return the associated type.
 
     If the same name is assigned more than once, return the first one.
 
