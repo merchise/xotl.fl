@@ -138,12 +138,13 @@ def test_wfe_infix_func():
     assert parse('a . b `f` c') == parse('(a . b) `f` c')
 
 
-@pytest.mark.xfail(reason='programming error')
 def test_wfe_infix_func_precedence():
     # The actual result is '(++) a (f b c)' which is kind of weird since
     # 'a ++' is not a well formed expression.  Investigate.
     assert parse('a ++ b `f` c') == parse('(a ++ b) `f` c')
 
+
+def test_wfe_infix_func_precedence2():
     assert parse('a + b `f` c') == parse('(a + b) `f` c')
 
 
@@ -301,12 +302,10 @@ def test_datetime_literals(d):
     assert res == Literal(d, DateTimeType)
 
 
-@pytest.mark.xfail(reason='bad parsing')
 def test_regression_confusing_unary_plus():
     assert parse('f a + c') == parse('(f a) + c')
 
 
-@pytest.mark.xfail(reason='bad parsing')
 def test_regression_greedy_where():
     assert parse(
         'let a1 = id a in a1 + 1'
@@ -314,4 +313,37 @@ def test_regression_greedy_where():
         'a1 + 1 where a1 = id a'
     ) == parse(
         '(a1 + 1) where a1 = id a'
+    )
+
+
+def test_parens_aroun_dot_regression():
+    assert parse('f . g + 1') == parse('(f.g) + 1')
+
+
+def test_application_and_composition():
+    assert parse('f g . h') == parse('((f g) . h')
+
+
+def test_normal_precedence_of_mul_div():
+    assert parse('a * b / c') == parse('(a * b)/c')
+
+
+def test_bool_op_has_less_precedence():
+    assert parse('a + b <= c - d') == parse('(a + b) <= (c - d)')
+
+
+def test_infix_func_has_less_precedence():
+    assert parse('a > b `f` c - d') == parse('(a > b) `f` (c - d)')
+
+
+def test_pattern_matching_let():
+    code = '''let if True t f = t
+                  if False t f = f
+              in g . if'''
+    assert parse(code) == Let(
+        {
+            'if': None  # TODO: Pattern-matching lambda abstraction
+        },
+        Application(Application(Identifier('.'), Identifier('g')),
+                    Identifier('if'))
     )
