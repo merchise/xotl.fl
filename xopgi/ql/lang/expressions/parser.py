@@ -353,22 +353,59 @@ precedence = (
 )
 
 
+def p_application(prod):
+    'expr_factor : expr_factor SPACE expr_factor'
+    prod[0] = Application(prod[1], prod[3])
+
+
+# XXX: The only infix op at level 9 is DOT is right-associative.
+def p_expressions_precedence_rules(prod):
+    '''
+    expr_term9 : expr_factor infix_operator_9 expr_factor
+               | expr_factor infix_operator_9 expr_term9
+               | expr_factor
+
+    expr_term7 : expr_term9 infix_operator_7 expr_term9
+               | expr_term7 infix_operator_7 expr_term9
+               | expr_term9
+
+    expr_term6 : expr_term7 infix_operator_6 expr_term7
+               | expr_term6 infix_operator_6 expr_term7
+               | expr_term7
+
+    expr_term2 : expr_term6 infix_operator_2 expr_term6
+               | expr_term2 infix_operator_2 expr_term6
+               | expr_term6
+
+    expr_term0 : expr_term2 infix_operator_0 expr_term2
+               | expr_term0 infix_operator_0 expr_term2
+               | expr_term2
+
+    '''
+    rhs = prod[1:]
+    if len(rhs) > 1:
+        e1, op, e2 = prod[1:]
+        prod[0] = Application(Application(Identifier(op), e1), e2)
+    else:
+        prod[0] = prod[1]
+
+
 def p_standalone_expr(prod):
     '''st_expr : expr
+
+    expr : expr_term0
+
+    expr_factor : literal
+                | identifier
+                | enclosed_expr
+                | unit_value
+                | letexpr
+                | where_expr
+                | lambda_expr
+
     '''
     count = len(prod)
     prod[0] = prod[count - 1]
-
-
-def p_literals_and_basic(prod):
-    '''expr :  literal
-             | identifier
-             | enclosed_expr
-             | letexpr
-             | where_expr
-             | unit_value
-    '''
-    prod[0] = prod[1]
 
 
 def p_literals(prod):
@@ -434,29 +471,11 @@ def p_paren_expr(prod):
     prod[0] = prod[2]
 
 
-def p_infix_application(prod):
-    'expr : expr TICK_OPERATOR expr'
-    prod[0] = Application(Application(Identifier(prod[2]), prod[1]), prod[3])
-
-
-def p_application(prod):
-    'expr : expr SPACE expr'
-    prod[0] = Application(prod[1], prod[3])
-
-
 def p_application_after_paren(prod):
-    '''expr : enclosed_expr expr
-            | expr enclosed_expr
+    '''expr_factor : enclosed_expr expr_factor
+                   | expr_factor enclosed_expr
     '''
     prod[0] = Application(prod[1], prod[2])
-
-
-def p_compose(prod):
-    r'''
-    expr : expr DOT_OPERATOR expr
-    '''
-    e1, e2 = prod[1], prod[3]
-    prod[0] = Application(Application(Identifier('.'), e1), e2)
 
 
 def p_operators_as_expressios(prod):
@@ -467,24 +486,30 @@ def p_operators_as_expressios(prod):
     prod[0] = Identifier(operator)
 
 
-def p_user_operator_expr(prod):
-    r'''expr : expr operator expr
 
-    '''
-    e1, operator, e2 = prod[1], prod[2], prod[3]
-    prod[0] = Application(Application(Identifier(operator), e1), e2)
-
-
+# The user may use '->' for a custom operator; that's why need the ARROW in
+# the infix_operator_2 rule.
 def p_operator(prod):
-    r'''
-    operator :  PLUS
-              | MINUS
-              | STAR
-              | SLASH
-              | DOUBLESLASH
-              | PERCENT
-              | ARROW
-              | OPERATOR
+    '''
+    infix_operator_9 : DOT_OPERATOR
+
+    infix_operator_7 : STAR
+                     | SLASH
+                     | DOUBLESLASH
+                     | PERCENT
+
+    infix_operator_6 : PLUS
+                     | MINUS
+
+    infix_operator_2 : OPERATOR
+                     | ARROW
+
+    infix_operator_0 : TICK_OPERATOR
+
+    operator : infix_operator_0
+             | infix_operator_2
+             | infix_operator_6
+             | infix_operator_7
 
     '''
     prod[0] = prod[1]
@@ -515,19 +540,6 @@ def p_integer(prod):
     prod[0] = Literal(val, NumberType)
 
 
-def p_pos_number(prod):
-    '''number : PLUS number'''
-    prod[0] = prod[2]
-
-
-def p_neg_number(prod):
-    '''number : MINUS number'''
-    number = prod[2]
-    assert isinstance(number, Literal)
-    number.value = -number.value
-    prod[0] = number
-
-
 def p_float(prod):
     'number : FLOAT'
     prod[0] = Literal(float(prod[1]), NumberType)
@@ -550,7 +562,7 @@ def p_empty(prod):
 
 
 def p_lambda_definition(prod):
-    '''expr : BACKSLASH parameters ARROW expr
+    '''lambda_expr : BACKSLASH parameters ARROW expr
     '''
     params = prod[2]
     assert params
