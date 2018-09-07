@@ -321,7 +321,7 @@ def test_parens_aroun_dot_regression():
 
 
 def test_application_and_composition():
-    assert parse('f g . h') == parse('((f g) . h')
+    assert parse('f g . h') == parse('(f g) . h')
 
 
 def test_normal_precedence_of_mul_div():
