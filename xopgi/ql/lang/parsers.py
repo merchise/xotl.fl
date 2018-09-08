@@ -740,47 +740,6 @@ def p_where_expr(prod):
     prod[0] = _build_let(prod[4], prod[1])
 
 
-def _build_let(equations, body):
-    r'''Build a Let/Letrec from a set of equations and a body.
-
-    We need to decide if we issue a Let or a Letrec: if any of declared
-    names appear in the any of the bodies we must issue a Letrec, otherwise
-    issue a Let.
-
-    Also we need to convert function-patterns into Lambda abstractions::
-
-       let id x = ...
-
-    becomes::
-
-       led id = \x -> ...
-
-    For the time being (we don't have pattern matching yet), each symbol can
-    be defined just once.
-
-    '''
-    def to_lambda(equation: Equation):
-        'Convert (if needed) an equation to the equivalent one using lambdas.'
-        if equation.pattern.params:
-            return Equation(
-                Pattern(equation.pattern.cons),
-                build_lambda(equation.pattern.params, equation.body)
-            )
-        else:
-            return equation
-
-    equations = [to_lambda(eq) for eq in equations]
-    conses = [eq.pattern.cons for eq in equations]
-    names = set(conses)
-    if len(names) != len(conses):
-        raise ParserError('Several definitions for the same name')
-    if any(set(find_free_names(eq.body)) & names for eq in equations):
-        klass = Letrec
-    else:
-        klass = Let
-    return klass({eq.pattern.cons: eq.body for eq in equations}, body)
-
-
 def p_error(prod):
     raise ParserError('Invalid expression')
 
@@ -950,3 +909,44 @@ def find_free_names(expr: AST) -> List[str]:
         else:
             assert False, f'Unknown AST node: {node!r}'
     return result
+
+
+def _build_let(equations, body):
+    r'''Build a Let/Letrec from a set of equations and a body.
+
+    We need to decide if we issue a Let or a Letrec: if any of declared
+    names appear in the any of the bodies we must issue a Letrec, otherwise
+    issue a Let.
+
+    Also we need to convert function-patterns into Lambda abstractions::
+
+       let id x = ...
+
+    becomes::
+
+       led id = \x -> ...
+
+    For the time being (we don't have pattern matching yet), each symbol can
+    be defined just once.
+
+    '''
+    def to_lambda(equation: Equation):
+        'Convert (if needed) an equation to the equivalent one using lambdas.'
+        if equation.pattern.params:
+            return Equation(
+                Pattern(equation.pattern.cons),
+                build_lambda(equation.pattern.params, equation.body)
+            )
+        else:
+            return equation
+
+    equations = [to_lambda(eq) for eq in equations]
+    conses = [eq.pattern.cons for eq in equations]
+    names = set(conses)
+    if len(names) != len(conses):
+        raise ParserError('Several definitions for the same name')
+    if any(set(find_free_names(eq.body)) & names for eq in equations):
+        klass = Letrec
+    else:
+        klass = Let
+    return klass({eq.pattern.cons: eq.body for eq in equations}, body)
