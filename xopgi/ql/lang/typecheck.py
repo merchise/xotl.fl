@@ -18,14 +18,14 @@ from typing import (
 from typing import Any, Optional  # noqa
 from collections import ChainMap
 
-from xopgi.ql.lang.types.base import (
+from xopgi.ql.lang.types import (
+    AST,
     Type,
     TypeVariable,
     TypeCons,
     FunctionTypeCons as FuncCons,
 )
-from xopgi.ql.lang.expressions.base import (
-    AST,
+from xopgi.ql.lang.expressions import (
     Identifier,
     Literal,
     Lambda,
@@ -248,7 +248,7 @@ class TypeScheme:
 
     Example:
 
-      >>> from xopgi.ql.lang.types.parser import parse
+      >>> from xopgi.ql.lang.types import parse
       >>> map_type = TypeScheme(['a', 'b'],
       ...                       parse('(a -> b) -> List a -> List b'))
 

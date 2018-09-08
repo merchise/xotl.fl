@@ -3,25 +3,33 @@
 ==============================================================
 
 .. automodule:: xopgi.ql.lang.expressions
-   :members: parse, find_free_names
+   :members: parse
 
 .. testsetup::
 
-   from xopgi.ql.lang.expressions.base import *
    from xopgi.ql.lang.expressions import *
 
 
 The AST of the type expressions
 ===============================
 
-.. automodule:: xopgi.ql.lang.expressions.base
-   :members: Identifier, Literal, Lambda, Application, Let, Letrec
+.. autoclass:: Identifier
+
+.. autoclass:: Literal
+
+.. autoclass:: Lambda
+
+.. autoclass:: Application
+
+.. autoclass:: Let
+
+.. autoclass:: Letrec
 
 
 The type expression grammar
 ===========================
 
-.. module:: xopgi.ql.lang.expression.parser
+.. seealso:: :mod:`xopgi.ql.lang.parsers`
 
 
 The function `~xopgi.ql.lang.expressions.parse`:func: parses a single
@@ -62,9 +70,8 @@ are just three builtin types which have a literal representation.
      >>> parse(r"'\u0020'")
      Literal(' ', TypeCons('Char', ()))
 
-  Notice that the value in the
-  `~xopgi.ql.lang.expressions.base.Literal`:class: object is a Python string;
-  but it will always one character.
+  Notice that the value in the `~xopgi.ql.lang.expressions.Literal`:class:
+  object is a Python string; but it will always one character.
 
 - Strings are surrounded with quotation mark ``"``.  You can use the backslash
   to enter the quotation mark, the backslash itself and other Unicode code
@@ -213,7 +220,7 @@ Lambda abstractions are represented with the concise syntax of Haskell::
 
   \args -> body
 
-Even though the AST `~xopgi.ql.lang.expressions.base.Lambda`:class: supports a
+Even though the AST `~xopgi.ql.lang.expressions.Lambda`:class: supports a
 single argument the parser admits several and does the expected currying:
 
    >>> parse(r'\a b -> a') == parse(r'\a -> \b -> a')
@@ -253,9 +260,9 @@ You can't have several definitions for the same name:
       ...
    ParserError: More than one definition ...
 
-The parser will produce a `~xopgi.ql.lang.expressions.base.Let`:class: node if
+The parser will produce a `~xopgi.ql.lang.expressions.Let`:class: node if
 there are no recursive definitions, otherwise it will create a
-`~xopgi.ql.lang.expressions.base.Letrec`:class:.
+`~xopgi.ql.lang.expressions.Letrec`:class:.
 
 The 'where' expressions produce the same AST.  The general schema is::
 
@@ -270,4 +277,4 @@ restrictions of the 'let' expressions apply.
 The builtin types
 =================
 
-.. module:: xopgi.ql.lang.builtins
+.. automodule:: xopgi.ql.lang.builtins

@@ -6,14 +6,16 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Reversible
+from collections import deque
+from typing import Reversible, Optional, List, Deque
 
 from xoutil.objects import setdefaultattr
 from xoutil.future.datetime import TimeSpan
 
 from ply import lex, yacc
 
-from .base import (
+from .types import TypeVariable, TypeCons, ListTypeCons
+from .expressions import (
     AST,
     Identifier,
     Literal,
@@ -50,6 +52,8 @@ tokens = [
     'PADDING',
     'LPAREN',
     'RPAREN',
+    'LBRACKET',
+    'RBRACKET',
     'CHAR',
     'STRING',
     'PLUS',
@@ -242,6 +246,16 @@ def t_RPAREN(t):
     return t
 
 
+def t_LBRACKET(t):
+    r'\['
+    return t
+
+
+def t_RBRACKET(t):
+    r'\]'
+    return t
+
+
 # PLUS, MINUS, EQ and DOT are treated specially to disambiguate (binary + from
 # unary +, etc); DOT is right associative.
 def t_PLUS(t):
@@ -406,8 +420,9 @@ def p_expressions_precedence_rules(prod):
         prod[0] = prod[1]
 
 
-def p_standalone_expr(prod):
-    '''st_expr : expr
+def p_standalone_definitions(prod):
+    '''
+    st_expr : expr
 
     expr : expr_term0
 
@@ -418,6 +433,8 @@ def p_standalone_expr(prod):
                 | letexpr
                 | where_expr
                 | lambda_expr
+
+    st_type_expr : type_expr
 
     '''
     count = len(prod)
@@ -742,8 +759,6 @@ def _build_let(equations, body):
     be defined just once.
 
     '''
-    from . import find_free_names
-
     def to_lambda(equation: Equation):
         'Convert (if needed) an equation to the equivalent one using lambdas.'
         if equation.pattern.params:
@@ -771,11 +786,91 @@ def p_error(prod):
 
 
 def p_program(prod):
-    'program : st_expr'
+    '''program : st_expr
+               | st_type_expr
+    '''
     prod[0] = prod[1]
 
 
-expr_parser = yacc.yacc(debug=True, start='st_expr',
+def p_type_expr(prod):
+    '''type_expr : type_function_expr
+                 | type_term'''
+    prod[0] = prod[1]
+
+
+def p_type_function_expr(prod):
+    '''type_function_expr : type_term ARROW _maybe_padding type_function_expr
+                          | type_term
+    '''
+    count = len(prod)
+    if count > 2:
+        prod[0] = TypeCons('->', [prod[1], prod[count - 1]], binary=True)
+    else:
+        prod[0] = prod[1]
+
+
+def p_type_term(prod):
+    '''type_term : type_app_expression
+                 | type_factor'''
+    prod[0] = prod[1]
+
+
+def p_type_application_expr(prod):
+    'type_app_expression : type_factor _app_args_non_empty'
+    cons = prod[1]
+    args = tuple(prod[2])
+    if isinstance(cons, TypeVariable):
+        f = TypeCons(cons.name)
+    else:
+        assert isinstance(cons, TypeCons)
+        f = cons
+    prod[0] = TypeCons(f.cons, f.subtypes + args, binary=f.binary)
+
+
+def p_type_application_args(prod):
+    '''_app_args : SPACE type_factor _app_args
+       _app_args_non_empty : SPACE type_factor _app_args
+    '''
+    args = prod[3]
+    args.insert(0, prod[2])
+    prod[0] = args
+
+
+def p_type_application_args_empty(prod):
+    '_app_args : empty'
+    prod[0] = []
+
+
+def p_type_identifier(prod):
+    'type_factor : IDENTIFIER'
+    name = prod[1]
+    if name[0] == '_' or name[0].islower():
+        prod[0] = TypeVariable(name)
+    else:
+        prod[0] = TypeCons(name)
+
+
+def p_type_factor_paren(p):
+    '''type_factor : LPAREN _maybe_padding type_expr _maybe_padding RPAREN'''
+    p[0] = p[3]
+
+
+def p_type_factor_bracket(prod):
+    'type_factor : LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET'
+    prod[0] = ListTypeCons(prod[3])
+
+
+def p_maybe_padding(prod):
+    '''_maybe_padding : PADDING
+                      | empty
+    '''
+    pass
+
+
+type_parser = yacc.yacc(debug=False, start='st_type_expr',
+                        tabmodule='type_parsertab')
+
+expr_parser = yacc.yacc(debug=False, start='st_expr',
                         tabmodule='expr_parsertab')
 
 program_parser = yacc.yacc(debug=True, start='program',
@@ -796,3 +891,62 @@ def build_lambda(params: Reversible[str], body: AST) -> Lambda:
     for param in reversed(params):
         result = Lambda(param, result)
     return result  # type: ignore
+
+
+def find_free_names(expr: AST) -> List[str]:
+    '''Find all names that appear free in `expr`.
+
+    Example:
+
+      >>> set(find_free_names(parse('let id x = x in map id xs')))  # doctest: +LITERAL_EVAL
+      {'map', 'xs'}
+
+    Names can be repeated:
+
+      >>> find_free_names(parse('twice x x')).count('x')
+      2
+
+    '''
+    POPFRAME = None  # remove a binding from the 'stack'
+    result: List[str] = []
+    bindings: Deque[str] = deque([])
+    nodes: Deque[Optional[AST]] = deque([expr])
+    while nodes:
+        node = nodes.pop()
+        if node is POPFRAME:
+            bindings.pop()
+        elif isinstance(node, Identifier):
+            if node.name not in bindings:
+                result.append(node.name)
+        elif isinstance(node, Literal):
+            if isinstance(node.annotation, AST):
+                nodes.append(node)
+        elif isinstance(node, Application):
+            nodes.extend([
+                node.e1,
+                node.e2,
+            ])
+        elif isinstance(node, Lambda):
+            bindings.append(node.varname)
+            nodes.append(POPFRAME)
+            nodes.append(node.body)
+        elif isinstance(node, (Let, Letrec)):
+            # This is tricky; the bindings can be used recursively in the
+            # bodies of a letrec:
+            #
+            #    letrec f1 = ....f1 ... f2 ....
+            #           f2 = ... f1 ... f2 ....
+            #           ....
+            #    in ... f1 ... f2 ...
+            #
+            # So we must make all the names in the bindings bound and then
+            # look at all the definitions.
+            #
+            # We push several POPFRAME at the to account for that.
+            bindings.extend(node.keys())
+            nodes.extend(POPFRAME for _ in node.keys())
+            nodes.extend(node.values())
+            nodes.append(node.body)
+        else:
+            assert False, f'Unknown AST node: {node!r}'
+    return result

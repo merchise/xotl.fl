@@ -10,11 +10,7 @@ from typing import Any, Mapping, Iterator
 from xoutil.objects import validate_attrs
 from xoutil.fp.tools import fst
 
-from ..types.base import Type
-
-
-class AST:
-    pass
+from .types import AST, Type
 
 
 class Identifier(AST):
@@ -43,8 +39,9 @@ class Identifier(AST):
 class Literal(AST):
     '''A literal value with its type.
 
-    The `~xopgi.ql.lang.expressions.parser`:mod: only recognizes strings,
-    chars, and numbers (integers and floats are represented by a single type).
+    The `parser <xopgi.ql.lang.expressions.parse>`:func: only recognizes
+    strings, chars, and numbers (integers and floats are represented by a
+    single type).
 
     '''
     def __init__(self, value: Any, type_: Type, annotation: Any = None) -> None:
@@ -144,9 +141,9 @@ class _LetExpr(AST):
 class Let(_LetExpr):
     '''A non-recursive Let expression.
 
-    The `~xopgi.ql.lang.expressions.parser`:mod: automatically selects between
-    `Let`:class: and `Letrec`:class.  If you're creating the program by hand
-    you should choose appropriately.
+    The `parser <xopgi.ql.lang.expressions.parse>`:func: automatically selects
+    between `Let`:class: and `Letrec`:class.  If you're creating the program
+    by hand you should choose appropriately.
 
     '''
     def __repr__(self):
@@ -161,3 +158,17 @@ class Letrec(_LetExpr):
     '''
     def __repr__(self):
         return f'Letrec({self.bindings!r}, {self.body!r})'
+
+
+def parse(code: str, debug=False, tracking=False) -> Type:
+    '''Parse a single expression `code`.
+    '''
+    from .parsers import expr_parser, lexer
+    return expr_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
+
+
+def tokenize(source):
+    from .parsers import lexer
+    lexer = lexer.clone()
+    lexer.input(source)
+    return [tok for tok in lexer]

@@ -10,6 +10,7 @@ xopgi.ql -- A `xotl.ql`_ translator for Odoo ORM
    xopgi.ql/lang/index.rst
    xopgi.ql/lang/expressions.rst
    xopgi.ql/lang/types.rst
+   xopgi.ql/lang/parsers.rst
    history
 
 

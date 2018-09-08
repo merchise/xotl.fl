@@ -7,7 +7,6 @@
 
 .. testsetup::
 
-   from xopgi.ql.lang.types.base import *
    from xopgi.ql.lang.types import *
 
 
@@ -15,18 +14,21 @@
 The AST of the type expressions
 ===============================
 
-.. automodule:: xopgi.ql.lang.types.base
-   :members: TypeVariable, TypeCons, FunctionTypeCons, ListTypeCons,
-             TupleTypeCons
+.. autoclass:: TypeVariable
+
+.. autoclass:: TypeCons
+
+.. autoclass:: FunctionTypeCons
+
+.. autoclass:: ListTypeCons
+
+.. autoclass:: TupleTypeCons
 
 
 The type expression language (and grammar)
 ==========================================
 
-.. module:: xopgi.ql.lang.types.parser
-
-.. note:: The purpose of the parsing module for type expressions is just to
-   ease experimentation (and tests).  Keep this mind.
+.. seealso:: :mod:`xopgi.ql.lang.parsers`
 
 In the type expression language we use *identifiers* starting with a
 lower-case letter to indicate a `type variable

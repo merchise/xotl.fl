@@ -19,7 +19,11 @@ from typing import Iterable, Sequence
 from itertools import zip_longest
 
 
-class Type:
+class AST:
+    pass
+
+
+class Type(AST):
     @classmethod
     def from_str(cls, source):
         '''Parse a single type expression `code`.
@@ -27,8 +31,7 @@ class Type:
         Return a `type expression AST <xopgi.ql.lang.types.base>`:mod:.
 
         '''
-        from .parser import parser, lexer
-        return parser.parse(source, lexer=lexer)
+        return parse(source)
 
 
 class TypeVariable(Type):
@@ -61,6 +64,9 @@ class TypeVariable(Type):
 
 
 class TypeCons(Type):
+    '''The syntax for a type constructor expression.
+
+    '''
     def __init__(self, constructor: str, subtypes: Iterable[Type] = None,
                  *, binary=False) -> None:
         assert not subtypes or all(isinstance(t, Type) for t in subtypes), \
@@ -109,3 +115,18 @@ TupleTypeCons = lambda *ts: TypeCons('Tuple', list(ts))
 
 #: Shortcut to create a list type from type `t`.
 ListTypeCons = lambda t: TypeCons('[]', [t])
+
+
+def parse(code: str, debug=False, tracking=False) -> Type:
+    '''Parse a single type expression `code`.
+
+    Return a `type expression AST <xopgi.ql.lang.types.base>`:mod:.
+
+    Example:
+
+       >>> parse('a -> b')
+       TypeCons('->', (TypeVariable('a'), TypeVariable('b')))
+
+    '''
+    from .parsers import type_parser, lexer
+    return type_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
