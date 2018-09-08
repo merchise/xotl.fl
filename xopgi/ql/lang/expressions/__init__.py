@@ -14,8 +14,8 @@ from .base import AST, Literal, Identifier, Lambda, Application, Let, Letrec
 
 def parse(source: str, debug=False, tracking=False) -> AST:
     '''Parse a single expression.'''
-    from .parser import parser, lexer
-    return parser.parse(source, lexer=lexer, debug=debug, tracking=tracking)
+    from .parser import expr_parser, lexer
+    return expr_parser.parse(source, lexer=lexer, debug=debug, tracking=tracking)
 
 
 def tokenize(source):

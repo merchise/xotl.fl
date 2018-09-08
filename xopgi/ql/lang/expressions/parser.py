@@ -770,7 +770,16 @@ def p_error(prod):
     raise ParserError('Invalid expression')
 
 
-parser = yacc.yacc(debug=True, start='st_expr')
+def p_program(prod):
+    'program : st_expr'
+    prod[0] = prod[1]
+
+
+expr_parser = yacc.yacc(debug=True, start='st_expr',
+                        tabmodule='expr_parsertab')
+
+program_parser = yacc.yacc(debug=True, start='program',
+                           tabmodule='program_parsertab')
 
 
 def build_lambda(params: Reversible[str], body: AST) -> Lambda:
