@@ -34,7 +34,7 @@ from xopgi.ql.lang.builtins import (
 )
 
 
-class ParserError(SyntaxError):
+class ParserError(Exception):
     pass
 
 
@@ -758,7 +758,7 @@ def _build_let(equations, body):
     conses = [eq.pattern.cons for eq in equations]
     names = set(conses)
     if len(names) != len(conses):
-        raise SyntaxError('Several definitions for the same name')
+        raise ParserError('Several definitions for the same name')
     if any(set(find_free_names(eq.body)) & names for eq in equations):
         klass = Letrec
     else:

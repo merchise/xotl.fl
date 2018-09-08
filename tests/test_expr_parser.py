@@ -33,7 +33,7 @@ from xopgi.ql.lang.builtins import (
 
 
 def test_trivially_malformed():
-    with pytest.raises(SyntaxError):
+    with pytest.raises(ParserError):
         parse('')
 
 
