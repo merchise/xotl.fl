@@ -42,7 +42,9 @@ class ParserError(Exception):
 
 
 tokens = [
-    'IDENTIFIER',
+    'UPPER_IDENTIFIER',
+    'LOWER_IDENTIFIER',
+    'UNDER_IDENTIFIER',
     'BASE16_INTEGER',
     'BASE10_INTEGER',
     'BASE8_INTEGER',
@@ -124,7 +126,6 @@ for keyword, regexp in reserved:
     tokens.append(tk)
 
 
-t_IDENTIFIER = r'[A-Za-z_]\w*'
 t_COLON = r':'
 
 
@@ -381,6 +382,19 @@ def t_OPERATOR(t):
     return t
 
 
+def t_IDENTIFIER(t):
+    r'[A-Za-z_]\w*'
+    value = t.value
+    if value.startswith('_'):
+        t.type = 'UNDER_IDENTIFIER'
+    elif value[0].isupper():
+        t.type = 'UPPER_IDENTIFIER'
+    else:
+        assert value[0].islower()
+        t.type = 'LOWER_IDENTIFIER'
+    return t
+
+
 lexer = lex.lex(debug=False)
 
 
@@ -513,8 +527,19 @@ def p_string(prod):
 
 
 def p_variable(prod):
-    'identifier : IDENTIFIER'
+    '''identifier : _identifier
+
+    '''
     prod[0] = Identifier(prod[1])
+
+
+def p_bare_identifier(prod):
+    '''_identifier : UNDER_IDENTIFIER
+                   | UPPER_IDENTIFIER
+                   | LOWER_IDENTIFIER
+
+    '''
+    prod[0] = prod[1]
 
 
 def p_paren_expr(prod):
@@ -627,7 +652,7 @@ def p_lambda_definition(prod):
 
 
 def p_parameters(prod):
-    '''parameters : IDENTIFIER _parameters
+    '''parameters : _identifier _parameters
     '''
     names = prod[2]
     names.insert(0, prod[1])
@@ -635,7 +660,7 @@ def p_parameters(prod):
 
 
 def p__params(prod):
-    '_parameters : SPACE IDENTIFIER _parameters'
+    '_parameters : SPACE _identifier _parameters'
     names = prod[3]
     names.insert(0, prod[2])
     prod[0] = names
@@ -811,13 +836,22 @@ def p_type_application_args_empty(prod):
     prod[0] = []
 
 
-def p_type_identifier(prod):
-    'type_factor : IDENTIFIER'
-    name = prod[1]
-    if name[0] == '_' or name[0].islower():
-        prod[0] = TypeVariable(name)
-    else:
-        prod[0] = TypeCons(name)
+def p_type_variable(prod):
+    '''type_variable : LOWER_IDENTIFIER'''
+    prod[0] = TypeVariable(prod[1])
+
+
+def p_type_cons(prod):
+    '''type_cons : UPPER_IDENTIFIER'''
+    prod[0] = TypeCons(prod[1])
+
+
+def p_type_factor_identifier(prod):
+    '''type_factor : type_variable
+                   | type_cons
+
+    '''
+    prod[0] = prod[1]
 
 
 def p_type_factor_paren(p):
@@ -911,13 +945,13 @@ def p_funcdef(prod):
 
 
 def p_functype_decl(prod):
-    '''functype_decl : IDENTIFIER COLON COLON st_type_expr
+    '''functype_decl : _identifier COLON COLON st_type_expr
     '''
     pass
 
 
 def p_datatype_definition(prod):
-    '''datatype_definition : KEYWORD_DATA SPACE IDENTIFIER _cons_args EQ _data_body
+    '''datatype_definition : KEYWORD_DATA SPACE UPPER_IDENTIFIER _cons_args EQ _data_body
     '''
     name = prod[3]
     if not name[0].isupper():
@@ -929,7 +963,7 @@ def p_datatype_definition(prod):
 
 
 def p_datatype_cons_args(prod):
-    '''_cons_args : SPACE IDENTIFIER _cons_args
+    '''_cons_args : SPACE LOWER_IDENTIFIER _cons_args
     '''
     arg = prod[2]
     if not arg[0].islower():
@@ -988,7 +1022,7 @@ class DataType(AST):
 
 
 def p_data_cons(prod):
-    '''data_cons : IDENTIFIER _cons_args'''
+    '''data_cons : UPPER_IDENTIFIER _cons_args'''
     prod[0] = DataCons(prod[1], prod[2])
 
 
