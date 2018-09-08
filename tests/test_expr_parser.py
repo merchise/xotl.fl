@@ -157,8 +157,6 @@ def test_wfe_infix_func():
 
 
 def test_wfe_infix_func_precedence():
-    # The actual result is '(++) a (f b c)' which is kind of weird since
-    # 'a ++' is not a well formed expression.  Investigate.
     assert parse('a ++ b `f` c') == parse('(a ++ b) `f` c')
 
 
@@ -354,6 +352,7 @@ def test_infix_func_has_less_precedence():
     assert parse('a > b `f` c - d') == parse('(a > b) `f` (c - d)')
 
 
+@pytest.mark.xfail(reason='We have no pattern matching')
 def test_pattern_matching_let():
     code = '''let if True t f = t
                   if False t f = f

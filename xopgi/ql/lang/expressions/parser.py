@@ -379,27 +379,22 @@ def p_application(prod):
     prod[0] = Application(prod[1], prod[3])
 
 
-# XXX: The only infix op at level 9 is DOT is right-associative.
+# XXX: The only infix op at level 9 is DOT and it is right-associative.
 def p_expressions_precedence_rules(prod):
     '''
-    expr_term9 : expr_factor infix_operator_9 expr_factor
-               | expr_factor infix_operator_9 expr_term9
+    expr_term9 : expr_factor infix_operator_9 expr_term9
                | expr_factor
 
-    expr_term7 : expr_term9 infix_operator_7 expr_term9
-               | expr_term7 infix_operator_7 expr_term9
+    expr_term7 : expr_term7 infix_operator_7 expr_term9
                | expr_term9
 
-    expr_term6 : expr_term7 infix_operator_6 expr_term7
-               | expr_term6 infix_operator_6 expr_term7
+    expr_term6 : expr_term6 infix_operator_6 expr_term7
                | expr_term7
 
-    expr_term2 : expr_term6 infix_operator_2 expr_term6
-               | expr_term2 infix_operator_2 expr_term6
+    expr_term2 : expr_term2 infix_operator_2 expr_term6
                | expr_term6
 
-    expr_term0 : expr_term2 infix_operator_0 expr_term2
-               | expr_term0 infix_operator_0 expr_term2
+    expr_term0 : expr infix_operator_0 expr_term0
                | expr_term2
 
     '''
@@ -505,7 +500,6 @@ def p_operators_as_expressios(prod):
     '''
     operator = prod[2]
     prod[0] = Identifier(operator)
-
 
 
 # The user may use '->' for a custom operator; that's why need the ARROW in
