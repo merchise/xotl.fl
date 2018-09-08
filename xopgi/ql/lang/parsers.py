@@ -230,7 +230,7 @@ def t_SPACE(t):
         before = t.lexer.lexdata[t.lexpos - 1]
         after = t.lexer.lexdata[t.lexpos + len(t.value)]
         common = '=<>`.,:+-%@!$*^/'
-        if before in common + '(' or after in common + ')':
+        if before in common + '[(' or after in common + ')]':
             return  # This removes the token entirely.
         else:
             return t
