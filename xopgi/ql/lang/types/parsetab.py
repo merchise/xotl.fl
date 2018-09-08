@@ -8,9 +8,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'type_exprleftLBRACKETrightARROWleftSPACEARROW CONS LBRACKET LPAREN RBRACKET RPAREN SPACE TYPEVARtype_expr : TYPEVARtype_expr : CONStype_expr : type_expr SPACE type_exprtype_expr : LPAREN type_expr RPARENtype_expr : LBRACKET type_expr RBRACKETtype_expr : type_expr ARROW type_expr'
-
-_lr_action_items = {'TYPEVAR':([0,4,5,6,7,],[2,2,2,2,2,]),'CONS':([0,4,5,6,7,],[3,3,3,3,3,]),'LPAREN':([0,4,5,6,7,],[4,4,4,4,4,]),'LBRACKET':([0,4,5,6,7,],[5,5,5,5,5,]),'$end':([1,2,3,10,11,12,13,],[0,-1,-2,-3,-6,-4,-5,]),'SPACE':([1,2,3,8,9,10,11,12,13,],[6,-1,-2,6,6,-3,6,-4,-5,]),'ARROW':([1,2,3,8,9,10,11,12,13,],[7,-1,-2,7,7,-3,7,-4,-5,]),'RPAREN':([2,3,8,10,11,12,13,],[-1,-2,12,-3,-6,-4,-5,]),'RBRACKET':([2,3,9,10,11,12,13,],[-1,-2,13,-3,-6,-4,-5,]),}
+_lr_signature = 'type_exprleftLBRACKETrightARROWleftSPACEARROW IDENTIFIER LBRACKET LPAREN RBRACKET RPAREN SPACEtype_expr : type_function_expr\n                 | type_termtype_function_expr : type_term ARROW type_termtype_term : type_app_expression\n                 | type_factortype_app_expression : type_factor _app_args_app_args : SPACE type_factor _app_args_app_args : emptyempty : type_factor : IDENTIFIERtype_factor : LPAREN type_expr RPARENtype_factor : LBRACKET type_expr RBRACKET'
+    
+_lr_action_items = {'IDENTIFIER':([0,7,8,9,11,],[6,6,6,6,6,]),'LPAREN':([0,7,8,9,11,],[7,7,7,7,7,]),'LBRACKET':([0,7,8,9,11,],[8,8,8,8,8,]),'$end':([1,2,3,4,5,6,10,12,15,16,17,18,19,],[0,-1,-2,-4,-5,-10,-6,-8,-3,-9,-11,-12,-7,]),'RPAREN':([2,3,4,5,6,10,12,13,15,16,17,18,19,],[-1,-2,-4,-5,-10,-6,-8,17,-3,-9,-11,-12,-7,]),'RBRACKET':([2,3,4,5,6,10,12,14,15,16,17,18,19,],[-1,-2,-4,-5,-10,-6,-8,18,-3,-9,-11,-12,-7,]),'ARROW':([3,4,5,6,10,12,16,17,18,19,],[9,-4,-5,-10,-6,-8,-9,-11,-12,-7,]),'SPACE':([5,6,16,17,18,],[11,-10,11,-11,-12,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -19,7 +19,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'type_expr':([0,4,5,6,7,],[1,8,9,10,11,]),}
+_lr_goto_items = {'type_expr':([0,7,8,],[1,13,14,]),'type_function_expr':([0,7,8,],[2,2,2,]),'type_term':([0,7,8,9,],[3,3,3,15,]),'type_app_expression':([0,7,8,9,],[4,4,4,4,]),'type_factor':([0,7,8,9,11,],[5,5,5,5,16,]),'_app_args':([5,16,],[10,19,]),'empty':([5,16,],[12,12,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -29,10 +29,16 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> type_expr","S'",1,None,None,None),
-  ('type_expr -> TYPEVAR','type_expr',1,'p_tvar','parser.py',103),
-  ('type_expr -> CONS','type_expr',1,'p_cons','parser.py',108),
-  ('type_expr -> type_expr SPACE type_expr','type_expr',3,'p_application','parser.py',113),
-  ('type_expr -> LPAREN type_expr RPAREN','type_expr',3,'p_paren','parser.py',127),
-  ('type_expr -> LBRACKET type_expr RBRACKET','type_expr',3,'p_bracket','parser.py',132),
-  ('type_expr -> type_expr ARROW type_expr','type_expr',3,'p_expression_fntype','parser.py',137),
+  ('type_expr -> type_function_expr','type_expr',1,'p_type_expr','parser.py',106),
+  ('type_expr -> type_term','type_expr',1,'p_type_expr','parser.py',107),
+  ('type_function_expr -> type_term ARROW type_term','type_function_expr',3,'p_type_function_expr','parser.py',112),
+  ('type_term -> type_app_expression','type_term',1,'p_type_term','parser.py',117),
+  ('type_term -> type_factor','type_term',1,'p_type_term','parser.py',118),
+  ('type_app_expression -> type_factor _app_args','type_app_expression',2,'p_type_application_expr','parser.py',123),
+  ('_app_args -> SPACE type_factor _app_args','_app_args',3,'p_type_application_args','parser.py',135),
+  ('_app_args -> empty','_app_args',1,'p_type_application_args_empty','parser.py',142),
+  ('empty -> <empty>','empty',0,'p_empty','parser.py',147),
+  ('type_factor -> IDENTIFIER','type_factor',1,'p_type_identifier','parser.py',152),
+  ('type_factor -> LPAREN type_expr RPAREN','type_factor',3,'p_type_factor_paren','parser.py',161),
+  ('type_factor -> LBRACKET type_expr RBRACKET','type_factor',3,'p_type_factor_bracket','parser.py',166),
 ]

@@ -22,17 +22,14 @@ tokens = (
     'ARROW',
     'LPAREN',
     'RPAREN',
-    'TYPEVAR',
-    'CONS',
+    'IDENTIFIER',
     'SPACE',
     'LBRACKET',
     'RBRACKET',
 )
 
 t_ARROW = r'->[\t\s]*'
-
-t_TYPEVAR = r'[a-z][\.a-zA-Z0-9]*'
-t_CONS = r'[A-Z][\.a-zA-Z0-9]*'
+t_IDENTIFIER = r'[A-Za-z_]\w*'
 
 
 # t_NL and tNLE remove runs of empty spaces at the beginning or end of the
@@ -105,42 +102,69 @@ precedence = (
 )
 
 
-def p_tvar(p):
-    'type_expr : TYPEVAR'
-    p[0] = TypeVar(p[1])
+def p_type_expr(prod):
+    '''type_expr : type_function_expr
+                 | type_term'''
+    prod[0] = prod[1]
 
 
-def p_cons(p):
-    'type_expr : CONS'
-    p[0] = TypeCons(p[1])
+def p_type_function_expr(prod):
+    'type_function_expr : type_term ARROW type_term'
+    prod[0] = TypeCons('->', [prod[1], prod[3]], binary=True)
 
 
-def p_application(p):
-    'type_expr : type_expr SPACE type_expr'
-    e1, e2 = p[1], p[3]
-    if isinstance(e1, TypeVar):
-        # I have to promote to a TypeCons
-        f = TypeCons(e1.name)
+def p_type_term(prod):
+    '''type_term : type_app_expression
+                 | type_factor'''
+    prod[0] = prod[1]
+
+
+def p_type_application_expr(prod):
+    'type_app_expression : type_factor _app_args'
+    cons = prod[1]
+    args = prod[2]
+    if isinstance(cons, TypeVar):
+        f = TypeCons(cons.name)
     else:
-        assert isinstance(e1, TypeCons)
-        f = e1
-    assert isinstance(e2, Type), f'@ {e1!r} {e2!r}'
-    p[0] = TypeCons(f.cons, f.subtypes + (e2, ), binary=f.binary)
+        assert isinstance(cons, TypeCons)
+        f = cons
+    prod[0] = TypeCons(f.cons, f.subtypes + args, binary=f.binary)
 
 
-def p_paren(p):
-    'type_expr : LPAREN type_expr RPAREN'
+def p_type_application_args(prod):
+    '_app_args : SPACE type_factor _app_args'
+    args = prod[3]
+    args.insert(0, prod[2])
+    prod[0] = args
+
+
+def p_type_application_args_empty(prod):
+    '_app_args : empty'
+    prod[0] = []
+
+
+def p_empty(prod):
+    '''empty : '''
+    pass
+
+
+def p_type_identifier(prod):
+    'type_factor : IDENTIFIER'
+    name = prod[1]
+    if name[0] == '_' or name[0].islower():
+        prod[0] = TypeVar(name)
+    else:
+        prod[0] = TypeCons(name)
+
+
+def p_type_factor_paren(p):
+    'type_factor : LPAREN type_expr RPAREN'
     p[0] = p[2]
 
 
-def p_bracket(prod):
-    'type_expr : LBRACKET type_expr RBRACKET'
+def p_type_factor_bracket(prod):
+    'type_factor : LBRACKET type_expr RBRACKET'
     prod[0] = ListTypeCons(prod[2])
-
-
-def p_expression_fntype(p):
-    'type_expr : type_expr ARROW type_expr'
-    p[0] = TypeCons('->', [p[1], p[3]], binary=True)
 
 
 def p_error(p):
