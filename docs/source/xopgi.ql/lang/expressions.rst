@@ -162,7 +162,7 @@ application, is next in priority:
   >>> parse('f . g . h') == parse('f . (g . h)')
   True
 
-  >>> parse('f g . h') == parse('((f g) . h')
+  >>> parse('f g . h') == parse('(f g) . h')
   True
 
   >>> # This funny expression is syntactically valid, but it won't type-check.

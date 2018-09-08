@@ -34,7 +34,7 @@ from xopgi.ql.lang.builtins import (
 )
 
 
-class ParserError(SyntaxError):
+class ParserError(Exception):
     pass
 
 
@@ -108,11 +108,6 @@ for keyword, regexp in reserved:
 
 
 t_IDENTIFIER = r'[A-Za-z_]\w*'
-t_BASE10_INTEGER = '[0-9][0-9_]*'
-t_BASE16_INTEGER = '0[xX][0-9a-fA-F][0-9a-fA-F_]*'
-t_BASE8_INTEGER = '0[oO][0-7][0-7_]*'
-t_BASE2_INTEGER = '0[bB][01][01_]*'
-
 t_COLON = r':'
 
 
@@ -159,6 +154,41 @@ def t_CHAR(t):
         # \x..., \u...
         value = eval(f"'{value}'")
     t.value = value
+    return t
+
+
+def t_BASE2_INTEGER(t):
+    '-?0[bB][01][01_]*'
+    return t
+
+
+def t_BASE8_INTEGER(t):
+    '-?0[oO][0-7][0-7_]*'
+    return t
+
+
+def t_BASE16_INTEGER(t):
+    '-?0[xX][0-9a-fA-F][0-9a-fA-F_]*'
+    return t
+
+
+def t_FLOAT(t):
+    r'-?([0-9_]*\.[0-9]+([eE][-+]\d+)?|[0-9][0-9_]*[eE][-+]\d+)'
+    value = t.value
+    if value.startswith('-') or value.startswith('+'):
+        sign, value = value[0], value[1:]
+    else:
+        sign = ''
+    if value.startswith('_'):
+        raise lex.LexError(f'Illegal float representation {value!r}', t.lexpos)
+    t.value = sign + value.replace('_', '')
+    return t
+
+
+# Integers were pushed to the bottom because the tokenizer would make of '0b0'
+# the tokens BASE10_INTEGER IDENTIFIER BASE10_INTEGER.
+def t_BASE10_INTEGER(t):
+    r'-?[0-9][0-9_]*'
     return t
 
 
@@ -212,17 +242,8 @@ def t_RPAREN(t):
     return t
 
 
-def t_FLOAT(t):
-    r'([0-9_]*\.[0-9]+([eE][-+]\d+)?|[0-9][0-9_]*[eE][-+]\d+)'
-    if t.value.startswith('_'):
-        raise lex.LexError(f'Illegal float representation {t.value!r}', t.lexpos)
-    t.value = t.value.replace('_', '')
-    return t
-
-
 # PLUS, MINUS, EQ and DOT are treated specially to disambiguate (binary + from
 # unary +, etc); DOT is right associative.
-
 def t_PLUS(t):
     r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])\+(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
     return t
@@ -353,22 +374,54 @@ precedence = (
 )
 
 
+def p_application(prod):
+    'expr_factor : expr_factor SPACE expr_factor'
+    prod[0] = Application(prod[1], prod[3])
+
+
+# XXX: The only infix op at level 9 is DOT and it is right-associative.
+def p_expressions_precedence_rules(prod):
+    '''
+    expr_term9 : expr_factor infix_operator_9 expr_term9
+               | expr_factor
+
+    expr_term7 : expr_term7 infix_operator_7 expr_term9
+               | expr_term9
+
+    expr_term6 : expr_term6 infix_operator_6 expr_term7
+               | expr_term7
+
+    expr_term2 : expr_term2 infix_operator_2 expr_term6
+               | expr_term6
+
+    expr_term0 : expr infix_operator_0 expr_term0
+               | expr_term2
+
+    '''
+    rhs = prod[1:]
+    if len(rhs) > 1:
+        e1, op, e2 = prod[1:]
+        prod[0] = Application(Application(Identifier(op), e1), e2)
+    else:
+        prod[0] = prod[1]
+
+
 def p_standalone_expr(prod):
     '''st_expr : expr
+
+    expr : expr_term0
+
+    expr_factor : literal
+                | identifier
+                | enclosed_expr
+                | unit_value
+                | letexpr
+                | where_expr
+                | lambda_expr
+
     '''
     count = len(prod)
     prod[0] = prod[count - 1]
-
-
-def p_literals_and_basic(prod):
-    '''expr :  literal
-             | identifier
-             | enclosed_expr
-             | letexpr
-             | where_expr
-             | unit_value
-    '''
-    prod[0] = prod[1]
 
 
 def p_literals(prod):
@@ -434,29 +487,11 @@ def p_paren_expr(prod):
     prod[0] = prod[2]
 
 
-def p_infix_application(prod):
-    'expr : expr TICK_OPERATOR expr'
-    prod[0] = Application(Application(Identifier(prod[2]), prod[1]), prod[3])
-
-
-def p_application(prod):
-    'expr : expr SPACE expr'
-    prod[0] = Application(prod[1], prod[3])
-
-
 def p_application_after_paren(prod):
-    '''expr : enclosed_expr expr
-            | expr enclosed_expr
+    '''expr_factor : enclosed_expr expr_factor
+                   | expr_factor enclosed_expr
     '''
     prod[0] = Application(prod[1], prod[2])
-
-
-def p_compose(prod):
-    r'''
-    expr : expr DOT_OPERATOR expr
-    '''
-    e1, e2 = prod[1], prod[3]
-    prod[0] = Application(Application(Identifier('.'), e1), e2)
 
 
 def p_operators_as_expressios(prod):
@@ -467,24 +502,29 @@ def p_operators_as_expressios(prod):
     prod[0] = Identifier(operator)
 
 
-def p_user_operator_expr(prod):
-    r'''expr : expr operator expr
-
-    '''
-    e1, operator, e2 = prod[1], prod[2], prod[3]
-    prod[0] = Application(Application(Identifier(operator), e1), e2)
-
-
+# The user may use '->' for a custom operator; that's why need the ARROW in
+# the infix_operator_2 rule.
 def p_operator(prod):
-    r'''
-    operator :  PLUS
-              | MINUS
-              | STAR
-              | SLASH
-              | DOUBLESLASH
-              | PERCENT
-              | ARROW
-              | OPERATOR
+    '''
+    infix_operator_9 : DOT_OPERATOR
+
+    infix_operator_7 : STAR
+                     | SLASH
+                     | DOUBLESLASH
+                     | PERCENT
+
+    infix_operator_6 : PLUS
+                     | MINUS
+
+    infix_operator_2 : OPERATOR
+                     | ARROW
+
+    infix_operator_0 : TICK_OPERATOR
+
+    operator : infix_operator_0
+             | infix_operator_2
+             | infix_operator_6
+             | infix_operator_7
 
     '''
     prod[0] = prod[1]
@@ -499,6 +539,13 @@ def p_integer(prod):
     value = prod[1]
     value = value.replace('_', '')  # We separators anywhere: 1000 = 10_00
     base = 10
+    if value.startswith('-'):
+        sign = -1
+        value = value[1:]
+    else:
+        sign = 1
+        if value.startswith('+'):
+            value = value[1:]
     if value.startswith('0'):
         mark = value[1:2]
         if mark in ('x', 'X'):
@@ -511,21 +558,8 @@ def p_integer(prod):
             pass
         else:
             assert False, 'Invalid integer mark'
-    val = int(value, base)
+    val = sign * int(value, base)
     prod[0] = Literal(val, NumberType)
-
-
-def p_pos_number(prod):
-    '''number : PLUS number'''
-    prod[0] = prod[2]
-
-
-def p_neg_number(prod):
-    '''number : MINUS number'''
-    number = prod[2]
-    assert isinstance(number, Literal)
-    number.value = -number.value
-    prod[0] = number
 
 
 def p_float(prod):
@@ -550,7 +584,7 @@ def p_empty(prod):
 
 
 def p_lambda_definition(prod):
-    '''expr : BACKSLASH parameters ARROW expr
+    '''lambda_expr : BACKSLASH parameters ARROW expr
     '''
     params = prod[2]
     assert params
@@ -724,7 +758,7 @@ def _build_let(equations, body):
     conses = [eq.pattern.cons for eq in equations]
     names = set(conses)
     if len(names) != len(conses):
-        raise SyntaxError('Several definitions for the same name')
+        raise ParserError('Several definitions for the same name')
     if any(set(find_free_names(eq.body)) & names for eq in equations):
         klass = Letrec
     else:

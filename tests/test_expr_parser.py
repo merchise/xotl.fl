@@ -33,7 +33,7 @@ from xopgi.ql.lang.builtins import (
 
 
 def test_trivially_malformed():
-    with pytest.raises(SyntaxError):
+    with pytest.raises(ParserError):
         parse('')
 
 
@@ -62,34 +62,52 @@ def test_wfe_string_literals(s):
 
 
 @given(s.integers())
-def test_wfe_integer_literals(i):
+def test_wfe_integer_literals_base10(i):
     code = str(i)
     assert parse(code) == Literal(i, NumberType)
 
+
+@given(s.integers())
+def test_wfe_integer_literals_base16(i):
     code = hex(i)
     assert parse(code) == Literal(i, NumberType)
 
+
+@given(s.integers())
+def test_wfe_integer_literals_base2(i):
     code = bin(i)
     assert parse(code) == Literal(i, NumberType)
 
+
+@given(s.integers())
+def test_wfe_integer_literals_base8(i):
     code = oct(i)
     assert parse(code) == Literal(i, NumberType)
 
 
 @given(s.integers(), s.integers(min_value=0))
-def test_wfe_integer_literals_with_under(i, g):
+def test_wfe_integer_literals_with_under_base10(i, g):
     code = str(i) + '__' + str(g) + '_'
     value = eval(str(i) + str(g) if i else str(g))
     assert parse(code) == Literal(value, NumberType)
 
+
+@given(s.integers(), s.integers(min_value=0))
+def test_wfe_integer_literals_with_under_base16(i, g):
     code = hex(i) + '__' + hex(g)[2:] + '_'
     value = eval(hex(i) + hex(g)[2:] if i else hex(g))
     assert parse(code) == Literal(value, NumberType)
 
+
+@given(s.integers(), s.integers(min_value=0))
+def test_wfe_integer_literals_with_under_base8(i, g):
     code = oct(i) + '__' + oct(g)[2:] + '_'
     value = eval(oct(i) + oct(g)[2:] if i else oct(g))
     assert parse(code) == Literal(value, NumberType)
 
+
+@given(s.integers(), s.integers(min_value=0))
+def test_wfe_integer_literals_with_under_base2(i, g):
     code = bin(i) + '__' + bin(g)[2:] + '_'
     value = eval(bin(i) + bin(g)[2:] if i else bin(g))
     assert parse(code) == Literal(value, NumberType)
@@ -139,8 +157,6 @@ def test_wfe_infix_func():
 
 
 def test_wfe_infix_func_precedence():
-    # The actual result is '(++) a (f b c)' which is kind of weird since
-    # 'a ++' is not a well formed expression.  Investigate.
     assert parse('a ++ b `f` c') == parse('(a ++ b) `f` c')
 
 
@@ -336,6 +352,7 @@ def test_infix_func_has_less_precedence():
     assert parse('a > b `f` c - d') == parse('(a > b) `f` (c - d)')
 
 
+@pytest.mark.xfail(reason='We have no pattern matching')
 def test_pattern_matching_let():
     code = '''let if True t f = t
                   if False t f = f
