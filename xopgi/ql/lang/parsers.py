@@ -7,7 +7,7 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 from collections import deque
-from typing import Reversible, Optional, List, Deque, Sequence
+from typing import Reversible, Optional, List, Deque, Sequence, Mapping
 
 from xoutil.objects import setdefaultattr
 from xoutil.future.datetime import TimeSpan
@@ -917,22 +917,24 @@ def p_functype_decl(prod):
 
 
 def p_datatype_definition(prod):
-    '''datatype_definition : KEYWORD_DATA IDENTIFIER _cons_args EQ _data_body
+    '''datatype_definition : KEYWORD_DATA SPACE IDENTIFIER _cons_args EQ _data_body
     '''
-    tcons = prod[2]
-    if not tcons[0].isupper():
+    name = prod[3]
+    if not name[0].isupper():
         raise ParserError('Type constructors must begin with an uppercase')
-    args = prod[3]
-    # TODO: Check lsh and rsh
+    args = prod[4]
+    type_ = TypeCons(name, [TypeVariable(n) for n in args])
+    defs = prod[6]
+    prod[0] = DataType(name, type_, defs)
 
 
 def p_datatype_cons_args(prod):
-    '''_cons_args : IDENTIFIER _cons_args
+    '''_cons_args : SPACE IDENTIFIER _cons_args
     '''
-    arg = prod[1]
+    arg = prod[2]
     if not arg[0].islower():
         raise ParserError('Type variables must begin with a lowercase')
-    args = prod[2]
+    args = prod[3]
     args.insert(0, arg)
     prod[0] = args
 
@@ -960,8 +962,29 @@ def p_datatype_conses_empty(prod):
 
 class DataCons(AST):
     def __init__(self, cons: str, args: Sequence[str]) -> None:
-        self.cons = cons
+        self.name = cons
         self.args = tuple(args)
+
+    def __repr__(self):
+        names = ' '.join(self.args)
+        if names:
+            return f'<DataCons {self.name} {names}>'
+        else:
+            return f'<DataCons {self.name}>'
+
+
+class DataType(AST):
+    def __init__(self, name: str, type_: TypeCons, defs: Sequence[DataCons]) -> None:
+        self.name = name
+        self.t = type_
+        self.dataconses: Mapping[str, DataCons] = {
+            d.name: d for d in defs
+        }
+
+    def __repr__(self):
+        defs = list(self.dataconses.values())
+        defs = ' | '.join(map(str, defs))
+        return f'<Data {self.t} = {defs}>'
 
 
 def p_data_cons(prod):

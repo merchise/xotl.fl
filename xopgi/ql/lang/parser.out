@@ -110,8 +110,8 @@ Rule 99    function_definition -> functype_decl PADDING funcdef
 Rule 100   function_definition -> funcdef
 Rule 101   funcdef -> KEYWORD_DEF equations
 Rule 102   functype_decl -> IDENTIFIER COLON COLON st_type_expr
-Rule 103   datatype_definition -> KEYWORD_DATA IDENTIFIER _cons_args EQ _data_body
-Rule 104   _cons_args -> IDENTIFIER _cons_args
+Rule 103   datatype_definition -> KEYWORD_DATA SPACE IDENTIFIER _cons_args EQ _data_body
+Rule 104   _cons_args -> SPACE IDENTIFIER _cons_args
 Rule 105   _cons_args -> empty
 Rule 106   _data_body -> data_cons _data_conses
 Rule 107   _data_conses -> _maybe_padding PIPE data_cons _data_conses
@@ -156,7 +156,7 @@ PLUS                 : 48
 RBRACKET             : 90
 RPAREN               : 34 38 41 42 89
 SLASH                : 45
-SPACE                : 1 68 75 75 76 85 86
+SPACE                : 1 68 75 75 76 85 86 103 104
 STAR                 : 44
 STRING               : 36
 TICK_OPERATOR        : 52
@@ -233,7 +233,7 @@ state 0
     (98) definition -> . datatype_definition
     (99) function_definition -> . functype_decl PADDING funcdef
     (100) function_definition -> . funcdef
-    (103) datatype_definition -> . KEYWORD_DATA IDENTIFIER _cons_args EQ _data_body
+    (103) datatype_definition -> . KEYWORD_DATA SPACE IDENTIFIER _cons_args EQ _data_body
     (102) functype_decl -> . IDENTIFIER COLON COLON st_type_expr
     (101) funcdef -> . KEYWORD_DEF equations
 
@@ -308,9 +308,9 @@ state 7
 
 state 8
 
-    (103) datatype_definition -> KEYWORD_DATA . IDENTIFIER _cons_args EQ _data_body
+    (103) datatype_definition -> KEYWORD_DATA . SPACE IDENTIFIER _cons_args EQ _data_body
 
-    IDENTIFIER      shift and go to state 15
+    SPACE           shift and go to state 15
 
 
 state 9
@@ -349,7 +349,7 @@ state 12
     (98) definition -> . datatype_definition
     (99) function_definition -> . functype_decl PADDING funcdef
     (100) function_definition -> . funcdef
-    (103) datatype_definition -> . KEYWORD_DATA IDENTIFIER _cons_args EQ _data_body
+    (103) datatype_definition -> . KEYWORD_DATA SPACE IDENTIFIER _cons_args EQ _data_body
     (102) functype_decl -> . IDENTIFIER COLON COLON st_type_expr
     (101) funcdef -> . KEYWORD_DEF equations
 
@@ -381,22 +381,16 @@ state 14
 
 state 15
 
-    (103) datatype_definition -> KEYWORD_DATA IDENTIFIER . _cons_args EQ _data_body
-    (104) _cons_args -> . IDENTIFIER _cons_args
-    (105) _cons_args -> . empty
-    (65) empty -> .
+    (103) datatype_definition -> KEYWORD_DATA SPACE . IDENTIFIER _cons_args EQ _data_body
 
     IDENTIFIER      shift and go to state 24
-    EQ              reduce using rule 65 (empty -> .)
 
-    _cons_args                     shift and go to state 25
-    empty                          shift and go to state 26
 
 state 16
 
     (102) functype_decl -> IDENTIFIER COLON . COLON st_type_expr
 
-    COLON           shift and go to state 27
+    COLON           shift and go to state 25
 
 
 state 17
@@ -415,7 +409,7 @@ state 18
     (65) empty -> .
 
   ! shift/reduce conflict for PADDING resolved as shift
-    PADDING         shift and go to state 29
+    PADDING         shift and go to state 27
     $end            reduce using rule 65 (empty -> .)
     KEYWORD_IN      reduce using rule 65 (empty -> .)
     SPACE           reduce using rule 65 (empty -> .)
@@ -435,14 +429,14 @@ state 18
 
   ! PADDING         [ reduce using rule 65 (empty -> .) ]
 
-    _equation_set                  shift and go to state 28
-    empty                          shift and go to state 30
+    _equation_set                  shift and go to state 26
+    empty                          shift and go to state 28
 
 state 19
 
     (71) equation -> pattern . EQ expr
 
-    EQ              shift and go to state 31
+    EQ              shift and go to state 29
 
 
 state 20
@@ -459,12 +453,12 @@ state 21
     (69) _parameters -> . empty
     (65) empty -> .
 
-    SPACE           shift and go to state 33
+    SPACE           shift and go to state 31
     EQ              reduce using rule 65 (empty -> .)
     ARROW           reduce using rule 65 (empty -> .)
 
-    _parameters                    shift and go to state 32
-    empty                          shift and go to state 34
+    _parameters                    shift and go to state 30
+    empty                          shift and go to state 32
 
 state 22
 
@@ -476,7 +470,7 @@ state 22
     PADDING         shift and go to state 12
     $end            reduce using rule 65 (empty -> .)
 
-    _definition_set                shift and go to state 35
+    _definition_set                shift and go to state 33
     empty                          shift and go to state 13
 
 state 23
@@ -489,38 +483,18 @@ state 23
 
 state 24
 
-    (104) _cons_args -> IDENTIFIER . _cons_args
-    (104) _cons_args -> . IDENTIFIER _cons_args
+    (103) datatype_definition -> KEYWORD_DATA SPACE IDENTIFIER . _cons_args EQ _data_body
+    (104) _cons_args -> . SPACE IDENTIFIER _cons_args
     (105) _cons_args -> . empty
     (65) empty -> .
 
-    IDENTIFIER      shift and go to state 24
+    SPACE           shift and go to state 34
     EQ              reduce using rule 65 (empty -> .)
-    PADDING         reduce using rule 65 (empty -> .)
-    PIPE            reduce using rule 65 (empty -> .)
-    $end            reduce using rule 65 (empty -> .)
 
-    _cons_args                     shift and go to state 36
-    empty                          shift and go to state 26
+    _cons_args                     shift and go to state 35
+    empty                          shift and go to state 36
 
 state 25
-
-    (103) datatype_definition -> KEYWORD_DATA IDENTIFIER _cons_args . EQ _data_body
-
-    EQ              shift and go to state 37
-
-
-state 26
-
-    (105) _cons_args -> empty .
-
-    EQ              reduce using rule 105 (_cons_args -> empty .)
-    PADDING         reduce using rule 105 (_cons_args -> empty .)
-    PIPE            reduce using rule 105 (_cons_args -> empty .)
-    $end            reduce using rule 105 (_cons_args -> empty .)
-
-
-state 27
 
     (102) functype_decl -> IDENTIFIER COLON COLON . st_type_expr
     (21) st_type_expr -> . type_expr
@@ -535,18 +509,18 @@ state 27
     (89) type_factor -> . LPAREN _maybe_padding type_expr _maybe_padding RPAREN
     (90) type_factor -> . LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET
 
-    IDENTIFIER      shift and go to state 38
-    LPAREN          shift and go to state 45
-    LBRACKET        shift and go to state 46
+    IDENTIFIER      shift and go to state 37
+    LPAREN          shift and go to state 44
+    LBRACKET        shift and go to state 45
 
-    st_type_expr                   shift and go to state 39
-    type_expr                      shift and go to state 40
-    type_function_expr             shift and go to state 41
-    type_term                      shift and go to state 42
-    type_app_expression            shift and go to state 43
-    type_factor                    shift and go to state 44
+    st_type_expr                   shift and go to state 38
+    type_expr                      shift and go to state 39
+    type_function_expr             shift and go to state 40
+    type_term                      shift and go to state 41
+    type_app_expression            shift and go to state 42
+    type_factor                    shift and go to state 43
 
-state 28
+state 26
 
     (72) equations -> equation _equation_set .
 
@@ -569,7 +543,7 @@ state 28
     RPAREN          reduce using rule 72 (equations -> equation _equation_set .)
 
 
-state 29
+state 27
 
     (73) _equation_set -> PADDING . equation _equation_set
     (71) equation -> . pattern EQ expr
@@ -578,11 +552,11 @@ state 29
 
     IDENTIFIER      shift and go to state 21
 
-    equation                       shift and go to state 47
+    equation                       shift and go to state 46
     pattern                        shift and go to state 19
     parameters                     shift and go to state 20
 
-state 30
+state 28
 
     (74) _equation_set -> empty .
 
@@ -605,7 +579,7 @@ state 30
     RPAREN          reduce using rule 74 (_equation_set -> empty .)
 
 
-state 31
+state 29
 
     (71) equation -> pattern EQ . expr
     (13) expr -> . expr_term0
@@ -661,46 +635,46 @@ state 31
     (32) date_interval -> . DATE_INTERVAL
     (33) datetime_interval -> . DATETIME_INTERVAL
 
-    IDENTIFIER      shift and go to state 70
-    LPAREN          shift and go to state 71
-    KEYWORD_LET     shift and go to state 72
-    BACKSLASH       shift and go to state 73
-    BASE10_INTEGER  shift and go to state 74
-    BASE16_INTEGER  shift and go to state 75
-    BASE8_INTEGER   shift and go to state 76
-    BASE2_INTEGER   shift and go to state 77
-    FLOAT           shift and go to state 78
-    STRING          shift and go to state 79
-    CHAR            shift and go to state 80
-    DATE            shift and go to state 81
-    DATETIME        shift and go to state 82
-    DATE_INTERVAL   shift and go to state 83
-    DATETIME_INTERVAL shift and go to state 84
+    IDENTIFIER      shift and go to state 69
+    LPAREN          shift and go to state 70
+    KEYWORD_LET     shift and go to state 71
+    BACKSLASH       shift and go to state 72
+    BASE10_INTEGER  shift and go to state 73
+    BASE16_INTEGER  shift and go to state 74
+    BASE8_INTEGER   shift and go to state 75
+    BASE2_INTEGER   shift and go to state 76
+    FLOAT           shift and go to state 77
+    STRING          shift and go to state 78
+    CHAR            shift and go to state 79
+    DATE            shift and go to state 80
+    DATETIME        shift and go to state 81
+    DATE_INTERVAL   shift and go to state 82
+    DATETIME_INTERVAL shift and go to state 83
 
-    expr                           shift and go to state 48
-    expr_term0                     shift and go to state 49
-    expr_term2                     shift and go to state 50
-    expr_term6                     shift and go to state 51
-    expr_term7                     shift and go to state 52
-    expr_term9                     shift and go to state 53
-    expr_factor                    shift and go to state 54
-    literal                        shift and go to state 55
-    identifier                     shift and go to state 56
-    enclosed_expr                  shift and go to state 57
-    unit_value                     shift and go to state 58
-    letexpr                        shift and go to state 59
-    where_expr                     shift and go to state 60
-    lambda_expr                    shift and go to state 61
-    number                         shift and go to state 62
-    concrete_number                shift and go to state 63
-    string                         shift and go to state 64
-    char                           shift and go to state 65
-    date                           shift and go to state 66
-    datetime                       shift and go to state 67
-    date_interval                  shift and go to state 68
-    datetime_interval              shift and go to state 69
+    expr                           shift and go to state 47
+    expr_term0                     shift and go to state 48
+    expr_term2                     shift and go to state 49
+    expr_term6                     shift and go to state 50
+    expr_term7                     shift and go to state 51
+    expr_term9                     shift and go to state 52
+    expr_factor                    shift and go to state 53
+    literal                        shift and go to state 54
+    identifier                     shift and go to state 55
+    enclosed_expr                  shift and go to state 56
+    unit_value                     shift and go to state 57
+    letexpr                        shift and go to state 58
+    where_expr                     shift and go to state 59
+    lambda_expr                    shift and go to state 60
+    number                         shift and go to state 61
+    concrete_number                shift and go to state 62
+    string                         shift and go to state 63
+    char                           shift and go to state 64
+    date                           shift and go to state 65
+    datetime                       shift and go to state 66
+    date_interval                  shift and go to state 67
+    datetime_interval              shift and go to state 68
 
-state 32
+state 30
 
     (67) parameters -> IDENTIFIER _parameters .
 
@@ -708,14 +682,14 @@ state 32
     ARROW           reduce using rule 67 (parameters -> IDENTIFIER _parameters .)
 
 
-state 33
+state 31
 
     (68) _parameters -> SPACE . IDENTIFIER _parameters
 
-    IDENTIFIER      shift and go to state 85
+    IDENTIFIER      shift and go to state 84
 
 
-state 34
+state 32
 
     (69) _parameters -> empty .
 
@@ -723,35 +697,38 @@ state 34
     ARROW           reduce using rule 69 (_parameters -> empty .)
 
 
-state 35
+state 33
 
     (95) _definition_set -> PADDING definition _definition_set .
 
     $end            reduce using rule 95 (_definition_set -> PADDING definition _definition_set .)
 
 
+state 34
+
+    (104) _cons_args -> SPACE . IDENTIFIER _cons_args
+
+    IDENTIFIER      shift and go to state 85
+
+
+state 35
+
+    (103) datatype_definition -> KEYWORD_DATA SPACE IDENTIFIER _cons_args . EQ _data_body
+
+    EQ              shift and go to state 86
+
+
 state 36
 
-    (104) _cons_args -> IDENTIFIER _cons_args .
+    (105) _cons_args -> empty .
 
-    EQ              reduce using rule 104 (_cons_args -> IDENTIFIER _cons_args .)
-    PADDING         reduce using rule 104 (_cons_args -> IDENTIFIER _cons_args .)
-    PIPE            reduce using rule 104 (_cons_args -> IDENTIFIER _cons_args .)
-    $end            reduce using rule 104 (_cons_args -> IDENTIFIER _cons_args .)
+    EQ              reduce using rule 105 (_cons_args -> empty .)
+    PADDING         reduce using rule 105 (_cons_args -> empty .)
+    PIPE            reduce using rule 105 (_cons_args -> empty .)
+    $end            reduce using rule 105 (_cons_args -> empty .)
 
 
 state 37
-
-    (103) datatype_definition -> KEYWORD_DATA IDENTIFIER _cons_args EQ . _data_body
-    (106) _data_body -> . data_cons _data_conses
-    (109) data_cons -> . IDENTIFIER _cons_args
-
-    IDENTIFIER      shift and go to state 86
-
-    _data_body                     shift and go to state 87
-    data_cons                      shift and go to state 88
-
-state 38
 
     (88) type_factor -> IDENTIFIER .
 
@@ -762,21 +739,21 @@ state 38
     RBRACKET        reduce using rule 88 (type_factor -> IDENTIFIER .)
 
 
-state 39
+state 38
 
     (102) functype_decl -> IDENTIFIER COLON COLON st_type_expr .
 
     PADDING         reduce using rule 102 (functype_decl -> IDENTIFIER COLON COLON st_type_expr .)
 
 
-state 40
+state 39
 
     (21) st_type_expr -> type_expr .
 
     PADDING         reduce using rule 21 (st_type_expr -> type_expr .)
 
 
-state 41
+state 40
 
     (78) type_expr -> type_function_expr .
 
@@ -785,7 +762,7 @@ state 41
     RBRACKET        reduce using rule 78 (type_expr -> type_function_expr .)
 
 
-state 42
+state 41
 
     (79) type_expr -> type_term .
     (80) type_function_expr -> type_term . ARROW _maybe_padding type_function_expr
@@ -797,14 +774,14 @@ state 42
     PADDING         reduce using rule 79 (type_expr -> type_term .)
     RPAREN          reduce using rule 79 (type_expr -> type_term .)
     RBRACKET        reduce using rule 79 (type_expr -> type_term .)
-    ARROW           shift and go to state 89
+    ARROW           shift and go to state 87
 
   ! PADDING         [ reduce using rule 81 (type_function_expr -> type_term .) ]
   ! RPAREN          [ reduce using rule 81 (type_function_expr -> type_term .) ]
   ! RBRACKET        [ reduce using rule 81 (type_function_expr -> type_term .) ]
 
 
-state 43
+state 42
 
     (82) type_term -> type_app_expression .
 
@@ -814,7 +791,7 @@ state 43
     RBRACKET        reduce using rule 82 (type_term -> type_app_expression .)
 
 
-state 44
+state 43
 
     (83) type_term -> type_factor .
     (84) type_app_expression -> type_factor . _app_args_non_empty
@@ -824,41 +801,41 @@ state 44
     PADDING         reduce using rule 83 (type_term -> type_factor .)
     RPAREN          reduce using rule 83 (type_term -> type_factor .)
     RBRACKET        reduce using rule 83 (type_term -> type_factor .)
-    SPACE           shift and go to state 91
+    SPACE           shift and go to state 89
 
-    _app_args_non_empty            shift and go to state 90
+    _app_args_non_empty            shift and go to state 88
 
-state 45
+state 44
 
     (89) type_factor -> LPAREN . _maybe_padding type_expr _maybe_padding RPAREN
     (91) _maybe_padding -> . PADDING
     (92) _maybe_padding -> . empty
     (65) empty -> .
 
-    PADDING         shift and go to state 93
+    PADDING         shift and go to state 91
     IDENTIFIER      reduce using rule 65 (empty -> .)
     LPAREN          reduce using rule 65 (empty -> .)
     LBRACKET        reduce using rule 65 (empty -> .)
 
-    _maybe_padding                 shift and go to state 92
-    empty                          shift and go to state 94
+    _maybe_padding                 shift and go to state 90
+    empty                          shift and go to state 92
 
-state 46
+state 45
 
     (90) type_factor -> LBRACKET . _maybe_padding type_expr _maybe_padding RBRACKET
     (91) _maybe_padding -> . PADDING
     (92) _maybe_padding -> . empty
     (65) empty -> .
 
-    PADDING         shift and go to state 93
+    PADDING         shift and go to state 91
     IDENTIFIER      reduce using rule 65 (empty -> .)
     LPAREN          reduce using rule 65 (empty -> .)
     LBRACKET        reduce using rule 65 (empty -> .)
 
-    _maybe_padding                 shift and go to state 95
-    empty                          shift and go to state 94
+    _maybe_padding                 shift and go to state 93
+    empty                          shift and go to state 92
 
-state 47
+state 46
 
     (73) _equation_set -> PADDING equation . _equation_set
     (73) _equation_set -> . PADDING equation _equation_set
@@ -866,7 +843,7 @@ state 47
     (65) empty -> .
 
   ! shift/reduce conflict for PADDING resolved as shift
-    PADDING         shift and go to state 29
+    PADDING         shift and go to state 27
     $end            reduce using rule 65 (empty -> .)
     KEYWORD_IN      reduce using rule 65 (empty -> .)
     SPACE           reduce using rule 65 (empty -> .)
@@ -886,10 +863,10 @@ state 47
 
   ! PADDING         [ reduce using rule 65 (empty -> .) ]
 
-    _equation_set                  shift and go to state 96
-    empty                          shift and go to state 30
+    _equation_set                  shift and go to state 94
+    empty                          shift and go to state 28
 
-state 48
+state 47
 
     (71) equation -> pattern EQ expr .
     (10) expr_term0 -> expr . infix_operator_0 expr_term0
@@ -914,15 +891,15 @@ state 48
     OPERATOR        reduce using rule 71 (equation -> pattern EQ expr .)
     ARROW           reduce using rule 71 (equation -> pattern EQ expr .)
     RPAREN          reduce using rule 71 (equation -> pattern EQ expr .)
-    KEYWORD_WHERE   shift and go to state 98
-    TICK_OPERATOR   shift and go to state 99
+    KEYWORD_WHERE   shift and go to state 96
+    TICK_OPERATOR   shift and go to state 97
 
   ! KEYWORD_WHERE   [ reduce using rule 71 (equation -> pattern EQ expr .) ]
   ! TICK_OPERATOR   [ reduce using rule 71 (equation -> pattern EQ expr .) ]
 
-    infix_operator_0               shift and go to state 97
+    infix_operator_0               shift and go to state 95
 
-state 49
+state 48
 
     (13) expr -> expr_term0 .
 
@@ -945,7 +922,7 @@ state 49
     RPAREN          reduce using rule 13 (expr -> expr_term0 .)
 
 
-state 50
+state 49
 
     (11) expr_term0 -> expr_term2 .
     (8) expr_term2 -> expr_term2 . infix_operator_2 expr_term6
@@ -969,15 +946,15 @@ state 50
     KEYWORD_WHERE   reduce using rule 11 (expr_term0 -> expr_term2 .)
     TICK_OPERATOR   reduce using rule 11 (expr_term0 -> expr_term2 .)
     RPAREN          reduce using rule 11 (expr_term0 -> expr_term2 .)
-    OPERATOR        shift and go to state 101
-    ARROW           shift and go to state 102
+    OPERATOR        shift and go to state 99
+    ARROW           shift and go to state 100
 
   ! OPERATOR        [ reduce using rule 11 (expr_term0 -> expr_term2 .) ]
   ! ARROW           [ reduce using rule 11 (expr_term0 -> expr_term2 .) ]
 
-    infix_operator_2               shift and go to state 100
+    infix_operator_2               shift and go to state 98
 
-state 51
+state 50
 
     (9) expr_term2 -> expr_term6 .
     (6) expr_term6 -> expr_term6 . infix_operator_6 expr_term7
@@ -1001,15 +978,15 @@ state 51
     KEYWORD_WHERE   reduce using rule 9 (expr_term2 -> expr_term6 .)
     TICK_OPERATOR   reduce using rule 9 (expr_term2 -> expr_term6 .)
     RPAREN          reduce using rule 9 (expr_term2 -> expr_term6 .)
-    PLUS            shift and go to state 104
-    MINUS           shift and go to state 105
+    PLUS            shift and go to state 102
+    MINUS           shift and go to state 103
 
   ! PLUS            [ reduce using rule 9 (expr_term2 -> expr_term6 .) ]
   ! MINUS           [ reduce using rule 9 (expr_term2 -> expr_term6 .) ]
 
-    infix_operator_6               shift and go to state 103
+    infix_operator_6               shift and go to state 101
 
-state 52
+state 51
 
     (7) expr_term6 -> expr_term7 .
     (4) expr_term7 -> expr_term7 . infix_operator_7 expr_term9
@@ -1035,19 +1012,19 @@ state 52
     KEYWORD_WHERE   reduce using rule 7 (expr_term6 -> expr_term7 .)
     TICK_OPERATOR   reduce using rule 7 (expr_term6 -> expr_term7 .)
     RPAREN          reduce using rule 7 (expr_term6 -> expr_term7 .)
-    STAR            shift and go to state 107
-    SLASH           shift and go to state 108
-    DOUBLESLASH     shift and go to state 109
-    PERCENT         shift and go to state 110
+    STAR            shift and go to state 105
+    SLASH           shift and go to state 106
+    DOUBLESLASH     shift and go to state 107
+    PERCENT         shift and go to state 108
 
   ! STAR            [ reduce using rule 7 (expr_term6 -> expr_term7 .) ]
   ! SLASH           [ reduce using rule 7 (expr_term6 -> expr_term7 .) ]
   ! DOUBLESLASH     [ reduce using rule 7 (expr_term6 -> expr_term7 .) ]
   ! PERCENT         [ reduce using rule 7 (expr_term6 -> expr_term7 .) ]
 
-    infix_operator_7               shift and go to state 106
+    infix_operator_7               shift and go to state 104
 
-state 53
+state 52
 
     (5) expr_term7 -> expr_term9 .
 
@@ -1070,7 +1047,7 @@ state 53
     RPAREN          reduce using rule 5 (expr_term7 -> expr_term9 .)
 
 
-state 54
+state 53
 
     (2) expr_term9 -> expr_factor . infix_operator_9 expr_term9
     (3) expr_term9 -> expr_factor .
@@ -1098,18 +1075,18 @@ state 54
     KEYWORD_WHERE   reduce using rule 3 (expr_term9 -> expr_factor .)
     TICK_OPERATOR   reduce using rule 3 (expr_term9 -> expr_factor .)
     RPAREN          reduce using rule 3 (expr_term9 -> expr_factor .)
-    SPACE           shift and go to state 112
-    DOT_OPERATOR    shift and go to state 114
-    LPAREN          shift and go to state 115
+    SPACE           shift and go to state 110
+    DOT_OPERATOR    shift and go to state 112
+    LPAREN          shift and go to state 113
 
   ! SPACE           [ reduce using rule 3 (expr_term9 -> expr_factor .) ]
   ! DOT_OPERATOR    [ reduce using rule 3 (expr_term9 -> expr_factor .) ]
   ! LPAREN          [ reduce using rule 3 (expr_term9 -> expr_factor .) ]
 
-    infix_operator_9               shift and go to state 111
-    enclosed_expr                  shift and go to state 113
+    infix_operator_9               shift and go to state 109
+    enclosed_expr                  shift and go to state 111
 
-state 55
+state 54
 
     (14) expr_factor -> literal .
 
@@ -1132,7 +1109,7 @@ state 55
     RPAREN          reduce using rule 14 (expr_factor -> literal .)
 
 
-state 56
+state 55
 
     (15) expr_factor -> identifier .
 
@@ -1155,7 +1132,7 @@ state 56
     RPAREN          reduce using rule 15 (expr_factor -> identifier .)
 
 
-state 57
+state 56
 
     (16) expr_factor -> enclosed_expr .
     (39) expr_factor -> enclosed_expr . expr_factor
@@ -1229,48 +1206,48 @@ state 57
     KEYWORD_WHERE   reduce using rule 16 (expr_factor -> enclosed_expr .)
     TICK_OPERATOR   reduce using rule 16 (expr_factor -> enclosed_expr .)
     RPAREN          reduce using rule 16 (expr_factor -> enclosed_expr .)
-    IDENTIFIER      shift and go to state 70
-    LPAREN          shift and go to state 71
-    KEYWORD_LET     shift and go to state 72
-    BACKSLASH       shift and go to state 73
-    BASE10_INTEGER  shift and go to state 74
-    BASE16_INTEGER  shift and go to state 75
-    BASE8_INTEGER   shift and go to state 76
-    BASE2_INTEGER   shift and go to state 77
-    FLOAT           shift and go to state 78
-    STRING          shift and go to state 79
-    CHAR            shift and go to state 80
-    DATE            shift and go to state 81
-    DATETIME        shift and go to state 82
-    DATE_INTERVAL   shift and go to state 83
-    DATETIME_INTERVAL shift and go to state 84
+    IDENTIFIER      shift and go to state 69
+    LPAREN          shift and go to state 70
+    KEYWORD_LET     shift and go to state 71
+    BACKSLASH       shift and go to state 72
+    BASE10_INTEGER  shift and go to state 73
+    BASE16_INTEGER  shift and go to state 74
+    BASE8_INTEGER   shift and go to state 75
+    BASE2_INTEGER   shift and go to state 76
+    FLOAT           shift and go to state 77
+    STRING          shift and go to state 78
+    CHAR            shift and go to state 79
+    DATE            shift and go to state 80
+    DATETIME        shift and go to state 81
+    DATE_INTERVAL   shift and go to state 82
+    DATETIME_INTERVAL shift and go to state 83
 
   ! LPAREN          [ reduce using rule 16 (expr_factor -> enclosed_expr .) ]
 
-    enclosed_expr                  shift and go to state 57
-    expr_factor                    shift and go to state 116
-    literal                        shift and go to state 55
-    identifier                     shift and go to state 56
-    unit_value                     shift and go to state 58
-    letexpr                        shift and go to state 59
-    where_expr                     shift and go to state 60
-    lambda_expr                    shift and go to state 61
-    number                         shift and go to state 62
-    concrete_number                shift and go to state 63
-    string                         shift and go to state 64
-    char                           shift and go to state 65
-    date                           shift and go to state 66
-    datetime                       shift and go to state 67
-    date_interval                  shift and go to state 68
-    datetime_interval              shift and go to state 69
-    expr                           shift and go to state 117
-    expr_term0                     shift and go to state 49
-    expr_term2                     shift and go to state 50
-    expr_term6                     shift and go to state 51
-    expr_term7                     shift and go to state 52
-    expr_term9                     shift and go to state 53
+    enclosed_expr                  shift and go to state 56
+    expr_factor                    shift and go to state 114
+    literal                        shift and go to state 54
+    identifier                     shift and go to state 55
+    unit_value                     shift and go to state 57
+    letexpr                        shift and go to state 58
+    where_expr                     shift and go to state 59
+    lambda_expr                    shift and go to state 60
+    number                         shift and go to state 61
+    concrete_number                shift and go to state 62
+    string                         shift and go to state 63
+    char                           shift and go to state 64
+    date                           shift and go to state 65
+    datetime                       shift and go to state 66
+    date_interval                  shift and go to state 67
+    datetime_interval              shift and go to state 68
+    expr                           shift and go to state 115
+    expr_term0                     shift and go to state 48
+    expr_term2                     shift and go to state 49
+    expr_term6                     shift and go to state 50
+    expr_term7                     shift and go to state 51
+    expr_term9                     shift and go to state 52
 
-state 58
+state 57
 
     (17) expr_factor -> unit_value .
 
@@ -1293,7 +1270,7 @@ state 58
     RPAREN          reduce using rule 17 (expr_factor -> unit_value .)
 
 
-state 59
+state 58
 
     (18) expr_factor -> letexpr .
 
@@ -1316,7 +1293,7 @@ state 59
     RPAREN          reduce using rule 18 (expr_factor -> letexpr .)
 
 
-state 60
+state 59
 
     (19) expr_factor -> where_expr .
 
@@ -1339,7 +1316,7 @@ state 60
     RPAREN          reduce using rule 19 (expr_factor -> where_expr .)
 
 
-state 61
+state 60
 
     (20) expr_factor -> lambda_expr .
 
@@ -1362,7 +1339,7 @@ state 61
     RPAREN          reduce using rule 20 (expr_factor -> lambda_expr .)
 
 
-state 62
+state 61
 
     (22) literal -> number .
     (62) concrete_number -> number . ANNOTATION string
@@ -1386,10 +1363,10 @@ state 62
     KEYWORD_WHERE   reduce using rule 22 (literal -> number .)
     TICK_OPERATOR   reduce using rule 22 (literal -> number .)
     RPAREN          reduce using rule 22 (literal -> number .)
-    ANNOTATION      shift and go to state 118
+    ANNOTATION      shift and go to state 116
 
 
-state 63
+state 62
 
     (23) literal -> concrete_number .
 
@@ -1412,7 +1389,7 @@ state 63
     RPAREN          reduce using rule 23 (literal -> concrete_number .)
 
 
-state 64
+state 63
 
     (24) literal -> string .
 
@@ -1435,7 +1412,7 @@ state 64
     RPAREN          reduce using rule 24 (literal -> string .)
 
 
-state 65
+state 64
 
     (25) literal -> char .
 
@@ -1458,7 +1435,7 @@ state 65
     RPAREN          reduce using rule 25 (literal -> char .)
 
 
-state 66
+state 65
 
     (26) literal -> date .
 
@@ -1481,7 +1458,7 @@ state 66
     RPAREN          reduce using rule 26 (literal -> date .)
 
 
-state 67
+state 66
 
     (27) literal -> datetime .
 
@@ -1504,7 +1481,7 @@ state 67
     RPAREN          reduce using rule 27 (literal -> datetime .)
 
 
-state 68
+state 67
 
     (28) literal -> date_interval .
 
@@ -1527,7 +1504,7 @@ state 68
     RPAREN          reduce using rule 28 (literal -> date_interval .)
 
 
-state 69
+state 68
 
     (29) literal -> datetime_interval .
 
@@ -1550,7 +1527,7 @@ state 69
     RPAREN          reduce using rule 29 (literal -> datetime_interval .)
 
 
-state 70
+state 69
 
     (37) identifier -> IDENTIFIER .
 
@@ -1573,7 +1550,7 @@ state 70
     RPAREN          reduce using rule 37 (identifier -> IDENTIFIER .)
 
 
-state 71
+state 70
 
     (38) enclosed_expr -> LPAREN . expr RPAREN
     (41) enclosed_expr -> LPAREN . DOT_OPERATOR RPAREN
@@ -1645,78 +1622,78 @@ state 71
     (32) date_interval -> . DATE_INTERVAL
     (33) datetime_interval -> . DATETIME_INTERVAL
 
-    DOT_OPERATOR    shift and go to state 121
-    RPAREN          shift and go to state 120
-    TICK_OPERATOR   shift and go to state 99
-    OPERATOR        shift and go to state 101
-    ARROW           shift and go to state 102
-    PLUS            shift and go to state 104
-    MINUS           shift and go to state 105
-    STAR            shift and go to state 107
-    SLASH           shift and go to state 108
-    DOUBLESLASH     shift and go to state 109
-    PERCENT         shift and go to state 110
-    IDENTIFIER      shift and go to state 70
-    LPAREN          shift and go to state 71
-    KEYWORD_LET     shift and go to state 72
-    BACKSLASH       shift and go to state 73
-    BASE10_INTEGER  shift and go to state 74
-    BASE16_INTEGER  shift and go to state 75
-    BASE8_INTEGER   shift and go to state 76
-    BASE2_INTEGER   shift and go to state 77
-    FLOAT           shift and go to state 78
-    STRING          shift and go to state 79
-    CHAR            shift and go to state 80
-    DATE            shift and go to state 81
-    DATETIME        shift and go to state 82
-    DATE_INTERVAL   shift and go to state 83
-    DATETIME_INTERVAL shift and go to state 84
+    DOT_OPERATOR    shift and go to state 119
+    RPAREN          shift and go to state 118
+    TICK_OPERATOR   shift and go to state 97
+    OPERATOR        shift and go to state 99
+    ARROW           shift and go to state 100
+    PLUS            shift and go to state 102
+    MINUS           shift and go to state 103
+    STAR            shift and go to state 105
+    SLASH           shift and go to state 106
+    DOUBLESLASH     shift and go to state 107
+    PERCENT         shift and go to state 108
+    IDENTIFIER      shift and go to state 69
+    LPAREN          shift and go to state 70
+    KEYWORD_LET     shift and go to state 71
+    BACKSLASH       shift and go to state 72
+    BASE10_INTEGER  shift and go to state 73
+    BASE16_INTEGER  shift and go to state 74
+    BASE8_INTEGER   shift and go to state 75
+    BASE2_INTEGER   shift and go to state 76
+    FLOAT           shift and go to state 77
+    STRING          shift and go to state 78
+    CHAR            shift and go to state 79
+    DATE            shift and go to state 80
+    DATETIME        shift and go to state 81
+    DATE_INTERVAL   shift and go to state 82
+    DATETIME_INTERVAL shift and go to state 83
 
-    expr                           shift and go to state 119
-    operator                       shift and go to state 122
-    expr_term0                     shift and go to state 49
-    infix_operator_0               shift and go to state 123
-    infix_operator_2               shift and go to state 124
-    infix_operator_6               shift and go to state 125
-    infix_operator_7               shift and go to state 126
-    expr_term2                     shift and go to state 50
-    expr_term6                     shift and go to state 51
-    expr_term7                     shift and go to state 52
-    expr_term9                     shift and go to state 53
-    expr_factor                    shift and go to state 54
-    literal                        shift and go to state 55
-    identifier                     shift and go to state 56
-    enclosed_expr                  shift and go to state 57
-    unit_value                     shift and go to state 58
-    letexpr                        shift and go to state 59
-    where_expr                     shift and go to state 60
-    lambda_expr                    shift and go to state 61
-    number                         shift and go to state 62
-    concrete_number                shift and go to state 63
-    string                         shift and go to state 64
-    char                           shift and go to state 65
-    date                           shift and go to state 66
-    datetime                       shift and go to state 67
-    date_interval                  shift and go to state 68
-    datetime_interval              shift and go to state 69
+    expr                           shift and go to state 117
+    operator                       shift and go to state 120
+    expr_term0                     shift and go to state 48
+    infix_operator_0               shift and go to state 121
+    infix_operator_2               shift and go to state 122
+    infix_operator_6               shift and go to state 123
+    infix_operator_7               shift and go to state 124
+    expr_term2                     shift and go to state 49
+    expr_term6                     shift and go to state 50
+    expr_term7                     shift and go to state 51
+    expr_term9                     shift and go to state 52
+    expr_factor                    shift and go to state 53
+    literal                        shift and go to state 54
+    identifier                     shift and go to state 55
+    enclosed_expr                  shift and go to state 56
+    unit_value                     shift and go to state 57
+    letexpr                        shift and go to state 58
+    where_expr                     shift and go to state 59
+    lambda_expr                    shift and go to state 60
+    number                         shift and go to state 61
+    concrete_number                shift and go to state 62
+    string                         shift and go to state 63
+    char                           shift and go to state 64
+    date                           shift and go to state 65
+    datetime                       shift and go to state 66
+    date_interval                  shift and go to state 67
+    datetime_interval              shift and go to state 68
 
-state 72
+state 71
 
     (75) letexpr -> KEYWORD_LET . SPACE equations KEYWORD_IN SPACE st_expr
 
-    SPACE           shift and go to state 127
+    SPACE           shift and go to state 125
 
 
-state 73
+state 72
 
     (66) lambda_expr -> BACKSLASH . parameters ARROW expr
     (67) parameters -> . IDENTIFIER _parameters
 
     IDENTIFIER      shift and go to state 21
 
-    parameters                     shift and go to state 128
+    parameters                     shift and go to state 126
 
-state 74
+state 73
 
     (57) number -> BASE10_INTEGER .
 
@@ -1740,7 +1717,7 @@ state 74
     RPAREN          reduce using rule 57 (number -> BASE10_INTEGER .)
 
 
-state 75
+state 74
 
     (58) number -> BASE16_INTEGER .
 
@@ -1764,7 +1741,7 @@ state 75
     RPAREN          reduce using rule 58 (number -> BASE16_INTEGER .)
 
 
-state 76
+state 75
 
     (59) number -> BASE8_INTEGER .
 
@@ -1788,7 +1765,7 @@ state 76
     RPAREN          reduce using rule 59 (number -> BASE8_INTEGER .)
 
 
-state 77
+state 76
 
     (60) number -> BASE2_INTEGER .
 
@@ -1812,7 +1789,7 @@ state 77
     RPAREN          reduce using rule 60 (number -> BASE2_INTEGER .)
 
 
-state 78
+state 77
 
     (61) number -> FLOAT .
 
@@ -1836,7 +1813,7 @@ state 78
     RPAREN          reduce using rule 61 (number -> FLOAT .)
 
 
-state 79
+state 78
 
     (36) string -> STRING .
 
@@ -1859,7 +1836,7 @@ state 79
     RPAREN          reduce using rule 36 (string -> STRING .)
 
 
-state 80
+state 79
 
     (35) char -> CHAR .
 
@@ -1882,7 +1859,7 @@ state 80
     RPAREN          reduce using rule 35 (char -> CHAR .)
 
 
-state 81
+state 80
 
     (30) date -> DATE .
 
@@ -1905,7 +1882,7 @@ state 81
     RPAREN          reduce using rule 30 (date -> DATE .)
 
 
-state 82
+state 81
 
     (31) datetime -> DATETIME .
 
@@ -1928,7 +1905,7 @@ state 82
     RPAREN          reduce using rule 31 (datetime -> DATETIME .)
 
 
-state 83
+state 82
 
     (32) date_interval -> DATE_INTERVAL .
 
@@ -1951,7 +1928,7 @@ state 83
     RPAREN          reduce using rule 32 (date_interval -> DATE_INTERVAL .)
 
 
-state 84
+state 83
 
     (33) datetime_interval -> DATETIME_INTERVAL .
 
@@ -1974,79 +1951,63 @@ state 84
     RPAREN          reduce using rule 33 (datetime_interval -> DATETIME_INTERVAL .)
 
 
-state 85
+state 84
 
     (68) _parameters -> SPACE IDENTIFIER . _parameters
     (68) _parameters -> . SPACE IDENTIFIER _parameters
     (69) _parameters -> . empty
     (65) empty -> .
 
-    SPACE           shift and go to state 33
+    SPACE           shift and go to state 31
     EQ              reduce using rule 65 (empty -> .)
     ARROW           reduce using rule 65 (empty -> .)
 
-    _parameters                    shift and go to state 129
-    empty                          shift and go to state 34
+    _parameters                    shift and go to state 127
+    empty                          shift and go to state 32
 
-state 86
+state 85
 
-    (109) data_cons -> IDENTIFIER . _cons_args
-    (104) _cons_args -> . IDENTIFIER _cons_args
+    (104) _cons_args -> SPACE IDENTIFIER . _cons_args
+    (104) _cons_args -> . SPACE IDENTIFIER _cons_args
     (105) _cons_args -> . empty
     (65) empty -> .
 
-    IDENTIFIER      shift and go to state 24
+    SPACE           shift and go to state 34
+    EQ              reduce using rule 65 (empty -> .)
     PADDING         reduce using rule 65 (empty -> .)
     PIPE            reduce using rule 65 (empty -> .)
     $end            reduce using rule 65 (empty -> .)
 
-    _cons_args                     shift and go to state 130
-    empty                          shift and go to state 26
+    _cons_args                     shift and go to state 128
+    empty                          shift and go to state 36
+
+state 86
+
+    (103) datatype_definition -> KEYWORD_DATA SPACE IDENTIFIER _cons_args EQ . _data_body
+    (106) _data_body -> . data_cons _data_conses
+    (109) data_cons -> . IDENTIFIER _cons_args
+
+    IDENTIFIER      shift and go to state 129
+
+    _data_body                     shift and go to state 130
+    data_cons                      shift and go to state 131
 
 state 87
-
-    (103) datatype_definition -> KEYWORD_DATA IDENTIFIER _cons_args EQ _data_body .
-
-    PADDING         reduce using rule 103 (datatype_definition -> KEYWORD_DATA IDENTIFIER _cons_args EQ _data_body .)
-    $end            reduce using rule 103 (datatype_definition -> KEYWORD_DATA IDENTIFIER _cons_args EQ _data_body .)
-
-
-state 88
-
-    (106) _data_body -> data_cons . _data_conses
-    (107) _data_conses -> . _maybe_padding PIPE data_cons _data_conses
-    (108) _data_conses -> . empty
-    (91) _maybe_padding -> . PADDING
-    (92) _maybe_padding -> . empty
-    (65) empty -> .
-
-  ! shift/reduce conflict for PADDING resolved as shift
-    PADDING         shift and go to state 93
-    $end            reduce using rule 65 (empty -> .)
-    PIPE            reduce using rule 65 (empty -> .)
-
-  ! PADDING         [ reduce using rule 65 (empty -> .) ]
-
-    _data_conses                   shift and go to state 131
-    _maybe_padding                 shift and go to state 132
-    empty                          shift and go to state 133
-
-state 89
 
     (80) type_function_expr -> type_term ARROW . _maybe_padding type_function_expr
     (91) _maybe_padding -> . PADDING
     (92) _maybe_padding -> . empty
     (65) empty -> .
 
-    PADDING         shift and go to state 93
+    PADDING         shift and go to state 91
     IDENTIFIER      reduce using rule 65 (empty -> .)
     LPAREN          reduce using rule 65 (empty -> .)
     LBRACKET        reduce using rule 65 (empty -> .)
 
-    _maybe_padding                 shift and go to state 134
-    empty                          shift and go to state 94
+    _maybe_padding                 shift and go to state 132
+    empty                          shift and go to state 92
 
-state 90
+state 88
 
     (84) type_app_expression -> type_factor _app_args_non_empty .
 
@@ -2056,20 +2017,20 @@ state 90
     RBRACKET        reduce using rule 84 (type_app_expression -> type_factor _app_args_non_empty .)
 
 
-state 91
+state 89
 
     (86) _app_args_non_empty -> SPACE . type_factor _app_args
     (88) type_factor -> . IDENTIFIER
     (89) type_factor -> . LPAREN _maybe_padding type_expr _maybe_padding RPAREN
     (90) type_factor -> . LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET
 
-    IDENTIFIER      shift and go to state 38
-    LPAREN          shift and go to state 45
-    LBRACKET        shift and go to state 46
+    IDENTIFIER      shift and go to state 37
+    LPAREN          shift and go to state 44
+    LBRACKET        shift and go to state 45
 
-    type_factor                    shift and go to state 135
+    type_factor                    shift and go to state 133
 
-state 92
+state 90
 
     (89) type_factor -> LPAREN _maybe_padding . type_expr _maybe_padding RPAREN
     (78) type_expr -> . type_function_expr
@@ -2083,17 +2044,17 @@ state 92
     (89) type_factor -> . LPAREN _maybe_padding type_expr _maybe_padding RPAREN
     (90) type_factor -> . LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET
 
-    IDENTIFIER      shift and go to state 38
-    LPAREN          shift and go to state 45
-    LBRACKET        shift and go to state 46
+    IDENTIFIER      shift and go to state 37
+    LPAREN          shift and go to state 44
+    LBRACKET        shift and go to state 45
 
-    type_expr                      shift and go to state 136
-    type_function_expr             shift and go to state 41
-    type_term                      shift and go to state 42
-    type_app_expression            shift and go to state 43
-    type_factor                    shift and go to state 44
+    type_expr                      shift and go to state 134
+    type_function_expr             shift and go to state 40
+    type_term                      shift and go to state 41
+    type_app_expression            shift and go to state 42
+    type_factor                    shift and go to state 43
 
-state 93
+state 91
 
     (91) _maybe_padding -> PADDING .
 
@@ -2105,7 +2066,7 @@ state 93
     RBRACKET        reduce using rule 91 (_maybe_padding -> PADDING .)
 
 
-state 94
+state 92
 
     (92) _maybe_padding -> empty .
 
@@ -2116,7 +2077,7 @@ state 94
     RBRACKET        reduce using rule 92 (_maybe_padding -> empty .)
 
 
-state 95
+state 93
 
     (90) type_factor -> LBRACKET _maybe_padding . type_expr _maybe_padding RBRACKET
     (78) type_expr -> . type_function_expr
@@ -2130,17 +2091,17 @@ state 95
     (89) type_factor -> . LPAREN _maybe_padding type_expr _maybe_padding RPAREN
     (90) type_factor -> . LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET
 
-    IDENTIFIER      shift and go to state 38
-    LPAREN          shift and go to state 45
-    LBRACKET        shift and go to state 46
+    IDENTIFIER      shift and go to state 37
+    LPAREN          shift and go to state 44
+    LBRACKET        shift and go to state 45
 
-    type_expr                      shift and go to state 137
-    type_function_expr             shift and go to state 41
-    type_term                      shift and go to state 42
-    type_app_expression            shift and go to state 43
-    type_factor                    shift and go to state 44
+    type_expr                      shift and go to state 135
+    type_function_expr             shift and go to state 40
+    type_term                      shift and go to state 41
+    type_app_expression            shift and go to state 42
+    type_factor                    shift and go to state 43
 
-state 96
+state 94
 
     (73) _equation_set -> PADDING equation _equation_set .
 
@@ -2163,7 +2124,7 @@ state 96
     RPAREN          reduce using rule 73 (_equation_set -> PADDING equation _equation_set .)
 
 
-state 97
+state 95
 
     (10) expr_term0 -> expr infix_operator_0 . expr_term0
     (10) expr_term0 -> . expr infix_operator_0 expr_term0
@@ -2219,55 +2180,55 @@ state 97
     (32) date_interval -> . DATE_INTERVAL
     (33) datetime_interval -> . DATETIME_INTERVAL
 
-    IDENTIFIER      shift and go to state 70
-    LPAREN          shift and go to state 71
-    KEYWORD_LET     shift and go to state 72
-    BACKSLASH       shift and go to state 73
-    BASE10_INTEGER  shift and go to state 74
-    BASE16_INTEGER  shift and go to state 75
-    BASE8_INTEGER   shift and go to state 76
-    BASE2_INTEGER   shift and go to state 77
-    FLOAT           shift and go to state 78
-    STRING          shift and go to state 79
-    CHAR            shift and go to state 80
-    DATE            shift and go to state 81
-    DATETIME        shift and go to state 82
-    DATE_INTERVAL   shift and go to state 83
-    DATETIME_INTERVAL shift and go to state 84
+    IDENTIFIER      shift and go to state 69
+    LPAREN          shift and go to state 70
+    KEYWORD_LET     shift and go to state 71
+    BACKSLASH       shift and go to state 72
+    BASE10_INTEGER  shift and go to state 73
+    BASE16_INTEGER  shift and go to state 74
+    BASE8_INTEGER   shift and go to state 75
+    BASE2_INTEGER   shift and go to state 76
+    FLOAT           shift and go to state 77
+    STRING          shift and go to state 78
+    CHAR            shift and go to state 79
+    DATE            shift and go to state 80
+    DATETIME        shift and go to state 81
+    DATE_INTERVAL   shift and go to state 82
+    DATETIME_INTERVAL shift and go to state 83
 
-    expr                           shift and go to state 138
-    expr_term0                     shift and go to state 139
-    expr_term2                     shift and go to state 50
-    expr_term6                     shift and go to state 51
-    expr_term7                     shift and go to state 52
-    expr_term9                     shift and go to state 53
-    expr_factor                    shift and go to state 54
-    literal                        shift and go to state 55
-    identifier                     shift and go to state 56
-    enclosed_expr                  shift and go to state 57
-    unit_value                     shift and go to state 58
-    letexpr                        shift and go to state 59
-    where_expr                     shift and go to state 60
-    lambda_expr                    shift and go to state 61
-    number                         shift and go to state 62
-    concrete_number                shift and go to state 63
-    string                         shift and go to state 64
-    char                           shift and go to state 65
-    date                           shift and go to state 66
-    datetime                       shift and go to state 67
-    date_interval                  shift and go to state 68
-    datetime_interval              shift and go to state 69
+    expr                           shift and go to state 136
+    expr_term0                     shift and go to state 137
+    expr_term2                     shift and go to state 49
+    expr_term6                     shift and go to state 50
+    expr_term7                     shift and go to state 51
+    expr_term9                     shift and go to state 52
+    expr_factor                    shift and go to state 53
+    literal                        shift and go to state 54
+    identifier                     shift and go to state 55
+    enclosed_expr                  shift and go to state 56
+    unit_value                     shift and go to state 57
+    letexpr                        shift and go to state 58
+    where_expr                     shift and go to state 59
+    lambda_expr                    shift and go to state 60
+    number                         shift and go to state 61
+    concrete_number                shift and go to state 62
+    string                         shift and go to state 63
+    char                           shift and go to state 64
+    date                           shift and go to state 65
+    datetime                       shift and go to state 66
+    date_interval                  shift and go to state 67
+    datetime_interval              shift and go to state 68
 
-state 98
+state 96
 
     (76) where_expr -> expr KEYWORD_WHERE . SPACE equations
     (77) where_expr -> expr KEYWORD_WHERE . PADDING equations
 
-    SPACE           shift and go to state 140
-    PADDING         shift and go to state 141
+    SPACE           shift and go to state 138
+    PADDING         shift and go to state 139
 
 
-state 99
+state 97
 
     (52) infix_operator_0 -> TICK_OPERATOR .
 
@@ -2289,7 +2250,7 @@ state 99
     RPAREN          reduce using rule 52 (infix_operator_0 -> TICK_OPERATOR .)
 
 
-state 100
+state 98
 
     (8) expr_term2 -> expr_term2 infix_operator_2 . expr_term6
     (6) expr_term6 -> . expr_term6 infix_operator_6 expr_term7
@@ -2345,46 +2306,46 @@ state 100
     (8) expr_term2 -> . expr_term2 infix_operator_2 expr_term6
     (9) expr_term2 -> . expr_term6
 
-    IDENTIFIER      shift and go to state 70
-    LPAREN          shift and go to state 71
-    KEYWORD_LET     shift and go to state 72
-    BACKSLASH       shift and go to state 73
-    BASE10_INTEGER  shift and go to state 74
-    BASE16_INTEGER  shift and go to state 75
-    BASE8_INTEGER   shift and go to state 76
-    BASE2_INTEGER   shift and go to state 77
-    FLOAT           shift and go to state 78
-    STRING          shift and go to state 79
-    CHAR            shift and go to state 80
-    DATE            shift and go to state 81
-    DATETIME        shift and go to state 82
-    DATE_INTERVAL   shift and go to state 83
-    DATETIME_INTERVAL shift and go to state 84
+    IDENTIFIER      shift and go to state 69
+    LPAREN          shift and go to state 70
+    KEYWORD_LET     shift and go to state 71
+    BACKSLASH       shift and go to state 72
+    BASE10_INTEGER  shift and go to state 73
+    BASE16_INTEGER  shift and go to state 74
+    BASE8_INTEGER   shift and go to state 75
+    BASE2_INTEGER   shift and go to state 76
+    FLOAT           shift and go to state 77
+    STRING          shift and go to state 78
+    CHAR            shift and go to state 79
+    DATE            shift and go to state 80
+    DATETIME        shift and go to state 81
+    DATE_INTERVAL   shift and go to state 82
+    DATETIME_INTERVAL shift and go to state 83
 
-    expr_term2                     shift and go to state 50
-    expr_term6                     shift and go to state 142
-    expr_term7                     shift and go to state 52
-    expr_term9                     shift and go to state 53
-    expr_factor                    shift and go to state 54
-    literal                        shift and go to state 55
-    identifier                     shift and go to state 56
-    enclosed_expr                  shift and go to state 57
-    unit_value                     shift and go to state 58
-    letexpr                        shift and go to state 59
-    where_expr                     shift and go to state 60
-    lambda_expr                    shift and go to state 61
-    number                         shift and go to state 62
-    concrete_number                shift and go to state 63
-    string                         shift and go to state 64
-    char                           shift and go to state 65
-    date                           shift and go to state 66
-    datetime                       shift and go to state 67
-    date_interval                  shift and go to state 68
-    datetime_interval              shift and go to state 69
-    expr                           shift and go to state 117
-    expr_term0                     shift and go to state 49
+    expr_term2                     shift and go to state 49
+    expr_term6                     shift and go to state 140
+    expr_term7                     shift and go to state 51
+    expr_term9                     shift and go to state 52
+    expr_factor                    shift and go to state 53
+    literal                        shift and go to state 54
+    identifier                     shift and go to state 55
+    enclosed_expr                  shift and go to state 56
+    unit_value                     shift and go to state 57
+    letexpr                        shift and go to state 58
+    where_expr                     shift and go to state 59
+    lambda_expr                    shift and go to state 60
+    number                         shift and go to state 61
+    concrete_number                shift and go to state 62
+    string                         shift and go to state 63
+    char                           shift and go to state 64
+    date                           shift and go to state 65
+    datetime                       shift and go to state 66
+    date_interval                  shift and go to state 67
+    datetime_interval              shift and go to state 68
+    expr                           shift and go to state 115
+    expr_term0                     shift and go to state 48
 
-state 101
+state 99
 
     (50) infix_operator_2 -> OPERATOR .
 
@@ -2406,7 +2367,7 @@ state 101
     RPAREN          reduce using rule 50 (infix_operator_2 -> OPERATOR .)
 
 
-state 102
+state 100
 
     (51) infix_operator_2 -> ARROW .
 
@@ -2428,7 +2389,7 @@ state 102
     RPAREN          reduce using rule 51 (infix_operator_2 -> ARROW .)
 
 
-state 103
+state 101
 
     (6) expr_term6 -> expr_term6 infix_operator_6 . expr_term7
     (4) expr_term7 -> . expr_term7 infix_operator_7 expr_term9
@@ -2484,46 +2445,46 @@ state 103
     (6) expr_term6 -> . expr_term6 infix_operator_6 expr_term7
     (7) expr_term6 -> . expr_term7
 
-    IDENTIFIER      shift and go to state 70
-    LPAREN          shift and go to state 71
-    KEYWORD_LET     shift and go to state 72
-    BACKSLASH       shift and go to state 73
-    BASE10_INTEGER  shift and go to state 74
-    BASE16_INTEGER  shift and go to state 75
-    BASE8_INTEGER   shift and go to state 76
-    BASE2_INTEGER   shift and go to state 77
-    FLOAT           shift and go to state 78
-    STRING          shift and go to state 79
-    CHAR            shift and go to state 80
-    DATE            shift and go to state 81
-    DATETIME        shift and go to state 82
-    DATE_INTERVAL   shift and go to state 83
-    DATETIME_INTERVAL shift and go to state 84
+    IDENTIFIER      shift and go to state 69
+    LPAREN          shift and go to state 70
+    KEYWORD_LET     shift and go to state 71
+    BACKSLASH       shift and go to state 72
+    BASE10_INTEGER  shift and go to state 73
+    BASE16_INTEGER  shift and go to state 74
+    BASE8_INTEGER   shift and go to state 75
+    BASE2_INTEGER   shift and go to state 76
+    FLOAT           shift and go to state 77
+    STRING          shift and go to state 78
+    CHAR            shift and go to state 79
+    DATE            shift and go to state 80
+    DATETIME        shift and go to state 81
+    DATE_INTERVAL   shift and go to state 82
+    DATETIME_INTERVAL shift and go to state 83
 
-    expr_term6                     shift and go to state 51
-    expr_term7                     shift and go to state 143
-    expr_term9                     shift and go to state 53
-    expr_factor                    shift and go to state 54
-    literal                        shift and go to state 55
-    identifier                     shift and go to state 56
-    enclosed_expr                  shift and go to state 57
-    unit_value                     shift and go to state 58
-    letexpr                        shift and go to state 59
-    where_expr                     shift and go to state 60
-    lambda_expr                    shift and go to state 61
-    number                         shift and go to state 62
-    concrete_number                shift and go to state 63
-    string                         shift and go to state 64
-    char                           shift and go to state 65
-    date                           shift and go to state 66
-    datetime                       shift and go to state 67
-    date_interval                  shift and go to state 68
-    datetime_interval              shift and go to state 69
-    expr                           shift and go to state 117
-    expr_term0                     shift and go to state 49
-    expr_term2                     shift and go to state 50
+    expr_term6                     shift and go to state 50
+    expr_term7                     shift and go to state 141
+    expr_term9                     shift and go to state 52
+    expr_factor                    shift and go to state 53
+    literal                        shift and go to state 54
+    identifier                     shift and go to state 55
+    enclosed_expr                  shift and go to state 56
+    unit_value                     shift and go to state 57
+    letexpr                        shift and go to state 58
+    where_expr                     shift and go to state 59
+    lambda_expr                    shift and go to state 60
+    number                         shift and go to state 61
+    concrete_number                shift and go to state 62
+    string                         shift and go to state 63
+    char                           shift and go to state 64
+    date                           shift and go to state 65
+    datetime                       shift and go to state 66
+    date_interval                  shift and go to state 67
+    datetime_interval              shift and go to state 68
+    expr                           shift and go to state 115
+    expr_term0                     shift and go to state 48
+    expr_term2                     shift and go to state 49
 
-state 104
+state 102
 
     (48) infix_operator_6 -> PLUS .
 
@@ -2545,7 +2506,7 @@ state 104
     RPAREN          reduce using rule 48 (infix_operator_6 -> PLUS .)
 
 
-state 105
+state 103
 
     (49) infix_operator_6 -> MINUS .
 
@@ -2567,7 +2528,7 @@ state 105
     RPAREN          reduce using rule 49 (infix_operator_6 -> MINUS .)
 
 
-state 106
+state 104
 
     (4) expr_term7 -> expr_term7 infix_operator_7 . expr_term9
     (2) expr_term9 -> . expr_factor infix_operator_9 expr_term9
@@ -2623,46 +2584,46 @@ state 106
     (4) expr_term7 -> . expr_term7 infix_operator_7 expr_term9
     (5) expr_term7 -> . expr_term9
 
-    IDENTIFIER      shift and go to state 70
-    LPAREN          shift and go to state 71
-    KEYWORD_LET     shift and go to state 72
-    BACKSLASH       shift and go to state 73
-    BASE10_INTEGER  shift and go to state 74
-    BASE16_INTEGER  shift and go to state 75
-    BASE8_INTEGER   shift and go to state 76
-    BASE2_INTEGER   shift and go to state 77
-    FLOAT           shift and go to state 78
-    STRING          shift and go to state 79
-    CHAR            shift and go to state 80
-    DATE            shift and go to state 81
-    DATETIME        shift and go to state 82
-    DATE_INTERVAL   shift and go to state 83
-    DATETIME_INTERVAL shift and go to state 84
+    IDENTIFIER      shift and go to state 69
+    LPAREN          shift and go to state 70
+    KEYWORD_LET     shift and go to state 71
+    BACKSLASH       shift and go to state 72
+    BASE10_INTEGER  shift and go to state 73
+    BASE16_INTEGER  shift and go to state 74
+    BASE8_INTEGER   shift and go to state 75
+    BASE2_INTEGER   shift and go to state 76
+    FLOAT           shift and go to state 77
+    STRING          shift and go to state 78
+    CHAR            shift and go to state 79
+    DATE            shift and go to state 80
+    DATETIME        shift and go to state 81
+    DATE_INTERVAL   shift and go to state 82
+    DATETIME_INTERVAL shift and go to state 83
 
-    expr_term7                     shift and go to state 52
-    expr_term9                     shift and go to state 144
-    expr_factor                    shift and go to state 54
-    literal                        shift and go to state 55
-    identifier                     shift and go to state 56
-    enclosed_expr                  shift and go to state 57
-    unit_value                     shift and go to state 58
-    letexpr                        shift and go to state 59
-    where_expr                     shift and go to state 60
-    lambda_expr                    shift and go to state 61
-    number                         shift and go to state 62
-    concrete_number                shift and go to state 63
-    string                         shift and go to state 64
-    char                           shift and go to state 65
-    date                           shift and go to state 66
-    datetime                       shift and go to state 67
-    date_interval                  shift and go to state 68
-    datetime_interval              shift and go to state 69
-    expr                           shift and go to state 117
-    expr_term0                     shift and go to state 49
-    expr_term2                     shift and go to state 50
-    expr_term6                     shift and go to state 51
+    expr_term7                     shift and go to state 51
+    expr_term9                     shift and go to state 142
+    expr_factor                    shift and go to state 53
+    literal                        shift and go to state 54
+    identifier                     shift and go to state 55
+    enclosed_expr                  shift and go to state 56
+    unit_value                     shift and go to state 57
+    letexpr                        shift and go to state 58
+    where_expr                     shift and go to state 59
+    lambda_expr                    shift and go to state 60
+    number                         shift and go to state 61
+    concrete_number                shift and go to state 62
+    string                         shift and go to state 63
+    char                           shift and go to state 64
+    date                           shift and go to state 65
+    datetime                       shift and go to state 66
+    date_interval                  shift and go to state 67
+    datetime_interval              shift and go to state 68
+    expr                           shift and go to state 115
+    expr_term0                     shift and go to state 48
+    expr_term2                     shift and go to state 49
+    expr_term6                     shift and go to state 50
 
-state 107
+state 105
 
     (44) infix_operator_7 -> STAR .
 
@@ -2684,7 +2645,7 @@ state 107
     RPAREN          reduce using rule 44 (infix_operator_7 -> STAR .)
 
 
-state 108
+state 106
 
     (45) infix_operator_7 -> SLASH .
 
@@ -2706,7 +2667,7 @@ state 108
     RPAREN          reduce using rule 45 (infix_operator_7 -> SLASH .)
 
 
-state 109
+state 107
 
     (46) infix_operator_7 -> DOUBLESLASH .
 
@@ -2728,7 +2689,7 @@ state 109
     RPAREN          reduce using rule 46 (infix_operator_7 -> DOUBLESLASH .)
 
 
-state 110
+state 108
 
     (47) infix_operator_7 -> PERCENT .
 
@@ -2750,7 +2711,7 @@ state 110
     RPAREN          reduce using rule 47 (infix_operator_7 -> PERCENT .)
 
 
-state 111
+state 109
 
     (2) expr_term9 -> expr_factor infix_operator_9 . expr_term9
     (2) expr_term9 -> . expr_factor infix_operator_9 expr_term9
@@ -2806,46 +2767,46 @@ state 111
     (4) expr_term7 -> . expr_term7 infix_operator_7 expr_term9
     (5) expr_term7 -> . expr_term9
 
-    IDENTIFIER      shift and go to state 70
-    LPAREN          shift and go to state 71
-    KEYWORD_LET     shift and go to state 72
-    BACKSLASH       shift and go to state 73
-    BASE10_INTEGER  shift and go to state 74
-    BASE16_INTEGER  shift and go to state 75
-    BASE8_INTEGER   shift and go to state 76
-    BASE2_INTEGER   shift and go to state 77
-    FLOAT           shift and go to state 78
-    STRING          shift and go to state 79
-    CHAR            shift and go to state 80
-    DATE            shift and go to state 81
-    DATETIME        shift and go to state 82
-    DATE_INTERVAL   shift and go to state 83
-    DATETIME_INTERVAL shift and go to state 84
+    IDENTIFIER      shift and go to state 69
+    LPAREN          shift and go to state 70
+    KEYWORD_LET     shift and go to state 71
+    BACKSLASH       shift and go to state 72
+    BASE10_INTEGER  shift and go to state 73
+    BASE16_INTEGER  shift and go to state 74
+    BASE8_INTEGER   shift and go to state 75
+    BASE2_INTEGER   shift and go to state 76
+    FLOAT           shift and go to state 77
+    STRING          shift and go to state 78
+    CHAR            shift and go to state 79
+    DATE            shift and go to state 80
+    DATETIME        shift and go to state 81
+    DATE_INTERVAL   shift and go to state 82
+    DATETIME_INTERVAL shift and go to state 83
 
-    expr_factor                    shift and go to state 54
-    expr_term9                     shift and go to state 145
-    literal                        shift and go to state 55
-    identifier                     shift and go to state 56
-    enclosed_expr                  shift and go to state 57
-    unit_value                     shift and go to state 58
-    letexpr                        shift and go to state 59
-    where_expr                     shift and go to state 60
-    lambda_expr                    shift and go to state 61
-    number                         shift and go to state 62
-    concrete_number                shift and go to state 63
-    string                         shift and go to state 64
-    char                           shift and go to state 65
-    date                           shift and go to state 66
-    datetime                       shift and go to state 67
-    date_interval                  shift and go to state 68
-    datetime_interval              shift and go to state 69
-    expr                           shift and go to state 117
-    expr_term0                     shift and go to state 49
-    expr_term2                     shift and go to state 50
-    expr_term6                     shift and go to state 51
-    expr_term7                     shift and go to state 52
+    expr_factor                    shift and go to state 53
+    expr_term9                     shift and go to state 143
+    literal                        shift and go to state 54
+    identifier                     shift and go to state 55
+    enclosed_expr                  shift and go to state 56
+    unit_value                     shift and go to state 57
+    letexpr                        shift and go to state 58
+    where_expr                     shift and go to state 59
+    lambda_expr                    shift and go to state 60
+    number                         shift and go to state 61
+    concrete_number                shift and go to state 62
+    string                         shift and go to state 63
+    char                           shift and go to state 64
+    date                           shift and go to state 65
+    datetime                       shift and go to state 66
+    date_interval                  shift and go to state 67
+    datetime_interval              shift and go to state 68
+    expr                           shift and go to state 115
+    expr_term0                     shift and go to state 48
+    expr_term2                     shift and go to state 49
+    expr_term6                     shift and go to state 50
+    expr_term7                     shift and go to state 51
 
-state 112
+state 110
 
     (1) expr_factor -> expr_factor SPACE . expr_factor
     (1) expr_factor -> . expr_factor SPACE expr_factor
@@ -2901,46 +2862,46 @@ state 112
     (2) expr_term9 -> . expr_factor infix_operator_9 expr_term9
     (3) expr_term9 -> . expr_factor
 
-    IDENTIFIER      shift and go to state 70
-    LPAREN          shift and go to state 71
-    KEYWORD_LET     shift and go to state 72
-    BACKSLASH       shift and go to state 73
-    BASE10_INTEGER  shift and go to state 74
-    BASE16_INTEGER  shift and go to state 75
-    BASE8_INTEGER   shift and go to state 76
-    BASE2_INTEGER   shift and go to state 77
-    FLOAT           shift and go to state 78
-    STRING          shift and go to state 79
-    CHAR            shift and go to state 80
-    DATE            shift and go to state 81
-    DATETIME        shift and go to state 82
-    DATE_INTERVAL   shift and go to state 83
-    DATETIME_INTERVAL shift and go to state 84
+    IDENTIFIER      shift and go to state 69
+    LPAREN          shift and go to state 70
+    KEYWORD_LET     shift and go to state 71
+    BACKSLASH       shift and go to state 72
+    BASE10_INTEGER  shift and go to state 73
+    BASE16_INTEGER  shift and go to state 74
+    BASE8_INTEGER   shift and go to state 75
+    BASE2_INTEGER   shift and go to state 76
+    FLOAT           shift and go to state 77
+    STRING          shift and go to state 78
+    CHAR            shift and go to state 79
+    DATE            shift and go to state 80
+    DATETIME        shift and go to state 81
+    DATE_INTERVAL   shift and go to state 82
+    DATETIME_INTERVAL shift and go to state 83
 
-    expr_factor                    shift and go to state 146
-    literal                        shift and go to state 55
-    identifier                     shift and go to state 56
-    enclosed_expr                  shift and go to state 57
-    unit_value                     shift and go to state 58
-    letexpr                        shift and go to state 59
-    where_expr                     shift and go to state 60
-    lambda_expr                    shift and go to state 61
-    number                         shift and go to state 62
-    concrete_number                shift and go to state 63
-    string                         shift and go to state 64
-    char                           shift and go to state 65
-    date                           shift and go to state 66
-    datetime                       shift and go to state 67
-    date_interval                  shift and go to state 68
-    datetime_interval              shift and go to state 69
-    expr                           shift and go to state 117
-    expr_term0                     shift and go to state 49
-    expr_term2                     shift and go to state 50
-    expr_term6                     shift and go to state 51
-    expr_term7                     shift and go to state 52
-    expr_term9                     shift and go to state 53
+    expr_factor                    shift and go to state 144
+    literal                        shift and go to state 54
+    identifier                     shift and go to state 55
+    enclosed_expr                  shift and go to state 56
+    unit_value                     shift and go to state 57
+    letexpr                        shift and go to state 58
+    where_expr                     shift and go to state 59
+    lambda_expr                    shift and go to state 60
+    number                         shift and go to state 61
+    concrete_number                shift and go to state 62
+    string                         shift and go to state 63
+    char                           shift and go to state 64
+    date                           shift and go to state 65
+    datetime                       shift and go to state 66
+    date_interval                  shift and go to state 67
+    datetime_interval              shift and go to state 68
+    expr                           shift and go to state 115
+    expr_term0                     shift and go to state 48
+    expr_term2                     shift and go to state 49
+    expr_term6                     shift and go to state 50
+    expr_term7                     shift and go to state 51
+    expr_term9                     shift and go to state 52
 
-state 113
+state 111
 
     (40) expr_factor -> expr_factor enclosed_expr .
 
@@ -2963,7 +2924,7 @@ state 113
     RPAREN          reduce using rule 40 (expr_factor -> expr_factor enclosed_expr .)
 
 
-state 114
+state 112
 
     (43) infix_operator_9 -> DOT_OPERATOR .
 
@@ -2984,7 +2945,7 @@ state 114
     DATETIME_INTERVAL reduce using rule 43 (infix_operator_9 -> DOT_OPERATOR .)
 
 
-state 115
+state 113
 
     (38) enclosed_expr -> LPAREN . expr RPAREN
     (41) enclosed_expr -> LPAREN . DOT_OPERATOR RPAREN
@@ -3055,61 +3016,61 @@ state 115
     (32) date_interval -> . DATE_INTERVAL
     (33) datetime_interval -> . DATETIME_INTERVAL
 
-    DOT_OPERATOR    shift and go to state 121
-    TICK_OPERATOR   shift and go to state 99
-    OPERATOR        shift and go to state 101
-    ARROW           shift and go to state 102
-    PLUS            shift and go to state 104
-    MINUS           shift and go to state 105
-    STAR            shift and go to state 107
-    SLASH           shift and go to state 108
-    DOUBLESLASH     shift and go to state 109
-    PERCENT         shift and go to state 110
-    IDENTIFIER      shift and go to state 70
-    LPAREN          shift and go to state 71
-    KEYWORD_LET     shift and go to state 72
-    BACKSLASH       shift and go to state 73
-    BASE10_INTEGER  shift and go to state 74
-    BASE16_INTEGER  shift and go to state 75
-    BASE8_INTEGER   shift and go to state 76
-    BASE2_INTEGER   shift and go to state 77
-    FLOAT           shift and go to state 78
-    STRING          shift and go to state 79
-    CHAR            shift and go to state 80
-    DATE            shift and go to state 81
-    DATETIME        shift and go to state 82
-    DATE_INTERVAL   shift and go to state 83
-    DATETIME_INTERVAL shift and go to state 84
+    DOT_OPERATOR    shift and go to state 119
+    TICK_OPERATOR   shift and go to state 97
+    OPERATOR        shift and go to state 99
+    ARROW           shift and go to state 100
+    PLUS            shift and go to state 102
+    MINUS           shift and go to state 103
+    STAR            shift and go to state 105
+    SLASH           shift and go to state 106
+    DOUBLESLASH     shift and go to state 107
+    PERCENT         shift and go to state 108
+    IDENTIFIER      shift and go to state 69
+    LPAREN          shift and go to state 70
+    KEYWORD_LET     shift and go to state 71
+    BACKSLASH       shift and go to state 72
+    BASE10_INTEGER  shift and go to state 73
+    BASE16_INTEGER  shift and go to state 74
+    BASE8_INTEGER   shift and go to state 75
+    BASE2_INTEGER   shift and go to state 76
+    FLOAT           shift and go to state 77
+    STRING          shift and go to state 78
+    CHAR            shift and go to state 79
+    DATE            shift and go to state 80
+    DATETIME        shift and go to state 81
+    DATE_INTERVAL   shift and go to state 82
+    DATETIME_INTERVAL shift and go to state 83
 
-    expr                           shift and go to state 119
-    operator                       shift and go to state 122
-    expr_term0                     shift and go to state 49
-    infix_operator_0               shift and go to state 123
-    infix_operator_2               shift and go to state 124
-    infix_operator_6               shift and go to state 125
-    infix_operator_7               shift and go to state 126
-    expr_term2                     shift and go to state 50
-    expr_term6                     shift and go to state 51
-    expr_term7                     shift and go to state 52
-    expr_term9                     shift and go to state 53
-    expr_factor                    shift and go to state 54
-    literal                        shift and go to state 55
-    identifier                     shift and go to state 56
-    enclosed_expr                  shift and go to state 57
-    unit_value                     shift and go to state 58
-    letexpr                        shift and go to state 59
-    where_expr                     shift and go to state 60
-    lambda_expr                    shift and go to state 61
-    number                         shift and go to state 62
-    concrete_number                shift and go to state 63
-    string                         shift and go to state 64
-    char                           shift and go to state 65
-    date                           shift and go to state 66
-    datetime                       shift and go to state 67
-    date_interval                  shift and go to state 68
-    datetime_interval              shift and go to state 69
+    expr                           shift and go to state 117
+    operator                       shift and go to state 120
+    expr_term0                     shift and go to state 48
+    infix_operator_0               shift and go to state 121
+    infix_operator_2               shift and go to state 122
+    infix_operator_6               shift and go to state 123
+    infix_operator_7               shift and go to state 124
+    expr_term2                     shift and go to state 49
+    expr_term6                     shift and go to state 50
+    expr_term7                     shift and go to state 51
+    expr_term9                     shift and go to state 52
+    expr_factor                    shift and go to state 53
+    literal                        shift and go to state 54
+    identifier                     shift and go to state 55
+    enclosed_expr                  shift and go to state 56
+    unit_value                     shift and go to state 57
+    letexpr                        shift and go to state 58
+    where_expr                     shift and go to state 59
+    lambda_expr                    shift and go to state 60
+    number                         shift and go to state 61
+    concrete_number                shift and go to state 62
+    string                         shift and go to state 63
+    char                           shift and go to state 64
+    date                           shift and go to state 65
+    datetime                       shift and go to state 66
+    date_interval                  shift and go to state 67
+    datetime_interval              shift and go to state 68
 
-state 116
+state 114
 
     (39) expr_factor -> enclosed_expr expr_factor .
     (1) expr_factor -> expr_factor . SPACE expr_factor
@@ -3138,7 +3099,7 @@ state 116
     $end            reduce using rule 39 (expr_factor -> enclosed_expr expr_factor .)
     KEYWORD_IN      reduce using rule 39 (expr_factor -> enclosed_expr expr_factor .)
     RPAREN          reduce using rule 39 (expr_factor -> enclosed_expr expr_factor .)
-    SPACE           shift and go to state 112
+    SPACE           shift and go to state 110
     STAR            reduce using rule 3 (expr_term9 -> expr_factor .)
     SLASH           reduce using rule 3 (expr_term9 -> expr_factor .)
     DOUBLESLASH     reduce using rule 3 (expr_term9 -> expr_factor .)
@@ -3149,8 +3110,8 @@ state 116
     ARROW           reduce using rule 3 (expr_term9 -> expr_factor .)
     KEYWORD_WHERE   reduce using rule 3 (expr_term9 -> expr_factor .)
     TICK_OPERATOR   reduce using rule 3 (expr_term9 -> expr_factor .)
-    LPAREN          shift and go to state 115
-    DOT_OPERATOR    shift and go to state 114
+    LPAREN          shift and go to state 113
+    DOT_OPERATOR    shift and go to state 112
 
   ! SPACE           [ reduce using rule 39 (expr_factor -> enclosed_expr expr_factor .) ]
   ! DOT_OPERATOR    [ reduce using rule 39 (expr_factor -> enclosed_expr expr_factor .) ]
@@ -3166,22 +3127,22 @@ state 116
   ! KEYWORD_WHERE   [ reduce using rule 39 (expr_factor -> enclosed_expr expr_factor .) ]
   ! TICK_OPERATOR   [ reduce using rule 39 (expr_factor -> enclosed_expr expr_factor .) ]
 
-    enclosed_expr                  shift and go to state 113
-    infix_operator_9               shift and go to state 111
+    enclosed_expr                  shift and go to state 111
+    infix_operator_9               shift and go to state 109
 
-state 117
+state 115
 
     (76) where_expr -> expr . KEYWORD_WHERE SPACE equations
     (77) where_expr -> expr . KEYWORD_WHERE PADDING equations
     (10) expr_term0 -> expr . infix_operator_0 expr_term0
     (52) infix_operator_0 -> . TICK_OPERATOR
 
-    KEYWORD_WHERE   shift and go to state 98
-    TICK_OPERATOR   shift and go to state 99
+    KEYWORD_WHERE   shift and go to state 96
+    TICK_OPERATOR   shift and go to state 97
 
-    infix_operator_0               shift and go to state 97
+    infix_operator_0               shift and go to state 95
 
-state 118
+state 116
 
     (62) concrete_number -> number ANNOTATION . string
     (63) concrete_number -> number ANNOTATION . char
@@ -3190,15 +3151,15 @@ state 118
     (35) char -> . CHAR
     (37) identifier -> . IDENTIFIER
 
-    STRING          shift and go to state 79
-    CHAR            shift and go to state 80
-    IDENTIFIER      shift and go to state 70
+    STRING          shift and go to state 78
+    CHAR            shift and go to state 79
+    IDENTIFIER      shift and go to state 69
 
-    string                         shift and go to state 147
-    char                           shift and go to state 148
-    identifier                     shift and go to state 149
+    string                         shift and go to state 145
+    char                           shift and go to state 146
+    identifier                     shift and go to state 147
 
-state 119
+state 117
 
     (38) enclosed_expr -> LPAREN expr . RPAREN
     (10) expr_term0 -> expr . infix_operator_0 expr_term0
@@ -3206,13 +3167,13 @@ state 119
     (77) where_expr -> expr . KEYWORD_WHERE PADDING equations
     (52) infix_operator_0 -> . TICK_OPERATOR
 
-    RPAREN          shift and go to state 150
-    KEYWORD_WHERE   shift and go to state 98
-    TICK_OPERATOR   shift and go to state 99
+    RPAREN          shift and go to state 148
+    KEYWORD_WHERE   shift and go to state 96
+    TICK_OPERATOR   shift and go to state 97
 
-    infix_operator_0               shift and go to state 97
+    infix_operator_0               shift and go to state 95
 
-state 120
+state 118
 
     (34) unit_value -> LPAREN RPAREN .
 
@@ -3235,49 +3196,49 @@ state 120
     RPAREN          reduce using rule 34 (unit_value -> LPAREN RPAREN .)
 
 
-state 121
+state 119
 
     (41) enclosed_expr -> LPAREN DOT_OPERATOR . RPAREN
 
-    RPAREN          shift and go to state 151
+    RPAREN          shift and go to state 149
 
 
-state 122
+state 120
 
     (42) enclosed_expr -> LPAREN operator . RPAREN
 
-    RPAREN          shift and go to state 152
+    RPAREN          shift and go to state 150
 
 
-state 123
+state 121
 
     (53) operator -> infix_operator_0 .
 
     RPAREN          reduce using rule 53 (operator -> infix_operator_0 .)
 
 
-state 124
+state 122
 
     (54) operator -> infix_operator_2 .
 
     RPAREN          reduce using rule 54 (operator -> infix_operator_2 .)
 
 
-state 125
+state 123
 
     (55) operator -> infix_operator_6 .
 
     RPAREN          reduce using rule 55 (operator -> infix_operator_6 .)
 
 
-state 126
+state 124
 
     (56) operator -> infix_operator_7 .
 
     RPAREN          reduce using rule 56 (operator -> infix_operator_7 .)
 
 
-state 127
+state 125
 
     (75) letexpr -> KEYWORD_LET SPACE . equations KEYWORD_IN SPACE st_expr
     (72) equations -> . equation _equation_set
@@ -3287,19 +3248,19 @@ state 127
 
     IDENTIFIER      shift and go to state 21
 
-    equations                      shift and go to state 153
+    equations                      shift and go to state 151
     equation                       shift and go to state 18
     pattern                        shift and go to state 19
     parameters                     shift and go to state 20
 
-state 128
+state 126
 
     (66) lambda_expr -> BACKSLASH parameters . ARROW expr
 
-    ARROW           shift and go to state 154
+    ARROW           shift and go to state 152
 
 
-state 129
+state 127
 
     (68) _parameters -> SPACE IDENTIFIER _parameters .
 
@@ -3307,41 +3268,60 @@ state 129
     ARROW           reduce using rule 68 (_parameters -> SPACE IDENTIFIER _parameters .)
 
 
+state 128
+
+    (104) _cons_args -> SPACE IDENTIFIER _cons_args .
+
+    EQ              reduce using rule 104 (_cons_args -> SPACE IDENTIFIER _cons_args .)
+    PADDING         reduce using rule 104 (_cons_args -> SPACE IDENTIFIER _cons_args .)
+    PIPE            reduce using rule 104 (_cons_args -> SPACE IDENTIFIER _cons_args .)
+    $end            reduce using rule 104 (_cons_args -> SPACE IDENTIFIER _cons_args .)
+
+
+state 129
+
+    (109) data_cons -> IDENTIFIER . _cons_args
+    (104) _cons_args -> . SPACE IDENTIFIER _cons_args
+    (105) _cons_args -> . empty
+    (65) empty -> .
+
+    SPACE           shift and go to state 34
+    PADDING         reduce using rule 65 (empty -> .)
+    PIPE            reduce using rule 65 (empty -> .)
+    $end            reduce using rule 65 (empty -> .)
+
+    _cons_args                     shift and go to state 153
+    empty                          shift and go to state 36
+
 state 130
 
-    (109) data_cons -> IDENTIFIER _cons_args .
+    (103) datatype_definition -> KEYWORD_DATA SPACE IDENTIFIER _cons_args EQ _data_body .
 
-    PADDING         reduce using rule 109 (data_cons -> IDENTIFIER _cons_args .)
-    PIPE            reduce using rule 109 (data_cons -> IDENTIFIER _cons_args .)
-    $end            reduce using rule 109 (data_cons -> IDENTIFIER _cons_args .)
+    PADDING         reduce using rule 103 (datatype_definition -> KEYWORD_DATA SPACE IDENTIFIER _cons_args EQ _data_body .)
+    $end            reduce using rule 103 (datatype_definition -> KEYWORD_DATA SPACE IDENTIFIER _cons_args EQ _data_body .)
 
 
 state 131
 
-    (106) _data_body -> data_cons _data_conses .
+    (106) _data_body -> data_cons . _data_conses
+    (107) _data_conses -> . _maybe_padding PIPE data_cons _data_conses
+    (108) _data_conses -> . empty
+    (91) _maybe_padding -> . PADDING
+    (92) _maybe_padding -> . empty
+    (65) empty -> .
 
-    PADDING         reduce using rule 106 (_data_body -> data_cons _data_conses .)
-    $end            reduce using rule 106 (_data_body -> data_cons _data_conses .)
+  ! shift/reduce conflict for PADDING resolved as shift
+    PADDING         shift and go to state 91
+    $end            reduce using rule 65 (empty -> .)
+    PIPE            reduce using rule 65 (empty -> .)
 
+  ! PADDING         [ reduce using rule 65 (empty -> .) ]
+
+    _data_conses                   shift and go to state 154
+    _maybe_padding                 shift and go to state 155
+    empty                          shift and go to state 156
 
 state 132
-
-    (107) _data_conses -> _maybe_padding . PIPE data_cons _data_conses
-
-    PIPE            shift and go to state 155
-
-
-state 133
-
-    (108) _data_conses -> empty .
-    (92) _maybe_padding -> empty .
-
-    PADDING         reduce using rule 108 (_data_conses -> empty .)
-    $end            reduce using rule 108 (_data_conses -> empty .)
-    PIPE            reduce using rule 92 (_maybe_padding -> empty .)
-
-
-state 134
 
     (80) type_function_expr -> type_term ARROW _maybe_padding . type_function_expr
     (80) type_function_expr -> . type_term ARROW _maybe_padding type_function_expr
@@ -3353,70 +3333,70 @@ state 134
     (89) type_factor -> . LPAREN _maybe_padding type_expr _maybe_padding RPAREN
     (90) type_factor -> . LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET
 
-    IDENTIFIER      shift and go to state 38
-    LPAREN          shift and go to state 45
-    LBRACKET        shift and go to state 46
+    IDENTIFIER      shift and go to state 37
+    LPAREN          shift and go to state 44
+    LBRACKET        shift and go to state 45
 
-    type_term                      shift and go to state 156
-    type_function_expr             shift and go to state 157
-    type_app_expression            shift and go to state 43
-    type_factor                    shift and go to state 44
+    type_term                      shift and go to state 157
+    type_function_expr             shift and go to state 158
+    type_app_expression            shift and go to state 42
+    type_factor                    shift and go to state 43
 
-state 135
+state 133
 
     (86) _app_args_non_empty -> SPACE type_factor . _app_args
     (85) _app_args -> . SPACE type_factor _app_args
     (87) _app_args -> . empty
     (65) empty -> .
 
-    SPACE           shift and go to state 158
+    SPACE           shift and go to state 159
     ARROW           reduce using rule 65 (empty -> .)
     PADDING         reduce using rule 65 (empty -> .)
     RPAREN          reduce using rule 65 (empty -> .)
     RBRACKET        reduce using rule 65 (empty -> .)
 
-    _app_args                      shift and go to state 159
-    empty                          shift and go to state 160
+    _app_args                      shift and go to state 160
+    empty                          shift and go to state 161
 
-state 136
+state 134
 
     (89) type_factor -> LPAREN _maybe_padding type_expr . _maybe_padding RPAREN
     (91) _maybe_padding -> . PADDING
     (92) _maybe_padding -> . empty
     (65) empty -> .
 
-    PADDING         shift and go to state 93
+    PADDING         shift and go to state 91
     RPAREN          reduce using rule 65 (empty -> .)
 
-    _maybe_padding                 shift and go to state 161
-    empty                          shift and go to state 94
+    _maybe_padding                 shift and go to state 162
+    empty                          shift and go to state 92
 
-state 137
+state 135
 
     (90) type_factor -> LBRACKET _maybe_padding type_expr . _maybe_padding RBRACKET
     (91) _maybe_padding -> . PADDING
     (92) _maybe_padding -> . empty
     (65) empty -> .
 
-    PADDING         shift and go to state 93
+    PADDING         shift and go to state 91
     RBRACKET        reduce using rule 65 (empty -> .)
 
-    _maybe_padding                 shift and go to state 162
-    empty                          shift and go to state 94
+    _maybe_padding                 shift and go to state 163
+    empty                          shift and go to state 92
 
-state 138
+state 136
 
     (10) expr_term0 -> expr . infix_operator_0 expr_term0
     (76) where_expr -> expr . KEYWORD_WHERE SPACE equations
     (77) where_expr -> expr . KEYWORD_WHERE PADDING equations
     (52) infix_operator_0 -> . TICK_OPERATOR
 
-    KEYWORD_WHERE   shift and go to state 98
-    TICK_OPERATOR   shift and go to state 99
+    KEYWORD_WHERE   shift and go to state 96
+    TICK_OPERATOR   shift and go to state 97
 
-    infix_operator_0               shift and go to state 97
+    infix_operator_0               shift and go to state 95
 
-state 139
+state 137
 
     (10) expr_term0 -> expr infix_operator_0 expr_term0 .
     (13) expr -> expr_term0 .
@@ -3445,24 +3425,9 @@ state 139
   ! TICK_OPERATOR   [ reduce using rule 13 (expr -> expr_term0 .) ]
 
 
-state 140
+state 138
 
     (76) where_expr -> expr KEYWORD_WHERE SPACE . equations
-    (72) equations -> . equation _equation_set
-    (71) equation -> . pattern EQ expr
-    (70) pattern -> . parameters
-    (67) parameters -> . IDENTIFIER _parameters
-
-    IDENTIFIER      shift and go to state 21
-
-    equations                      shift and go to state 163
-    equation                       shift and go to state 18
-    pattern                        shift and go to state 19
-    parameters                     shift and go to state 20
-
-state 141
-
-    (77) where_expr -> expr KEYWORD_WHERE PADDING . equations
     (72) equations -> . equation _equation_set
     (71) equation -> . pattern EQ expr
     (70) pattern -> . parameters
@@ -3475,7 +3440,22 @@ state 141
     pattern                        shift and go to state 19
     parameters                     shift and go to state 20
 
-state 142
+state 139
+
+    (77) where_expr -> expr KEYWORD_WHERE PADDING . equations
+    (72) equations -> . equation _equation_set
+    (71) equation -> . pattern EQ expr
+    (70) pattern -> . parameters
+    (67) parameters -> . IDENTIFIER _parameters
+
+    IDENTIFIER      shift and go to state 21
+
+    equations                      shift and go to state 165
+    equation                       shift and go to state 18
+    pattern                        shift and go to state 19
+    parameters                     shift and go to state 20
+
+state 140
 
     (8) expr_term2 -> expr_term2 infix_operator_2 expr_term6 .
     (6) expr_term6 -> expr_term6 . infix_operator_6 expr_term7
@@ -3504,8 +3484,8 @@ state 142
     KEYWORD_WHERE   reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .)
     TICK_OPERATOR   reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .)
     RPAREN          reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .)
-    PLUS            shift and go to state 104
-    MINUS           shift and go to state 105
+    PLUS            shift and go to state 102
+    MINUS           shift and go to state 103
 
   ! PLUS            [ reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .) ]
   ! MINUS           [ reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .) ]
@@ -3514,9 +3494,9 @@ state 142
   ! KEYWORD_WHERE   [ reduce using rule 9 (expr_term2 -> expr_term6 .) ]
   ! TICK_OPERATOR   [ reduce using rule 9 (expr_term2 -> expr_term6 .) ]
 
-    infix_operator_6               shift and go to state 103
+    infix_operator_6               shift and go to state 101
 
-state 143
+state 141
 
     (6) expr_term6 -> expr_term6 infix_operator_6 expr_term7 .
     (4) expr_term7 -> expr_term7 . infix_operator_7 expr_term9
@@ -3549,10 +3529,10 @@ state 143
     KEYWORD_WHERE   reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .)
     TICK_OPERATOR   reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .)
     RPAREN          reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .)
-    STAR            shift and go to state 107
-    SLASH           shift and go to state 108
-    DOUBLESLASH     shift and go to state 109
-    PERCENT         shift and go to state 110
+    STAR            shift and go to state 105
+    SLASH           shift and go to state 106
+    DOUBLESLASH     shift and go to state 107
+    PERCENT         shift and go to state 108
 
   ! STAR            [ reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .) ]
   ! SLASH           [ reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .) ]
@@ -3565,9 +3545,9 @@ state 143
   ! KEYWORD_WHERE   [ reduce using rule 7 (expr_term6 -> expr_term7 .) ]
   ! TICK_OPERATOR   [ reduce using rule 7 (expr_term6 -> expr_term7 .) ]
 
-    infix_operator_7               shift and go to state 106
+    infix_operator_7               shift and go to state 104
 
-state 144
+state 142
 
     (4) expr_term7 -> expr_term7 infix_operator_7 expr_term9 .
     (5) expr_term7 -> expr_term9 .
@@ -3612,7 +3592,7 @@ state 144
   ! TICK_OPERATOR   [ reduce using rule 5 (expr_term7 -> expr_term9 .) ]
 
 
-state 145
+state 143
 
     (2) expr_term9 -> expr_factor infix_operator_9 expr_term9 .
     (5) expr_term7 -> expr_term9 .
@@ -3657,7 +3637,7 @@ state 145
   ! TICK_OPERATOR   [ reduce using rule 5 (expr_term7 -> expr_term9 .) ]
 
 
-state 146
+state 144
 
     (1) expr_factor -> expr_factor SPACE expr_factor .
     (1) expr_factor -> expr_factor . SPACE expr_factor
@@ -3697,7 +3677,7 @@ state 146
     TICK_OPERATOR   reduce using rule 1 (expr_factor -> expr_factor SPACE expr_factor .)
     RPAREN          reduce using rule 1 (expr_factor -> expr_factor SPACE expr_factor .)
 
-  ! SPACE           [ shift and go to state 112 ]
+  ! SPACE           [ shift and go to state 110 ]
   ! STAR            [ reduce using rule 3 (expr_term9 -> expr_factor .) ]
   ! SLASH           [ reduce using rule 3 (expr_term9 -> expr_factor .) ]
   ! DOUBLESLASH     [ reduce using rule 3 (expr_term9 -> expr_factor .) ]
@@ -3708,13 +3688,13 @@ state 146
   ! ARROW           [ reduce using rule 3 (expr_term9 -> expr_factor .) ]
   ! KEYWORD_WHERE   [ reduce using rule 3 (expr_term9 -> expr_factor .) ]
   ! TICK_OPERATOR   [ reduce using rule 3 (expr_term9 -> expr_factor .) ]
-  ! LPAREN          [ shift and go to state 115 ]
-  ! DOT_OPERATOR    [ shift and go to state 114 ]
+  ! LPAREN          [ shift and go to state 113 ]
+  ! DOT_OPERATOR    [ shift and go to state 112 ]
 
-    enclosed_expr                  shift and go to state 113
-    infix_operator_9               shift and go to state 111
+    enclosed_expr                  shift and go to state 111
+    infix_operator_9               shift and go to state 109
 
-state 147
+state 145
 
     (62) concrete_number -> number ANNOTATION string .
 
@@ -3737,7 +3717,7 @@ state 147
     RPAREN          reduce using rule 62 (concrete_number -> number ANNOTATION string .)
 
 
-state 148
+state 146
 
     (63) concrete_number -> number ANNOTATION char .
 
@@ -3760,7 +3740,7 @@ state 148
     RPAREN          reduce using rule 63 (concrete_number -> number ANNOTATION char .)
 
 
-state 149
+state 147
 
     (64) concrete_number -> number ANNOTATION identifier .
 
@@ -3783,7 +3763,7 @@ state 149
     RPAREN          reduce using rule 64 (concrete_number -> number ANNOTATION identifier .)
 
 
-state 150
+state 148
 
     (38) enclosed_expr -> LPAREN expr RPAREN .
 
@@ -3820,7 +3800,7 @@ state 150
     RPAREN          reduce using rule 38 (enclosed_expr -> LPAREN expr RPAREN .)
 
 
-state 151
+state 149
 
     (41) enclosed_expr -> LPAREN DOT_OPERATOR RPAREN .
 
@@ -3857,7 +3837,7 @@ state 151
     RPAREN          reduce using rule 41 (enclosed_expr -> LPAREN DOT_OPERATOR RPAREN .)
 
 
-state 152
+state 150
 
     (42) enclosed_expr -> LPAREN operator RPAREN .
 
@@ -3894,14 +3874,14 @@ state 152
     RPAREN          reduce using rule 42 (enclosed_expr -> LPAREN operator RPAREN .)
 
 
-state 153
+state 151
 
     (75) letexpr -> KEYWORD_LET SPACE equations . KEYWORD_IN SPACE st_expr
 
-    KEYWORD_IN      shift and go to state 165
+    KEYWORD_IN      shift and go to state 166
 
 
-state 154
+state 152
 
     (66) lambda_expr -> BACKSLASH parameters ARROW . expr
     (13) expr -> . expr_term0
@@ -3957,66 +3937,91 @@ state 154
     (32) date_interval -> . DATE_INTERVAL
     (33) datetime_interval -> . DATETIME_INTERVAL
 
-    IDENTIFIER      shift and go to state 70
-    LPAREN          shift and go to state 71
-    KEYWORD_LET     shift and go to state 72
-    BACKSLASH       shift and go to state 73
-    BASE10_INTEGER  shift and go to state 74
-    BASE16_INTEGER  shift and go to state 75
-    BASE8_INTEGER   shift and go to state 76
-    BASE2_INTEGER   shift and go to state 77
-    FLOAT           shift and go to state 78
-    STRING          shift and go to state 79
-    CHAR            shift and go to state 80
-    DATE            shift and go to state 81
-    DATETIME        shift and go to state 82
-    DATE_INTERVAL   shift and go to state 83
-    DATETIME_INTERVAL shift and go to state 84
+    IDENTIFIER      shift and go to state 69
+    LPAREN          shift and go to state 70
+    KEYWORD_LET     shift and go to state 71
+    BACKSLASH       shift and go to state 72
+    BASE10_INTEGER  shift and go to state 73
+    BASE16_INTEGER  shift and go to state 74
+    BASE8_INTEGER   shift and go to state 75
+    BASE2_INTEGER   shift and go to state 76
+    FLOAT           shift and go to state 77
+    STRING          shift and go to state 78
+    CHAR            shift and go to state 79
+    DATE            shift and go to state 80
+    DATETIME        shift and go to state 81
+    DATE_INTERVAL   shift and go to state 82
+    DATETIME_INTERVAL shift and go to state 83
 
-    expr                           shift and go to state 166
-    expr_term0                     shift and go to state 49
-    expr_term2                     shift and go to state 50
-    expr_term6                     shift and go to state 51
-    expr_term7                     shift and go to state 52
-    expr_term9                     shift and go to state 53
-    expr_factor                    shift and go to state 54
-    literal                        shift and go to state 55
-    identifier                     shift and go to state 56
-    enclosed_expr                  shift and go to state 57
-    unit_value                     shift and go to state 58
-    letexpr                        shift and go to state 59
-    where_expr                     shift and go to state 60
-    lambda_expr                    shift and go to state 61
-    number                         shift and go to state 62
-    concrete_number                shift and go to state 63
-    string                         shift and go to state 64
-    char                           shift and go to state 65
-    date                           shift and go to state 66
-    datetime                       shift and go to state 67
-    date_interval                  shift and go to state 68
-    datetime_interval              shift and go to state 69
+    expr                           shift and go to state 167
+    expr_term0                     shift and go to state 48
+    expr_term2                     shift and go to state 49
+    expr_term6                     shift and go to state 50
+    expr_term7                     shift and go to state 51
+    expr_term9                     shift and go to state 52
+    expr_factor                    shift and go to state 53
+    literal                        shift and go to state 54
+    identifier                     shift and go to state 55
+    enclosed_expr                  shift and go to state 56
+    unit_value                     shift and go to state 57
+    letexpr                        shift and go to state 58
+    where_expr                     shift and go to state 59
+    lambda_expr                    shift and go to state 60
+    number                         shift and go to state 61
+    concrete_number                shift and go to state 62
+    string                         shift and go to state 63
+    char                           shift and go to state 64
+    date                           shift and go to state 65
+    datetime                       shift and go to state 66
+    date_interval                  shift and go to state 67
+    datetime_interval              shift and go to state 68
+
+state 153
+
+    (109) data_cons -> IDENTIFIER _cons_args .
+
+    PADDING         reduce using rule 109 (data_cons -> IDENTIFIER _cons_args .)
+    PIPE            reduce using rule 109 (data_cons -> IDENTIFIER _cons_args .)
+    $end            reduce using rule 109 (data_cons -> IDENTIFIER _cons_args .)
+
+
+state 154
+
+    (106) _data_body -> data_cons _data_conses .
+
+    PADDING         reduce using rule 106 (_data_body -> data_cons _data_conses .)
+    $end            reduce using rule 106 (_data_body -> data_cons _data_conses .)
+
 
 state 155
 
-    (107) _data_conses -> _maybe_padding PIPE . data_cons _data_conses
-    (109) data_cons -> . IDENTIFIER _cons_args
+    (107) _data_conses -> _maybe_padding . PIPE data_cons _data_conses
 
-    IDENTIFIER      shift and go to state 86
+    PIPE            shift and go to state 168
 
-    data_cons                      shift and go to state 167
 
 state 156
+
+    (108) _data_conses -> empty .
+    (92) _maybe_padding -> empty .
+
+    PADDING         reduce using rule 108 (_data_conses -> empty .)
+    $end            reduce using rule 108 (_data_conses -> empty .)
+    PIPE            reduce using rule 92 (_maybe_padding -> empty .)
+
+
+state 157
 
     (80) type_function_expr -> type_term . ARROW _maybe_padding type_function_expr
     (81) type_function_expr -> type_term .
 
-    ARROW           shift and go to state 89
+    ARROW           shift and go to state 87
     PADDING         reduce using rule 81 (type_function_expr -> type_term .)
     RPAREN          reduce using rule 81 (type_function_expr -> type_term .)
     RBRACKET        reduce using rule 81 (type_function_expr -> type_term .)
 
 
-state 157
+state 158
 
     (80) type_function_expr -> type_term ARROW _maybe_padding type_function_expr .
 
@@ -4025,20 +4030,20 @@ state 157
     RBRACKET        reduce using rule 80 (type_function_expr -> type_term ARROW _maybe_padding type_function_expr .)
 
 
-state 158
+state 159
 
     (85) _app_args -> SPACE . type_factor _app_args
     (88) type_factor -> . IDENTIFIER
     (89) type_factor -> . LPAREN _maybe_padding type_expr _maybe_padding RPAREN
     (90) type_factor -> . LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET
 
-    IDENTIFIER      shift and go to state 38
-    LPAREN          shift and go to state 45
-    LBRACKET        shift and go to state 46
+    IDENTIFIER      shift and go to state 37
+    LPAREN          shift and go to state 44
+    LBRACKET        shift and go to state 45
 
-    type_factor                    shift and go to state 168
+    type_factor                    shift and go to state 169
 
-state 159
+state 160
 
     (86) _app_args_non_empty -> SPACE type_factor _app_args .
 
@@ -4048,7 +4053,7 @@ state 159
     RBRACKET        reduce using rule 86 (_app_args_non_empty -> SPACE type_factor _app_args .)
 
 
-state 160
+state 161
 
     (87) _app_args -> empty .
 
@@ -4058,21 +4063,21 @@ state 160
     RBRACKET        reduce using rule 87 (_app_args -> empty .)
 
 
-state 161
+state 162
 
     (89) type_factor -> LPAREN _maybe_padding type_expr _maybe_padding . RPAREN
 
-    RPAREN          shift and go to state 169
-
-
-state 162
-
-    (90) type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding . RBRACKET
-
-    RBRACKET        shift and go to state 170
+    RPAREN          shift and go to state 170
 
 
 state 163
+
+    (90) type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding . RBRACKET
+
+    RBRACKET        shift and go to state 171
+
+
+state 164
 
     (76) where_expr -> expr KEYWORD_WHERE SPACE equations .
 
@@ -4095,7 +4100,7 @@ state 163
     RPAREN          reduce using rule 76 (where_expr -> expr KEYWORD_WHERE SPACE equations .)
 
 
-state 164
+state 165
 
     (77) where_expr -> expr KEYWORD_WHERE PADDING equations .
 
@@ -4118,14 +4123,14 @@ state 164
     RPAREN          reduce using rule 77 (where_expr -> expr KEYWORD_WHERE PADDING equations .)
 
 
-state 165
+state 166
 
     (75) letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN . SPACE st_expr
 
-    SPACE           shift and go to state 171
+    SPACE           shift and go to state 172
 
 
-state 166
+state 167
 
     (66) lambda_expr -> BACKSLASH parameters ARROW expr .
     (10) expr_term0 -> expr . infix_operator_0 expr_term0
@@ -4148,51 +4153,40 @@ state 166
     OPERATOR        reduce using rule 66 (lambda_expr -> BACKSLASH parameters ARROW expr .)
     ARROW           reduce using rule 66 (lambda_expr -> BACKSLASH parameters ARROW expr .)
     RPAREN          reduce using rule 66 (lambda_expr -> BACKSLASH parameters ARROW expr .)
-    KEYWORD_WHERE   shift and go to state 98
-    TICK_OPERATOR   shift and go to state 99
+    KEYWORD_WHERE   shift and go to state 96
+    TICK_OPERATOR   shift and go to state 97
 
   ! KEYWORD_WHERE   [ reduce using rule 66 (lambda_expr -> BACKSLASH parameters ARROW expr .) ]
   ! TICK_OPERATOR   [ reduce using rule 66 (lambda_expr -> BACKSLASH parameters ARROW expr .) ]
 
-    infix_operator_0               shift and go to state 97
-
-state 167
-
-    (107) _data_conses -> _maybe_padding PIPE data_cons . _data_conses
-    (107) _data_conses -> . _maybe_padding PIPE data_cons _data_conses
-    (108) _data_conses -> . empty
-    (91) _maybe_padding -> . PADDING
-    (92) _maybe_padding -> . empty
-    (65) empty -> .
-
-  ! shift/reduce conflict for PADDING resolved as shift
-    PADDING         shift and go to state 93
-    $end            reduce using rule 65 (empty -> .)
-    PIPE            reduce using rule 65 (empty -> .)
-
-  ! PADDING         [ reduce using rule 65 (empty -> .) ]
-
-    _maybe_padding                 shift and go to state 132
-    _data_conses                   shift and go to state 172
-    empty                          shift and go to state 133
+    infix_operator_0               shift and go to state 95
 
 state 168
+
+    (107) _data_conses -> _maybe_padding PIPE . data_cons _data_conses
+    (109) data_cons -> . IDENTIFIER _cons_args
+
+    IDENTIFIER      shift and go to state 129
+
+    data_cons                      shift and go to state 173
+
+state 169
 
     (85) _app_args -> SPACE type_factor . _app_args
     (85) _app_args -> . SPACE type_factor _app_args
     (87) _app_args -> . empty
     (65) empty -> .
 
-    SPACE           shift and go to state 158
+    SPACE           shift and go to state 159
     ARROW           reduce using rule 65 (empty -> .)
     PADDING         reduce using rule 65 (empty -> .)
     RPAREN          reduce using rule 65 (empty -> .)
     RBRACKET        reduce using rule 65 (empty -> .)
 
-    _app_args                      shift and go to state 173
-    empty                          shift and go to state 160
+    _app_args                      shift and go to state 174
+    empty                          shift and go to state 161
 
-state 169
+state 170
 
     (89) type_factor -> LPAREN _maybe_padding type_expr _maybe_padding RPAREN .
 
@@ -4203,7 +4197,7 @@ state 169
     RBRACKET        reduce using rule 89 (type_factor -> LPAREN _maybe_padding type_expr _maybe_padding RPAREN .)
 
 
-state 170
+state 171
 
     (90) type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET .
 
@@ -4214,7 +4208,7 @@ state 170
     RBRACKET        reduce using rule 90 (type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET .)
 
 
-state 171
+state 172
 
     (75) letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE . st_expr
     (12) st_expr -> . expr
@@ -4271,55 +4265,67 @@ state 171
     (32) date_interval -> . DATE_INTERVAL
     (33) datetime_interval -> . DATETIME_INTERVAL
 
-    IDENTIFIER      shift and go to state 70
-    LPAREN          shift and go to state 71
-    KEYWORD_LET     shift and go to state 72
-    BACKSLASH       shift and go to state 73
-    BASE10_INTEGER  shift and go to state 74
-    BASE16_INTEGER  shift and go to state 75
-    BASE8_INTEGER   shift and go to state 76
-    BASE2_INTEGER   shift and go to state 77
-    FLOAT           shift and go to state 78
-    STRING          shift and go to state 79
-    CHAR            shift and go to state 80
-    DATE            shift and go to state 81
-    DATETIME        shift and go to state 82
-    DATE_INTERVAL   shift and go to state 83
-    DATETIME_INTERVAL shift and go to state 84
+    IDENTIFIER      shift and go to state 69
+    LPAREN          shift and go to state 70
+    KEYWORD_LET     shift and go to state 71
+    BACKSLASH       shift and go to state 72
+    BASE10_INTEGER  shift and go to state 73
+    BASE16_INTEGER  shift and go to state 74
+    BASE8_INTEGER   shift and go to state 75
+    BASE2_INTEGER   shift and go to state 76
+    FLOAT           shift and go to state 77
+    STRING          shift and go to state 78
+    CHAR            shift and go to state 79
+    DATE            shift and go to state 80
+    DATETIME        shift and go to state 81
+    DATE_INTERVAL   shift and go to state 82
+    DATETIME_INTERVAL shift and go to state 83
 
-    st_expr                        shift and go to state 174
-    expr                           shift and go to state 175
-    expr_term0                     shift and go to state 49
-    expr_term2                     shift and go to state 50
-    expr_term6                     shift and go to state 51
-    expr_term7                     shift and go to state 52
-    expr_term9                     shift and go to state 53
-    expr_factor                    shift and go to state 54
-    literal                        shift and go to state 55
-    identifier                     shift and go to state 56
-    enclosed_expr                  shift and go to state 57
-    unit_value                     shift and go to state 58
-    letexpr                        shift and go to state 59
-    where_expr                     shift and go to state 60
-    lambda_expr                    shift and go to state 61
-    number                         shift and go to state 62
-    concrete_number                shift and go to state 63
-    string                         shift and go to state 64
-    char                           shift and go to state 65
-    date                           shift and go to state 66
-    datetime                       shift and go to state 67
-    date_interval                  shift and go to state 68
-    datetime_interval              shift and go to state 69
-
-state 172
-
-    (107) _data_conses -> _maybe_padding PIPE data_cons _data_conses .
-
-    PADDING         reduce using rule 107 (_data_conses -> _maybe_padding PIPE data_cons _data_conses .)
-    $end            reduce using rule 107 (_data_conses -> _maybe_padding PIPE data_cons _data_conses .)
-
+    st_expr                        shift and go to state 175
+    expr                           shift and go to state 176
+    expr_term0                     shift and go to state 48
+    expr_term2                     shift and go to state 49
+    expr_term6                     shift and go to state 50
+    expr_term7                     shift and go to state 51
+    expr_term9                     shift and go to state 52
+    expr_factor                    shift and go to state 53
+    literal                        shift and go to state 54
+    identifier                     shift and go to state 55
+    enclosed_expr                  shift and go to state 56
+    unit_value                     shift and go to state 57
+    letexpr                        shift and go to state 58
+    where_expr                     shift and go to state 59
+    lambda_expr                    shift and go to state 60
+    number                         shift and go to state 61
+    concrete_number                shift and go to state 62
+    string                         shift and go to state 63
+    char                           shift and go to state 64
+    date                           shift and go to state 65
+    datetime                       shift and go to state 66
+    date_interval                  shift and go to state 67
+    datetime_interval              shift and go to state 68
 
 state 173
+
+    (107) _data_conses -> _maybe_padding PIPE data_cons . _data_conses
+    (107) _data_conses -> . _maybe_padding PIPE data_cons _data_conses
+    (108) _data_conses -> . empty
+    (91) _maybe_padding -> . PADDING
+    (92) _maybe_padding -> . empty
+    (65) empty -> .
+
+  ! shift/reduce conflict for PADDING resolved as shift
+    PADDING         shift and go to state 91
+    $end            reduce using rule 65 (empty -> .)
+    PIPE            reduce using rule 65 (empty -> .)
+
+  ! PADDING         [ reduce using rule 65 (empty -> .) ]
+
+    _maybe_padding                 shift and go to state 155
+    _data_conses                   shift and go to state 177
+    empty                          shift and go to state 156
+
+state 174
 
     (85) _app_args -> SPACE type_factor _app_args .
 
@@ -4329,7 +4335,7 @@ state 173
     RBRACKET        reduce using rule 85 (_app_args -> SPACE type_factor _app_args .)
 
 
-state 174
+state 175
 
     (75) letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .
 
@@ -4352,7 +4358,7 @@ state 174
     RPAREN          reduce using rule 75 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
 
 
-state 175
+state 176
 
     (12) st_expr -> expr .
     (10) expr_term0 -> expr . infix_operator_0 expr_term0
@@ -4377,58 +4383,66 @@ state 175
     OPERATOR        reduce using rule 12 (st_expr -> expr .)
     ARROW           reduce using rule 12 (st_expr -> expr .)
     RPAREN          reduce using rule 12 (st_expr -> expr .)
-    KEYWORD_WHERE   shift and go to state 98
-    TICK_OPERATOR   shift and go to state 99
+    KEYWORD_WHERE   shift and go to state 96
+    TICK_OPERATOR   shift and go to state 97
 
   ! KEYWORD_WHERE   [ reduce using rule 12 (st_expr -> expr .) ]
   ! TICK_OPERATOR   [ reduce using rule 12 (st_expr -> expr .) ]
 
-    infix_operator_0               shift and go to state 97
+    infix_operator_0               shift and go to state 95
+
+state 177
+
+    (107) _data_conses -> _maybe_padding PIPE data_cons _data_conses .
+
+    PADDING         reduce using rule 107 (_data_conses -> _maybe_padding PIPE data_cons _data_conses .)
+    $end            reduce using rule 107 (_data_conses -> _maybe_padding PIPE data_cons _data_conses .)
+
 WARNING: 
 WARNING: Conflicts:
 WARNING: 
 WARNING: shift/reduce conflict for PADDING in state 18 resolved as shift
-WARNING: shift/reduce conflict for PADDING in state 47 resolved as shift
-WARNING: shift/reduce conflict for KEYWORD_WHERE in state 48 resolved as shift
-WARNING: shift/reduce conflict for TICK_OPERATOR in state 48 resolved as shift
-WARNING: shift/reduce conflict for OPERATOR in state 50 resolved as shift
-WARNING: shift/reduce conflict for ARROW in state 50 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 51 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 51 resolved as shift
-WARNING: shift/reduce conflict for STAR in state 52 resolved as shift
-WARNING: shift/reduce conflict for SLASH in state 52 resolved as shift
-WARNING: shift/reduce conflict for DOUBLESLASH in state 52 resolved as shift
-WARNING: shift/reduce conflict for PERCENT in state 52 resolved as shift
-WARNING: shift/reduce conflict for SPACE in state 54 resolved as shift
-WARNING: shift/reduce conflict for DOT_OPERATOR in state 54 resolved as shift
-WARNING: shift/reduce conflict for LPAREN in state 54 resolved as shift
-WARNING: shift/reduce conflict for LPAREN in state 57 resolved as shift
-WARNING: shift/reduce conflict for PADDING in state 88 resolved as shift
-WARNING: shift/reduce conflict for SPACE in state 116 resolved as shift
-WARNING: shift/reduce conflict for LPAREN in state 116 resolved as shift
-WARNING: shift/reduce conflict for DOT_OPERATOR in state 116 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 142 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 142 resolved as shift
-WARNING: shift/reduce conflict for STAR in state 143 resolved as shift
-WARNING: shift/reduce conflict for SLASH in state 143 resolved as shift
-WARNING: shift/reduce conflict for DOUBLESLASH in state 143 resolved as shift
-WARNING: shift/reduce conflict for PERCENT in state 143 resolved as shift
-WARNING: shift/reduce conflict for PADDING in state 167 resolved as shift
-WARNING: shift/reduce conflict for KEYWORD_WHERE in state 175 resolved as shift
-WARNING: shift/reduce conflict for TICK_OPERATOR in state 175 resolved as shift
-WARNING: reduce/reduce conflict in state 42 resolved using rule (type_expr -> type_term)
-WARNING: rejected rule (type_function_expr -> type_term) in state 42
-WARNING: reduce/reduce conflict in state 116 resolved using rule (expr_term9 -> expr_factor)
-WARNING: rejected rule (expr_factor -> enclosed_expr expr_factor) in state 116
-WARNING: reduce/reduce conflict in state 139 resolved using rule (expr_term0 -> expr infix_operator_0 expr_term0)
-WARNING: rejected rule (expr -> expr_term0) in state 139
-WARNING: reduce/reduce conflict in state 142 resolved using rule (expr_term2 -> expr_term2 infix_operator_2 expr_term6)
-WARNING: rejected rule (expr_term2 -> expr_term6) in state 142
-WARNING: reduce/reduce conflict in state 143 resolved using rule (expr_term6 -> expr_term6 infix_operator_6 expr_term7)
-WARNING: rejected rule (expr_term6 -> expr_term7) in state 143
-WARNING: reduce/reduce conflict in state 144 resolved using rule (expr_term7 -> expr_term7 infix_operator_7 expr_term9)
-WARNING: rejected rule (expr_term7 -> expr_term9) in state 144
-WARNING: reduce/reduce conflict in state 145 resolved using rule (expr_term9 -> expr_factor infix_operator_9 expr_term9)
-WARNING: rejected rule (expr_term7 -> expr_term9) in state 145
-WARNING: reduce/reduce conflict in state 146 resolved using rule (expr_factor -> expr_factor SPACE expr_factor)
-WARNING: rejected rule (expr_term9 -> expr_factor) in state 146
+WARNING: shift/reduce conflict for PADDING in state 46 resolved as shift
+WARNING: shift/reduce conflict for KEYWORD_WHERE in state 47 resolved as shift
+WARNING: shift/reduce conflict for TICK_OPERATOR in state 47 resolved as shift
+WARNING: shift/reduce conflict for OPERATOR in state 49 resolved as shift
+WARNING: shift/reduce conflict for ARROW in state 49 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 50 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 50 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 51 resolved as shift
+WARNING: shift/reduce conflict for SLASH in state 51 resolved as shift
+WARNING: shift/reduce conflict for DOUBLESLASH in state 51 resolved as shift
+WARNING: shift/reduce conflict for PERCENT in state 51 resolved as shift
+WARNING: shift/reduce conflict for SPACE in state 53 resolved as shift
+WARNING: shift/reduce conflict for DOT_OPERATOR in state 53 resolved as shift
+WARNING: shift/reduce conflict for LPAREN in state 53 resolved as shift
+WARNING: shift/reduce conflict for LPAREN in state 56 resolved as shift
+WARNING: shift/reduce conflict for SPACE in state 114 resolved as shift
+WARNING: shift/reduce conflict for LPAREN in state 114 resolved as shift
+WARNING: shift/reduce conflict for DOT_OPERATOR in state 114 resolved as shift
+WARNING: shift/reduce conflict for PADDING in state 131 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 140 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 140 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 141 resolved as shift
+WARNING: shift/reduce conflict for SLASH in state 141 resolved as shift
+WARNING: shift/reduce conflict for DOUBLESLASH in state 141 resolved as shift
+WARNING: shift/reduce conflict for PERCENT in state 141 resolved as shift
+WARNING: shift/reduce conflict for PADDING in state 173 resolved as shift
+WARNING: shift/reduce conflict for KEYWORD_WHERE in state 176 resolved as shift
+WARNING: shift/reduce conflict for TICK_OPERATOR in state 176 resolved as shift
+WARNING: reduce/reduce conflict in state 41 resolved using rule (type_expr -> type_term)
+WARNING: rejected rule (type_function_expr -> type_term) in state 41
+WARNING: reduce/reduce conflict in state 114 resolved using rule (expr_term9 -> expr_factor)
+WARNING: rejected rule (expr_factor -> enclosed_expr expr_factor) in state 114
+WARNING: reduce/reduce conflict in state 137 resolved using rule (expr_term0 -> expr infix_operator_0 expr_term0)
+WARNING: rejected rule (expr -> expr_term0) in state 137
+WARNING: reduce/reduce conflict in state 140 resolved using rule (expr_term2 -> expr_term2 infix_operator_2 expr_term6)
+WARNING: rejected rule (expr_term2 -> expr_term6) in state 140
+WARNING: reduce/reduce conflict in state 141 resolved using rule (expr_term6 -> expr_term6 infix_operator_6 expr_term7)
+WARNING: rejected rule (expr_term6 -> expr_term7) in state 141
+WARNING: reduce/reduce conflict in state 142 resolved using rule (expr_term7 -> expr_term7 infix_operator_7 expr_term9)
+WARNING: rejected rule (expr_term7 -> expr_term9) in state 142
+WARNING: reduce/reduce conflict in state 143 resolved using rule (expr_term9 -> expr_factor infix_operator_9 expr_term9)
+WARNING: rejected rule (expr_term7 -> expr_term9) in state 143
+WARNING: reduce/reduce conflict in state 144 resolved using rule (expr_factor -> expr_factor SPACE expr_factor)
+WARNING: rejected rule (expr_term9 -> expr_factor) in state 144
