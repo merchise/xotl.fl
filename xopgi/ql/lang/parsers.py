@@ -7,7 +7,7 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 from collections import deque
-from typing import Reversible, Optional, List, Deque
+from typing import Reversible, Optional, List, Deque, Sequence
 
 from xoutil.objects import setdefaultattr
 from xoutil.future.datetime import TimeSpan
@@ -22,7 +22,8 @@ from .expressions import (
     Lambda,
     Application,
     Let,
-    Letrec
+    Letrec,
+    _LetExpr,
 )
 
 from xopgi.ql.lang.builtins import (
@@ -73,6 +74,7 @@ tokens = [
     'DATE',
     'DATETIME_INTERVAL',
     'DATE_INTERVAL',
+    'PIPE',
 ]
 
 # Reserved keywords: pairs of (keyword, regexp).  If the regexp is None, it
@@ -82,6 +84,17 @@ reserved = [
     ('data', None),
     ('class', None),
     ('instance', None),
+
+    # To dissambiguate the parser.  Otherwise the two lines:
+    #
+    #     id x = x
+    #     const a x = a
+    #
+    # match a single 'funcdef'.  There are two ways to remove the ambiguity:
+    # require type annotations for all functions, or introduce this keyword
+    # 'def'.  Other solution is the communicate with PLY to *backtrack*...
+    #
+    ('def', r'\bdef\s+\b'),
 
     ('where', r'\s+where\b'),
     ('let', None),
@@ -300,6 +313,11 @@ def t_PERCENT(t):
 
 def t_EQ(t):
     r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])=(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
+    return t
+
+
+def t_PIPE(t):
+    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])\|(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
     return t
 
 
@@ -744,13 +762,6 @@ def p_error(prod):
     raise ParserError('Invalid expression')
 
 
-def p_program(prod):
-    '''program : st_expr
-               | st_type_expr
-    '''
-    prod[0] = prod[1]
-
-
 def p_type_expr(prod):
     '''type_expr : type_function_expr
                  | type_term'''
@@ -824,6 +835,138 @@ def p_maybe_padding(prod):
                       | empty
     '''
     pass
+
+
+def p_program(prod):
+    '''program : definitions
+    '''
+    prod[0] = prod[1]
+
+
+class Definition:
+    def __init__(self, name: str, body: AST) -> None:
+        self.name = name
+        self.body = body
+
+
+class Definitions(list):
+    pass
+
+
+def p_definitions(prod):
+    '''definitions : definition _definition_set
+    '''
+    lst: Definitions = prod[2]
+    lst.insert(0, prod[1])
+    prod[0] = lst
+
+
+def p_definition_set(prod):
+    '''_definition_set : PADDING definition _definition_set
+    '''
+    lst: Definitions = prod[3]
+    lst.insert(0, prod[2])
+    prod[0] = lst
+
+
+def p_definition_set2(prod):
+    '''_definition_set : empty
+    '''
+    prod[0] = []
+
+
+def p_definition(prod):
+    ''' definition : function_definition
+                   | datatype_definition
+    '''
+    prod[0] = prod[1]
+
+
+def p_function_definition(prod):
+    '''function_definition : functype_decl PADDING funcdef
+                           | funcdef
+    '''
+    count = len(prod)
+    funcdef = prod[count - 1]
+    assert isinstance(funcdef, _LetExpr)
+    # TODO: I need to store the functype_decl to be able to typecheck the
+    # program.
+    prod[0] = funcdef
+
+
+def p_funcdef(prod):
+    '''funcdef : KEYWORD_DEF equations
+    '''
+    # Let's make the temporary let expression which handles all the things of
+    # creating lambdas, and then assert we are defining a single function and
+    # fill the body with the name of the function.
+    let: _LetExpr = _build_let(prod[2], None)
+    names = {name for name, _ in let.bindings}
+    if len(names) > 1:
+        names = ','.join(repr(n) for n in names)
+        raise ParserError(f'Creating several names {names}')
+    funcname = names.pop()
+    let.body = Identifier(funcname)
+    prod[0] = let
+
+
+def p_functype_decl(prod):
+    '''functype_decl : IDENTIFIER COLON COLON st_type_expr
+    '''
+    pass
+
+
+def p_datatype_definition(prod):
+    '''datatype_definition : KEYWORD_DATA IDENTIFIER _cons_args EQ _data_body
+    '''
+    tcons = prod[2]
+    if not tcons[0].isupper():
+        raise ParserError('Type constructors must begin with an uppercase')
+    args = prod[3]
+    # TODO: Check lsh and rsh
+
+
+def p_datatype_cons_args(prod):
+    '''_cons_args : IDENTIFIER _cons_args
+    '''
+    arg = prod[1]
+    if not arg[0].islower():
+        raise ParserError('Type variables must begin with a lowercase')
+    args = prod[2]
+    args.insert(0, arg)
+    prod[0] = args
+
+
+def p_datatype_cons_args2(prod):
+    '''_cons_args : empty
+    '''
+    prod[0] = []
+
+
+def p_datatype_body(prod):
+    '''_data_body   : data_cons _data_conses
+       _data_conses : _maybe_padding PIPE data_cons _data_conses
+    '''
+    count = len(prod)
+    lst = prod[count - 1]
+    lst.insert(0, prod[count - 2])
+    prod[0] = lst
+
+
+def p_datatype_conses_empty(prod):
+    '_data_conses : empty'
+    prod[0] = []
+
+
+class DataCons(AST):
+    def __init__(self, cons: str, args: Sequence[str]) -> None:
+        self.cons = cons
+        self.args = tuple(args)
+
+
+def p_data_cons(prod):
+    '''data_cons : IDENTIFIER _cons_args'''
+    prod[0] = DataCons(prod[1], prod[2])
 
 
 type_parser = yacc.yacc(debug=False, start='st_type_expr',
