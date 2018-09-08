@@ -108,11 +108,6 @@ for keyword, regexp in reserved:
 
 
 t_IDENTIFIER = r'[A-Za-z_]\w*'
-t_BASE10_INTEGER = '[0-9][0-9_]*'
-t_BASE16_INTEGER = '0[xX][0-9a-fA-F][0-9a-fA-F_]*'
-t_BASE8_INTEGER = '0[oO][0-7][0-7_]*'
-t_BASE2_INTEGER = '0[bB][01][01_]*'
-
 t_COLON = r':'
 
 
@@ -159,6 +154,41 @@ def t_CHAR(t):
         # \x..., \u...
         value = eval(f"'{value}'")
     t.value = value
+    return t
+
+
+def t_BASE2_INTEGER(t):
+    '-?0[bB][01][01_]*'
+    return t
+
+
+def t_BASE8_INTEGER(t):
+    '-?0[oO][0-7][0-7_]*'
+    return t
+
+
+def t_BASE16_INTEGER(t):
+    '-?0[xX][0-9a-fA-F][0-9a-fA-F_]*'
+    return t
+
+
+def t_FLOAT(t):
+    r'-?([0-9_]*\.[0-9]+([eE][-+]\d+)?|[0-9][0-9_]*[eE][-+]\d+)'
+    value = t.value
+    if value.startswith('-') or value.startswith('+'):
+        sign, value = value[0], value[1:]
+    else:
+        sign = ''
+    if value.startswith('_'):
+        raise lex.LexError(f'Illegal float representation {value!r}', t.lexpos)
+    t.value = sign + value.replace('_', '')
+    return t
+
+
+# Integers were pushed to the bottom because the tokenizer would make of '0b0'
+# the tokens BASE10_INTEGER IDENTIFIER BASE10_INTEGER.
+def t_BASE10_INTEGER(t):
+    r'-?[0-9][0-9_]*'
     return t
 
 
@@ -212,17 +242,8 @@ def t_RPAREN(t):
     return t
 
 
-def t_FLOAT(t):
-    r'([0-9_]*\.[0-9]+([eE][-+]\d+)?|[0-9][0-9_]*[eE][-+]\d+)'
-    if t.value.startswith('_'):
-        raise lex.LexError(f'Illegal float representation {t.value!r}', t.lexpos)
-    t.value = t.value.replace('_', '')
-    return t
-
-
 # PLUS, MINUS, EQ and DOT are treated specially to disambiguate (binary + from
 # unary +, etc); DOT is right associative.
-
 def t_PLUS(t):
     r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|])\+(?![/\.\-\+\*<>\$%\^&!@\#=\|])'
     return t
@@ -524,6 +545,13 @@ def p_integer(prod):
     value = prod[1]
     value = value.replace('_', '')  # We separators anywhere: 1000 = 10_00
     base = 10
+    if value.startswith('-'):
+        sign = -1
+        value = value[1:]
+    else:
+        sign = 1
+        if value.startswith('+'):
+            value = value[1:]
     if value.startswith('0'):
         mark = value[1:2]
         if mark in ('x', 'X'):
@@ -536,7 +564,7 @@ def p_integer(prod):
             pass
         else:
             assert False, 'Invalid integer mark'
-    val = int(value, base)
+    val = sign * int(value, base)
     prod[0] = Literal(val, NumberType)
 
 
