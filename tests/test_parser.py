@@ -27,6 +27,10 @@ def test_datatype_simple():
     assert parse('data Then a = Then a')
 
 
+def test_datatype_tree():
+    assert parse('data Tree a = Leaf a | Branch (Tree a) (Tree a)')
+
+
 def test_datatype_simple2():
     assert parse('''
        data Then a = Then a
