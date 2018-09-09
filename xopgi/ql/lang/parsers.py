@@ -14,7 +14,7 @@ from xoutil.future.datetime import TimeSpan
 
 from ply import lex, yacc
 
-from .types import TypeVariable, TypeCons, ListTypeCons
+from .types import Type, TypeVariable, TypeCons, ListTypeCons
 from .expressions import (
     AST,
     Identifier,
@@ -243,7 +243,7 @@ def t_SPACE(t):
         #
         before = t.lexer.lexdata[t.lexpos - 1]
         after = t.lexer.lexdata[t.lexpos + len(t.value)]
-        common = '=<>`.,:+-%@!$*^/'
+        common = '=<>`.,:+-%@!$*^/|'
         if before in common + '[(' or after in common + ')]':
             return  # This removes the token entirely.
         else:
@@ -653,16 +653,11 @@ def p_lambda_definition(prod):
 
 def p_parameters(prod):
     '''parameters : _identifier _parameters
+       _parameters : SPACE _identifier _parameters
     '''
-    names = prod[2]
-    names.insert(0, prod[1])
-    prod[0] = names
-
-
-def p__params(prod):
-    '_parameters : SPACE _identifier _parameters'
-    names = prod[3]
-    names.insert(0, prod[2])
+    count = len(prod)
+    names = prod[count - 1]
+    names.insert(0, prod[count - 2])
     prod[0] = names
 
 
@@ -784,7 +779,7 @@ def p_where_expr(prod):
 
 
 def p_error(prod):
-    raise ParserError('Invalid expression')
+    raise ParserError(f'While trying to match: {prod}')
 
 
 def p_type_expr(prod):
@@ -951,36 +946,39 @@ def p_functype_decl(prod):
 
 
 def p_datatype_definition(prod):
-    '''datatype_definition : KEYWORD_DATA SPACE UPPER_IDENTIFIER _cons_args EQ _data_body
+    '''datatype_definition : _datatype_lhs EQ _data_rhs
     '''
-    name = prod[3]
-    if not name[0].isupper():
-        raise ParserError('Type constructors must begin with an uppercase')
-    args = prod[4]
-    type_ = TypeCons(name, [TypeVariable(n) for n in args])
-    defs = prod[6]
+    name, args, type_ = prod[1]
+    defs = prod[3]
     prod[0] = DataType(name, type_, defs)
 
 
-def p_datatype_cons_args(prod):
-    '''_cons_args : SPACE LOWER_IDENTIFIER _cons_args
+def p_datatype_lhs(prod):
+    '''_datatype_lhs : KEYWORD_DATA SPACE UPPER_IDENTIFIER _cons_params
+    '''
+    name = prod[3]
+    args = prod[4]
+    type_ = TypeCons(name, [TypeVariable(n) for n in args])
+    prod[0] = (name, args, type_)
+
+
+def p_datatype_cons_params(prod):
+    '''_cons_params : SPACE LOWER_IDENTIFIER _cons_params
     '''
     arg = prod[2]
-    if not arg[0].islower():
-        raise ParserError('Type variables must begin with a lowercase')
     args = prod[3]
     args.insert(0, arg)
     prod[0] = args
 
 
-def p_datatype_cons_args2(prod):
-    '''_cons_args : empty
+def p_datatype_cons_params_empty(prod):
+    '''_cons_params : empty
     '''
     prod[0] = []
 
 
 def p_datatype_body(prod):
-    '''_data_body   : data_cons _data_conses
+    '''_data_rhs : data_cons _data_conses
        _data_conses : _maybe_padding PIPE data_cons _data_conses
     '''
     count = len(prod)
@@ -995,12 +993,12 @@ def p_datatype_conses_empty(prod):
 
 
 class DataCons(AST):
-    def __init__(self, cons: str, args: Sequence[str]) -> None:
+    def __init__(self, cons: str, args: Sequence[Type]) -> None:
         self.name = cons
         self.args = tuple(args)
 
     def __repr__(self):
-        names = ' '.join(self.args)
+        names = ' '.join(map(str, self.args))
         if names:
             return f'<DataCons {self.name} {names}>'
         else:
@@ -1022,8 +1020,49 @@ class DataType(AST):
 
 
 def p_data_cons(prod):
-    '''data_cons : UPPER_IDENTIFIER _cons_args'''
-    prod[0] = DataCons(prod[1], prod[2])
+    '''data_cons : _data_cons'''
+    name, args = prod[1]
+    prod[0] = DataCons(name, args)
+
+
+def p_bare_data_cons(prod):
+    '''_data_cons : UPPER_IDENTIFIER _cons_args'''
+    prod[0] = (prod[1], prod[2])
+
+
+def p_data_cons_args(prod):
+    '''_cons_args : SPACE cons_arg _cons_args
+    '''
+    count = len(prod)
+    lst = prod[count - 1]
+    lst.insert(0, prod[count - 2])
+    prod[0] = lst
+
+
+def p_data_cons_args_empty(prod):
+    '''_cons_args : empty
+    '''
+    prod[0] = []
+
+
+def p_cons_arg(prod):
+    '''cons_arg : type_variable
+       cons_arg : type_cons
+       cons_arg : _cons_arg_factor
+    '''
+    prod[0] = prod[1]
+
+
+def p_cons_arg_factor(prod):
+    '''_cons_arg_factor : LPAREN type_expr RPAREN
+    '''
+    prod[0] = prod[2]
+
+
+def p_cons_arg_factor_list(prod):
+    '''_cons_arg_factor : LBRACKET type_expr RBRACKET
+    '''
+    prod[0] = ListTypeCons(prod[2])
 
 
 type_parser = yacc.yacc(debug=False, start='st_type_expr',
