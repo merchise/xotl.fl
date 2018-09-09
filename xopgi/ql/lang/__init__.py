@@ -6,6 +6,8 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
+from .types import parse as type_parse  # noqa
+from .expressions import parse as expr_parse, tokenize  # noqa
 
 
 def parse(program_source: str, *, debug: bool = False):
