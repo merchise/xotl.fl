@@ -11,8 +11,13 @@
 '''
 from xoutil.modules import moduleproperty
 
-from .types import TypeCons, ListTypeCons, TupleTypeCons
-from .typecheck import TypeScheme, TypeEnvironment
+from .types import (
+    TypeCons,
+    ListTypeCons,
+    TupleTypeCons,
+    TypeScheme,
+    TypeEnvironment
+)
 
 # This is the type of all numbers in our language.  The expression language
 # will assign this type to every literal that matches a number; we don't

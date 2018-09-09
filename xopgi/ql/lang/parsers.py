@@ -14,7 +14,14 @@ from xoutil.future.datetime import TimeSpan
 
 from ply import lex, yacc
 
-from .types import Type, TypeVariable, TypeCons, ListTypeCons
+from .types import (
+    Type,
+    TypeVariable,
+    TypeCons,
+    ListTypeCons,
+    TypeScheme,
+)
+from .types import TypeEnvironment  # noqa
 from .expressions import (
     AST,
     Identifier,
@@ -92,7 +99,7 @@ reserved = [
     #     id x = x
     #     const a x = a
     #
-    # match a single 'funcdef'.  There are two ways to remove the ambiguity:
+    # match a single 'valuedef'.  There are two ways to remove the ambiguity:
     # require type annotations for all functions, or introduce this keyword
     # 'def'.  Other solution is the communicate with PLY to *backtrack*...
     #
@@ -905,26 +912,15 @@ def p_definition_set2(prod):
 
 
 def p_definition(prod):
-    ''' definition : function_definition
-                   | datatype_definition
+    '''definition : nametype_decl
+                  | valuedef
+                  | datatype_definition
     '''
     prod[0] = prod[1]
 
 
-def p_function_definition(prod):
-    '''function_definition : functype_decl PADDING funcdef
-                           | funcdef
-    '''
-    count = len(prod)
-    funcdef = prod[count - 1]
-    assert isinstance(funcdef, _LetExpr)
-    # TODO: I need to store the functype_decl to be able to typecheck the
-    # program.
-    prod[0] = funcdef
-
-
-def p_funcdef(prod):
-    '''funcdef : KEYWORD_DEF equations
+def p_valuedef(prod):
+    '''valuedef : KEYWORD_DEF equations
     '''
     # Let's make the temporary let expression which handles all the things of
     # creating lambdas, and then assert we are defining a single function and
@@ -934,15 +930,18 @@ def p_funcdef(prod):
     if len(names) > 1:
         names = ','.join(repr(n) for n in names)
         raise ParserError(f'Creating several names {names}')
-    funcname = names.pop()
-    let.body = Identifier(funcname)
+    defname = names.pop()
+    let.body = Identifier(defname)
     prod[0] = let
 
 
-def p_functype_decl(prod):
-    '''functype_decl : _identifier COLON COLON st_type_expr
+def p_nametype_decl(prod):
+    '''nametype_decl : _identifier COLON COLON st_type_expr
     '''
-    pass
+    name = prod[1]
+    type_ = prod[4]
+    scheme = TypeScheme.from_typeexpr(type_)
+    prod[0] = {name: scheme}  # type: TypeEnvironment
 
 
 def p_datatype_definition(prod):

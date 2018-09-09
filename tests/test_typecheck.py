@@ -19,16 +19,12 @@ from xopgi.ql.lang.builtins import (
     builtins_env,
 )
 from xopgi.ql.lang.expressions import parse
-from xopgi.ql.lang.types import Type
-
+from xopgi.ql.lang.types import Type, TypeScheme, EMPTY_TYPE_ENV, find_tvars
 from xopgi.ql.lang.typecheck import (
     typecheck,
     namesupply,
     sidentity,
-    TypeScheme,
     unify,
-    find_tvars,
-    EMPTY_TYPE_ENV,
 )
 
 

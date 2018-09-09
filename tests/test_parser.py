@@ -7,6 +7,7 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 from xopgi.ql.lang import parse
+from xopgi.ql.lang.types import TypeScheme
 
 
 def test_simple_one_definition():
@@ -21,6 +22,16 @@ def test_simple_functions_definition():
        def const a x = a
 
     ''')
+
+
+def test_typedecls():
+    assert parse('''
+       id :: a -> a
+       const :: a -> b -> a
+    ''') == [
+        {'id': TypeScheme.from_str('a -> a')},
+        {'const': TypeScheme.from_str('a -> b -> a')}
+    ]
 
 
 def test_datatype_simple():
