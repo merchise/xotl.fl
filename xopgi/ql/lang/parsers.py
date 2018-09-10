@@ -7,7 +7,7 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 from collections import deque
-from typing import Reversible, Optional, List, Deque, Sequence, Mapping
+from typing import Reversible, Optional, List, Deque
 
 from xoutil.objects import setdefaultattr
 from xoutil.future.datetime import TimeSpan
@@ -15,7 +15,6 @@ from xoutil.future.datetime import TimeSpan
 from ply import lex, yacc
 
 from .types import (
-    Type,
     TypeVariable,
     TypeCons,
     ListTypeCons,
@@ -32,6 +31,8 @@ from .expressions import (
     Letrec,
     Pattern,
     Equation,
+    DataType,
+    DataCons,
 )
 
 from xopgi.ql.lang.builtins import (
@@ -970,33 +971,6 @@ def p_datatype_body(prod):
 def p_datatype_conses_empty(prod):
     '_data_conses : empty'
     prod[0] = []
-
-
-class DataCons(AST):
-    def __init__(self, cons: str, args: Sequence[Type]) -> None:
-        self.name = cons
-        self.args = tuple(args)
-
-    def __repr__(self):
-        names = ' '.join(map(str, self.args))
-        if names:
-            return f'<DataCons {self.name} {names}>'
-        else:
-            return f'<DataCons {self.name}>'
-
-
-class DataType(AST):
-    def __init__(self, name: str, type_: TypeCons, defs: Sequence[DataCons]) -> None:
-        self.name = name
-        self.t = type_
-        self.dataconses: Mapping[str, DataCons] = {
-            d.name: d for d in defs
-        }
-
-    def __repr__(self):
-        defs = list(self.dataconses.values())
-        defs = ' | '.join(map(str, defs))
-        return f'<Data {self.t} = {defs}>'
 
 
 def p_data_cons(prod):

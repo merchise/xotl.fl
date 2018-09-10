@@ -8,7 +8,9 @@
 #
 import pytest
 from xopgi.ql.lang import parse
-from xopgi.ql.lang.types import TypeScheme
+from xopgi.ql.lang.types import Type, TypeScheme
+from xopgi.ql.lang.expressions import Equation, Pattern, Identifier
+from xopgi.ql.lang.expressions import DataType, DataCons
 
 
 def test_simple_one_definition():
@@ -35,18 +37,47 @@ def test_typedecls():
 
 
 def test_datatype_simple():
-    assert parse('data Then a = Then a')
+    assert parse('data Then a = Then a') == [
+        DataType(
+            'Then',
+            Type.from_str('Then a'),
+            [DataCons('Then', [Type.from_str('a')])]
+        )
+    ]
 
 
 def test_datatype_tree():
-    assert parse('data Tree a = Leaf a | Branch (Tree a) (Tree a)')
+    assert parse('data Tree a = Leaf a | Branch (Tree a) (Tree a)') == [
+        DataType(
+            'Tree',
+            Type.from_str('Tree a'),
+            [
+                DataCons('Leaf', [Type.from_str('a')]),
+                DataCons('Branch', [
+                    Type.from_str('Tree a'),
+                    Type.from_str('Tree a'),
+                ])
+            ]
+        )
+    ]
 
 
 def test_datatype_simple2():
     assert parse('''
        data Then a = Then a
        data Else a = Else a
-    ''')
+    ''') == [
+        DataType(
+            'Then',
+            Type.from_str('Then a'),
+            [DataCons('Then', [Type.from_str('a')])]
+        ),
+        DataType(
+            'Else',
+            Type.from_str('Else a'),
+            [DataCons('Else', [Type.from_str('a')])]
+        )
+    ]
 
 
 def test_simple_if_program():
@@ -54,7 +85,11 @@ def test_simple_if_program():
         if :: Bool -> a -> a -> a
         if True x _  = x
         if False _ x = x
-    ''', debug=True)
+    ''', debug=True) == [
+        {'id': TypeScheme.from_str('Bool -> a -> a -> a')},
+        Equation(Pattern('if', ('True', 'x', '_')), Identifier('x')),
+        Equation(Pattern('if', ('False', '_', 'x')), Identifier('x')),
+    ]
 
 
 @pytest.mark.xfail(reason='Failing to parse pattern-matching parameters')

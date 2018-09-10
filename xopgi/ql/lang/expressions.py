@@ -6,11 +6,11 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Any, Mapping, Iterator
+from typing import Any, Mapping, Iterator, Sequence
 from xoutil.objects import validate_attrs
 from xoutil.fp.tools import fst
 
-from .types import AST, Type
+from .types import AST, Type, TypeCons
 
 
 class Identifier(AST):
@@ -272,6 +272,62 @@ class Equation:
 
     def __hash__(self):
         return hash((Equation, self.pattern, self.body))
+
+
+class DataCons:
+    def __init__(self, cons: str, args: Sequence[Type]) -> None:
+        self.name = cons
+        self.args = tuple(args)
+
+    def __repr__(self):
+        names = ' '.join(map(str, self.args))
+        if names:
+            return f'<DataCons {self.name} {names}>'
+        else:
+            return f'<DataCons {self.name}>'
+
+    def __eq__(self, other):
+        if isinstance(other, DataCons):
+            return self.name == other.name and self.args == other.args
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, DataCons):
+            return not (self == other)
+        else:
+            return NotImplemented
+
+    def __hash__(self):
+        return hash((DataCons, self.name, self.args))
+
+
+class DataType:
+    def __init__(self, name: str, type_: TypeCons, defs: Sequence[DataCons]) -> None:
+        self.name = name
+        self.t = type_
+        self.dataconses = tuple(defs)
+
+    def __repr__(self):
+        defs = ' | '.join(map(str, self.dataconses))
+        return f'<Data {self.t} = {defs}>'
+
+    def __eq__(self, other):
+        if isinstance(other, DataType):
+            return (self.name == other.name and
+                    self.t == other.t and
+                    set(self.dataconses) == set(other.dataconses))
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, DataType):
+            return not (self == other)
+        else:
+            return NotImplemented
+
+    def __hash__(self):
+        return hash((DataType, self.name, self.t, self.dataconses))
 
 
 def parse(code: str, debug=False, tracking=False) -> Type:
