@@ -11,7 +11,8 @@ from hypothesis import strategies as s, given, example
 
 from ply import lex
 
-from xotl.fl.expressions import parse, tokenize
+from xotl.fl import tokenize
+from xotl.fl.expressions import parse
 from xotl.fl.expressions import (
     Identifier,
     Literal,

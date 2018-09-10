@@ -10,8 +10,6 @@
 # AVOID top-level imports since many setup imports this __init__ package when
 # importing 'xotl.fl.release'.
 
-VERSION = '0.1.0'
-
 
 def parse(program_source: str, *, debug: bool = False):
     '''Parse the program source and return its AST.
