@@ -91,7 +91,8 @@ controlled manner:
 - You can't break between constructors and its arguments, nor within the
   arguments themselves; unless you use parenthesis.
 
-- You can't break before the arrow '->', but breaking **after** it is ok.
+- You can't break before the arrow '->', but breaking **after** it is OK, but
+  also you need to *indent* the rest of the type expression.
 
 Invalid examples::
 
@@ -105,11 +106,10 @@ Invalid examples::
 
 Valid examples:
 
-  >>> parse('a -> \nb') == parse('a -> b')  # breaks after the arrow
+  >>> parse('a -> \n   b') == parse('a -> b')
   True
 
-  >>> # Breaks just after an opening '(', or just before a closing ')'.
-  >>> parse('a (\nb c\n)') == parse('a (b c)')
+  >>> parse('a (\n  b c\n  )') == parse('a (b c)')
   True
 
 

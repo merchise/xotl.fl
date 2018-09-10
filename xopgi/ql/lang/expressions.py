@@ -40,7 +40,6 @@ class Identifier(AST):
             return NotImplemented
 
 
-
 # An extension to the algorithm.  Literals are allowed, but have a the
 # most specific type possible.
 class Literal(AST):

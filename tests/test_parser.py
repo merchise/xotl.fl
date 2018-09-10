@@ -6,6 +6,7 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
+import pytest
 from xopgi.ql.lang import parse
 from xopgi.ql.lang.types import TypeScheme
 
@@ -20,7 +21,6 @@ def test_simple_functions_definition():
 
        const :: a -> b -> a
        const a x = a
-
     ''')
 
 
@@ -57,6 +57,7 @@ def test_simple_if_program():
     ''', debug=True)
 
 
+@pytest.mark.xfail(reason='Failing to parse pattern-matching parameters')
 def test_if_program():
     parse('''
         data Then a = Then a

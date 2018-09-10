@@ -30,7 +30,6 @@ from .expressions import (
     Application,
     Let,
     Letrec,
-    _LetExpr,
     Pattern,
     Equation,
 )
@@ -62,6 +61,7 @@ tokens = [
     'DOT_OPERATOR',
     'SPACE',
     'PADDING',
+    'NEWLINE',
     'LPAREN',
     'RPAREN',
     'LBRACKET',
@@ -112,9 +112,10 @@ for keyword, regexp in reserved:
     tk = f'KEYWORD_{keyword.upper()}'
 
     def tkdef(t):
-        setdefaultattr(t.lexer, 'col', 0)
-        t.value = t.value.strip()
-        t.lexer.col += len(keyword)
+        value = t.value
+        lines = value.count('\n')
+        t.value = value.strip()
+        t.lexer.lineno += lines
         return t
 
     tkdef.__doc__ = regexp or rf'\b{keyword}\b'
@@ -133,6 +134,47 @@ t_COLON = r':'
 # part of the string.
 def t_NL(t):
     r'^\s+'
+    value = t.value
+    lines = value.count('\n')
+    t.lexer.lineno += lines
+    # A program that starts:
+    #
+    #         +----  column 0
+    #         |
+    #         v
+    # line 0: \n
+    # line 1:       \n
+    # line 2:     id ....
+    #
+    # t_NL will match up to the space before 'id'.  So we start at that level
+    # of indentation.  If 'id' would start the line, then the last char of
+    # 'value' would a '\n' and last would be the empty string.
+    #
+    # Beware that _indent_level is only set here if there are spaces at the
+    # beginning of the program.
+    last = value.split('\n')[-1]
+    _set_min_indentation_level(t, len(last))
+    _set_indentation_level(t, len(last))
+
+
+def _get_indentation_level(t):
+    '''Return the indentation level of the token `t`.'''
+    return setdefaultattr(t.lexer, '_indentation_level', 0)
+
+
+def _set_indentation_level(t, level):
+    t.lexer._indentation_level = level
+    return t
+
+
+def _get_min_indentation_level(t):
+    '''Return the indentation level of the token `t`.'''
+    return setdefaultattr(t.lexer, '_min_indentation_level', 0)
+
+
+def _set_min_indentation_level(t, level):
+    t.lexer._min_indentation_level = level
+    return t
 
 
 def t_NLE(t):
@@ -223,11 +265,21 @@ def t_BASE10_INTEGER(t):
 #
 # In expressions like 'let x ...' the space after the keyword is not ignored
 # but required.
+#
+# See more details in the file ``indentation.rst``.
 def t_SPACE(t):
     r'[ \t\n]+'
     if '\n' in t.value:
-        t.type = 'PADDING'
-        t.lexer.lineno += t.value.count('\n')
+        value = t.value
+        lines = value.count('\n')
+        last = value.split('\n')[-1]
+        level = len(last)
+        _set_indentation_level(t, level)
+        if lines > 1 or level == _get_min_indentation_level(t):
+            t.type = 'NEWLINE'
+        else:
+            t.type = 'PADDING'
+        t.lexer.lineno += lines
         return t
     else:
         # In the expression:
@@ -837,7 +889,7 @@ def p_definitions(prod):
 
 
 def p_definition_set(prod):
-    '''_definition_set : PADDING definition _definition_set
+    '''_definition_set : NEWLINE definition _definition_set
     '''
     lst: Definitions = prod[3]
     lst.insert(0, prod[2])

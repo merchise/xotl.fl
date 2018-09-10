@@ -16,6 +16,7 @@ Implementation of Functional Programming Languages'.
 
 '''
 from typing import Iterable, Sequence, List, Mapping
+from typing import Optional  # noqa
 from itertools import zip_longest
 
 

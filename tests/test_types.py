@@ -53,7 +53,7 @@ def test_parse_with_newlines():
         parse('a \n -> b')  # You can't just break the arrow like that!
 
     assert parse('a -> \n b') == parse('a -> b')
-    assert parse('(a -> \n b -> c) -> (\n a -> b\n) -> \n a -> c') == S
+    assert parse('(a -> \n b -> c) -> (\n a -> b\n ) -> \n a -> c') == S
 
     with pytest.raises(Exception):
         parse('a \n b')  # You can't break application.

@@ -108,7 +108,7 @@ Rule 97    _maybe_padding -> PADDING
 Rule 98    _maybe_padding -> empty
 Rule 99    program -> definitions
 Rule 100   definitions -> definition _definition_set
-Rule 101   _definition_set -> PADDING definition _definition_set
+Rule 101   _definition_set -> NEWLINE definition _definition_set
 Rule 102   _definition_set -> empty
 Rule 103   definition -> nametype_decl
 Rule 104   definition -> valuedef
@@ -161,8 +161,9 @@ LBRACKET             : 96 123
 LOWER_IDENTIFIER     : 40 91 110
 LPAREN               : 34 41 44 45 95 122
 MINUS                : 52
+NEWLINE              : 101
 OPERATOR             : 53
-PADDING              : 76 80 97 101
+PADDING              : 76 80 97
 PERCENT              : 50
 PIPE                 : 113
 PLUS                 : 51
@@ -298,11 +299,11 @@ state 2
 state 3
 
     (100) definitions -> definition . _definition_set
-    (101) _definition_set -> . PADDING definition _definition_set
+    (101) _definition_set -> . NEWLINE definition _definition_set
     (102) _definition_set -> . empty
     (68) empty -> .
 
-    PADDING         shift and go to state 17
+    NEWLINE         shift and go to state 17
     $end            reduce using rule 68 (empty -> .)
 
     _definition_set                shift and go to state 16
@@ -312,7 +313,7 @@ state 4
 
     (103) definition -> nametype_decl .
 
-    PADDING         reduce using rule 103 (definition -> nametype_decl .)
+    NEWLINE         reduce using rule 103 (definition -> nametype_decl .)
     $end            reduce using rule 103 (definition -> nametype_decl .)
 
 
@@ -320,7 +321,7 @@ state 5
 
     (104) definition -> valuedef .
 
-    PADDING         reduce using rule 104 (definition -> valuedef .)
+    NEWLINE         reduce using rule 104 (definition -> valuedef .)
     $end            reduce using rule 104 (definition -> valuedef .)
 
 
@@ -328,7 +329,7 @@ state 6
 
     (105) definition -> datatype_definition .
 
-    PADDING         reduce using rule 105 (definition -> datatype_definition .)
+    NEWLINE         reduce using rule 105 (definition -> datatype_definition .)
     $end            reduce using rule 105 (definition -> datatype_definition .)
 
 
@@ -351,7 +352,7 @@ state 8
 
     (106) valuedef -> equation .
 
-    PADDING         reduce using rule 106 (valuedef -> equation .)
+    NEWLINE         reduce using rule 106 (valuedef -> equation .)
     $end            reduce using rule 106 (valuedef -> equation .)
 
 
@@ -372,8 +373,9 @@ state 10
     ARROW           reduce using rule 38 (_identifier -> UNDER_IDENTIFIER .)
     KEYWORD_WHERE   reduce using rule 38 (_identifier -> UNDER_IDENTIFIER .)
     TICK_OPERATOR   reduce using rule 38 (_identifier -> UNDER_IDENTIFIER .)
-    PADDING         reduce using rule 38 (_identifier -> UNDER_IDENTIFIER .)
+    NEWLINE         reduce using rule 38 (_identifier -> UNDER_IDENTIFIER .)
     $end            reduce using rule 38 (_identifier -> UNDER_IDENTIFIER .)
+    PADDING         reduce using rule 38 (_identifier -> UNDER_IDENTIFIER .)
     KEYWORD_IN      reduce using rule 38 (_identifier -> UNDER_IDENTIFIER .)
     DOT_OPERATOR    reduce using rule 38 (_identifier -> UNDER_IDENTIFIER .)
     LPAREN          reduce using rule 38 (_identifier -> UNDER_IDENTIFIER .)
@@ -397,8 +399,9 @@ state 11
     ARROW           reduce using rule 39 (_identifier -> UPPER_IDENTIFIER .)
     KEYWORD_WHERE   reduce using rule 39 (_identifier -> UPPER_IDENTIFIER .)
     TICK_OPERATOR   reduce using rule 39 (_identifier -> UPPER_IDENTIFIER .)
-    PADDING         reduce using rule 39 (_identifier -> UPPER_IDENTIFIER .)
+    NEWLINE         reduce using rule 39 (_identifier -> UPPER_IDENTIFIER .)
     $end            reduce using rule 39 (_identifier -> UPPER_IDENTIFIER .)
+    PADDING         reduce using rule 39 (_identifier -> UPPER_IDENTIFIER .)
     KEYWORD_IN      reduce using rule 39 (_identifier -> UPPER_IDENTIFIER .)
     DOT_OPERATOR    reduce using rule 39 (_identifier -> UPPER_IDENTIFIER .)
     LPAREN          reduce using rule 39 (_identifier -> UPPER_IDENTIFIER .)
@@ -422,8 +425,9 @@ state 12
     ARROW           reduce using rule 40 (_identifier -> LOWER_IDENTIFIER .)
     KEYWORD_WHERE   reduce using rule 40 (_identifier -> LOWER_IDENTIFIER .)
     TICK_OPERATOR   reduce using rule 40 (_identifier -> LOWER_IDENTIFIER .)
-    PADDING         reduce using rule 40 (_identifier -> LOWER_IDENTIFIER .)
+    NEWLINE         reduce using rule 40 (_identifier -> LOWER_IDENTIFIER .)
     $end            reduce using rule 40 (_identifier -> LOWER_IDENTIFIER .)
+    PADDING         reduce using rule 40 (_identifier -> LOWER_IDENTIFIER .)
     KEYWORD_IN      reduce using rule 40 (_identifier -> LOWER_IDENTIFIER .)
     DOT_OPERATOR    reduce using rule 40 (_identifier -> LOWER_IDENTIFIER .)
     LPAREN          reduce using rule 40 (_identifier -> LOWER_IDENTIFIER .)
@@ -467,7 +471,7 @@ state 16
 
 state 17
 
-    (101) _definition_set -> PADDING . definition _definition_set
+    (101) _definition_set -> NEWLINE . definition _definition_set
     (103) definition -> . nametype_decl
     (104) definition -> . valuedef
     (105) definition -> . datatype_definition
@@ -663,12 +667,12 @@ state 25
 
 state 26
 
-    (101) _definition_set -> PADDING definition . _definition_set
-    (101) _definition_set -> . PADDING definition _definition_set
+    (101) _definition_set -> NEWLINE definition . _definition_set
+    (101) _definition_set -> . NEWLINE definition _definition_set
     (102) _definition_set -> . empty
     (68) empty -> .
 
-    PADDING         shift and go to state 17
+    NEWLINE         shift and go to state 17
     $end            reduce using rule 68 (empty -> .)
 
     _definition_set                shift and go to state 71
@@ -724,7 +728,7 @@ state 29
 
     (108) datatype_definition -> _datatype_lhs EQ _data_rhs .
 
-    PADDING         reduce using rule 108 (datatype_definition -> _datatype_lhs EQ _data_rhs .)
+    NEWLINE         reduce using rule 108 (datatype_definition -> _datatype_lhs EQ _data_rhs .)
     $end            reduce using rule 108 (datatype_definition -> _datatype_lhs EQ _data_rhs .)
 
 
@@ -737,12 +741,10 @@ state 30
     (98) _maybe_padding -> . empty
     (68) empty -> .
 
-  ! shift/reduce conflict for PADDING resolved as shift
     PADDING         shift and go to state 88
+    NEWLINE         reduce using rule 68 (empty -> .)
     $end            reduce using rule 68 (empty -> .)
     PIPE            reduce using rule 68 (empty -> .)
-
-  ! PADDING         [ reduce using rule 68 (empty -> .) ]
 
     _data_conses                   shift and go to state 85
     _maybe_padding                 shift and go to state 86
@@ -754,6 +756,7 @@ state 31
 
     PADDING         reduce using rule 115 (data_cons -> _data_cons .)
     PIPE            reduce using rule 115 (data_cons -> _data_cons .)
+    NEWLINE         reduce using rule 115 (data_cons -> _data_cons .)
     $end            reduce using rule 115 (data_cons -> _data_cons .)
 
 
@@ -767,6 +770,7 @@ state 32
     SPACE           shift and go to state 90
     PADDING         reduce using rule 68 (empty -> .)
     PIPE            reduce using rule 68 (empty -> .)
+    NEWLINE         reduce using rule 68 (empty -> .)
     $end            reduce using rule 68 (empty -> .)
 
     _cons_args                     shift and go to state 89
@@ -782,8 +786,9 @@ state 33
 
   ! shift/reduce conflict for KEYWORD_WHERE resolved as shift
   ! shift/reduce conflict for TICK_OPERATOR resolved as shift
-    PADDING         reduce using rule 74 (equation -> pattern EQ expr .)
+    NEWLINE         reduce using rule 74 (equation -> pattern EQ expr .)
     $end            reduce using rule 74 (equation -> pattern EQ expr .)
+    PADDING         reduce using rule 74 (equation -> pattern EQ expr .)
     KEYWORD_IN      reduce using rule 74 (equation -> pattern EQ expr .)
     SPACE           reduce using rule 74 (equation -> pattern EQ expr .)
     DOT_OPERATOR    reduce using rule 74 (equation -> pattern EQ expr .)
@@ -811,8 +816,9 @@ state 34
 
     KEYWORD_WHERE   reduce using rule 13 (expr -> expr_term0 .)
     TICK_OPERATOR   reduce using rule 13 (expr -> expr_term0 .)
-    PADDING         reduce using rule 13 (expr -> expr_term0 .)
+    NEWLINE         reduce using rule 13 (expr -> expr_term0 .)
     $end            reduce using rule 13 (expr -> expr_term0 .)
+    PADDING         reduce using rule 13 (expr -> expr_term0 .)
     KEYWORD_IN      reduce using rule 13 (expr -> expr_term0 .)
     SPACE           reduce using rule 13 (expr -> expr_term0 .)
     DOT_OPERATOR    reduce using rule 13 (expr -> expr_term0 .)
@@ -839,8 +845,9 @@ state 35
   ! shift/reduce conflict for ARROW resolved as shift
     KEYWORD_WHERE   reduce using rule 11 (expr_term0 -> expr_term2 .)
     TICK_OPERATOR   reduce using rule 11 (expr_term0 -> expr_term2 .)
-    PADDING         reduce using rule 11 (expr_term0 -> expr_term2 .)
+    NEWLINE         reduce using rule 11 (expr_term0 -> expr_term2 .)
     $end            reduce using rule 11 (expr_term0 -> expr_term2 .)
+    PADDING         reduce using rule 11 (expr_term0 -> expr_term2 .)
     KEYWORD_IN      reduce using rule 11 (expr_term0 -> expr_term2 .)
     SPACE           reduce using rule 11 (expr_term0 -> expr_term2 .)
     DOT_OPERATOR    reduce using rule 11 (expr_term0 -> expr_term2 .)
@@ -871,8 +878,9 @@ state 36
   ! shift/reduce conflict for MINUS resolved as shift
     KEYWORD_WHERE   reduce using rule 9 (expr_term2 -> expr_term6 .)
     TICK_OPERATOR   reduce using rule 9 (expr_term2 -> expr_term6 .)
-    PADDING         reduce using rule 9 (expr_term2 -> expr_term6 .)
+    NEWLINE         reduce using rule 9 (expr_term2 -> expr_term6 .)
     $end            reduce using rule 9 (expr_term2 -> expr_term6 .)
+    PADDING         reduce using rule 9 (expr_term2 -> expr_term6 .)
     KEYWORD_IN      reduce using rule 9 (expr_term2 -> expr_term6 .)
     SPACE           reduce using rule 9 (expr_term2 -> expr_term6 .)
     DOT_OPERATOR    reduce using rule 9 (expr_term2 -> expr_term6 .)
@@ -907,8 +915,9 @@ state 37
   ! shift/reduce conflict for PERCENT resolved as shift
     KEYWORD_WHERE   reduce using rule 7 (expr_term6 -> expr_term7 .)
     TICK_OPERATOR   reduce using rule 7 (expr_term6 -> expr_term7 .)
-    PADDING         reduce using rule 7 (expr_term6 -> expr_term7 .)
+    NEWLINE         reduce using rule 7 (expr_term6 -> expr_term7 .)
     $end            reduce using rule 7 (expr_term6 -> expr_term7 .)
+    PADDING         reduce using rule 7 (expr_term6 -> expr_term7 .)
     KEYWORD_IN      reduce using rule 7 (expr_term6 -> expr_term7 .)
     SPACE           reduce using rule 7 (expr_term6 -> expr_term7 .)
     DOT_OPERATOR    reduce using rule 7 (expr_term6 -> expr_term7 .)
@@ -936,8 +945,9 @@ state 38
 
     KEYWORD_WHERE   reduce using rule 5 (expr_term7 -> expr_term9 .)
     TICK_OPERATOR   reduce using rule 5 (expr_term7 -> expr_term9 .)
-    PADDING         reduce using rule 5 (expr_term7 -> expr_term9 .)
+    NEWLINE         reduce using rule 5 (expr_term7 -> expr_term9 .)
     $end            reduce using rule 5 (expr_term7 -> expr_term9 .)
+    PADDING         reduce using rule 5 (expr_term7 -> expr_term9 .)
     KEYWORD_IN      reduce using rule 5 (expr_term7 -> expr_term9 .)
     SPACE           reduce using rule 5 (expr_term7 -> expr_term9 .)
     DOT_OPERATOR    reduce using rule 5 (expr_term7 -> expr_term9 .)
@@ -969,8 +979,9 @@ state 39
   ! shift/reduce conflict for LPAREN resolved as shift
     KEYWORD_WHERE   reduce using rule 3 (expr_term9 -> expr_factor .)
     TICK_OPERATOR   reduce using rule 3 (expr_term9 -> expr_factor .)
-    PADDING         reduce using rule 3 (expr_term9 -> expr_factor .)
+    NEWLINE         reduce using rule 3 (expr_term9 -> expr_factor .)
     $end            reduce using rule 3 (expr_term9 -> expr_factor .)
+    PADDING         reduce using rule 3 (expr_term9 -> expr_factor .)
     KEYWORD_IN      reduce using rule 3 (expr_term9 -> expr_factor .)
     STAR            reduce using rule 3 (expr_term9 -> expr_factor .)
     SLASH           reduce using rule 3 (expr_term9 -> expr_factor .)
@@ -998,8 +1009,9 @@ state 40
 
     KEYWORD_WHERE   reduce using rule 14 (expr_factor -> literal .)
     TICK_OPERATOR   reduce using rule 14 (expr_factor -> literal .)
-    PADDING         reduce using rule 14 (expr_factor -> literal .)
+    NEWLINE         reduce using rule 14 (expr_factor -> literal .)
     $end            reduce using rule 14 (expr_factor -> literal .)
+    PADDING         reduce using rule 14 (expr_factor -> literal .)
     KEYWORD_IN      reduce using rule 14 (expr_factor -> literal .)
     SPACE           reduce using rule 14 (expr_factor -> literal .)
     DOT_OPERATOR    reduce using rule 14 (expr_factor -> literal .)
@@ -1021,8 +1033,9 @@ state 41
 
     KEYWORD_WHERE   reduce using rule 15 (expr_factor -> identifier .)
     TICK_OPERATOR   reduce using rule 15 (expr_factor -> identifier .)
-    PADDING         reduce using rule 15 (expr_factor -> identifier .)
+    NEWLINE         reduce using rule 15 (expr_factor -> identifier .)
     $end            reduce using rule 15 (expr_factor -> identifier .)
+    PADDING         reduce using rule 15 (expr_factor -> identifier .)
     KEYWORD_IN      reduce using rule 15 (expr_factor -> identifier .)
     SPACE           reduce using rule 15 (expr_factor -> identifier .)
     DOT_OPERATOR    reduce using rule 15 (expr_factor -> identifier .)
@@ -1101,8 +1114,9 @@ state 42
   ! shift/reduce conflict for LPAREN resolved as shift
     KEYWORD_WHERE   reduce using rule 16 (expr_factor -> enclosed_expr .)
     TICK_OPERATOR   reduce using rule 16 (expr_factor -> enclosed_expr .)
-    PADDING         reduce using rule 16 (expr_factor -> enclosed_expr .)
+    NEWLINE         reduce using rule 16 (expr_factor -> enclosed_expr .)
     $end            reduce using rule 16 (expr_factor -> enclosed_expr .)
+    PADDING         reduce using rule 16 (expr_factor -> enclosed_expr .)
     KEYWORD_IN      reduce using rule 16 (expr_factor -> enclosed_expr .)
     SPACE           reduce using rule 16 (expr_factor -> enclosed_expr .)
     DOT_OPERATOR    reduce using rule 16 (expr_factor -> enclosed_expr .)
@@ -1165,8 +1179,9 @@ state 43
 
     KEYWORD_WHERE   reduce using rule 17 (expr_factor -> unit_value .)
     TICK_OPERATOR   reduce using rule 17 (expr_factor -> unit_value .)
-    PADDING         reduce using rule 17 (expr_factor -> unit_value .)
+    NEWLINE         reduce using rule 17 (expr_factor -> unit_value .)
     $end            reduce using rule 17 (expr_factor -> unit_value .)
+    PADDING         reduce using rule 17 (expr_factor -> unit_value .)
     KEYWORD_IN      reduce using rule 17 (expr_factor -> unit_value .)
     SPACE           reduce using rule 17 (expr_factor -> unit_value .)
     DOT_OPERATOR    reduce using rule 17 (expr_factor -> unit_value .)
@@ -1188,8 +1203,9 @@ state 44
 
     KEYWORD_WHERE   reduce using rule 18 (expr_factor -> letexpr .)
     TICK_OPERATOR   reduce using rule 18 (expr_factor -> letexpr .)
-    PADDING         reduce using rule 18 (expr_factor -> letexpr .)
+    NEWLINE         reduce using rule 18 (expr_factor -> letexpr .)
     $end            reduce using rule 18 (expr_factor -> letexpr .)
+    PADDING         reduce using rule 18 (expr_factor -> letexpr .)
     KEYWORD_IN      reduce using rule 18 (expr_factor -> letexpr .)
     SPACE           reduce using rule 18 (expr_factor -> letexpr .)
     DOT_OPERATOR    reduce using rule 18 (expr_factor -> letexpr .)
@@ -1211,8 +1227,9 @@ state 45
 
     KEYWORD_WHERE   reduce using rule 19 (expr_factor -> where_expr .)
     TICK_OPERATOR   reduce using rule 19 (expr_factor -> where_expr .)
-    PADDING         reduce using rule 19 (expr_factor -> where_expr .)
+    NEWLINE         reduce using rule 19 (expr_factor -> where_expr .)
     $end            reduce using rule 19 (expr_factor -> where_expr .)
+    PADDING         reduce using rule 19 (expr_factor -> where_expr .)
     KEYWORD_IN      reduce using rule 19 (expr_factor -> where_expr .)
     SPACE           reduce using rule 19 (expr_factor -> where_expr .)
     DOT_OPERATOR    reduce using rule 19 (expr_factor -> where_expr .)
@@ -1234,8 +1251,9 @@ state 46
 
     KEYWORD_WHERE   reduce using rule 20 (expr_factor -> lambda_expr .)
     TICK_OPERATOR   reduce using rule 20 (expr_factor -> lambda_expr .)
-    PADDING         reduce using rule 20 (expr_factor -> lambda_expr .)
+    NEWLINE         reduce using rule 20 (expr_factor -> lambda_expr .)
     $end            reduce using rule 20 (expr_factor -> lambda_expr .)
+    PADDING         reduce using rule 20 (expr_factor -> lambda_expr .)
     KEYWORD_IN      reduce using rule 20 (expr_factor -> lambda_expr .)
     SPACE           reduce using rule 20 (expr_factor -> lambda_expr .)
     DOT_OPERATOR    reduce using rule 20 (expr_factor -> lambda_expr .)
@@ -1260,8 +1278,9 @@ state 47
 
     KEYWORD_WHERE   reduce using rule 22 (literal -> number .)
     TICK_OPERATOR   reduce using rule 22 (literal -> number .)
-    PADDING         reduce using rule 22 (literal -> number .)
+    NEWLINE         reduce using rule 22 (literal -> number .)
     $end            reduce using rule 22 (literal -> number .)
+    PADDING         reduce using rule 22 (literal -> number .)
     KEYWORD_IN      reduce using rule 22 (literal -> number .)
     SPACE           reduce using rule 22 (literal -> number .)
     DOT_OPERATOR    reduce using rule 22 (literal -> number .)
@@ -1284,8 +1303,9 @@ state 48
 
     KEYWORD_WHERE   reduce using rule 23 (literal -> concrete_number .)
     TICK_OPERATOR   reduce using rule 23 (literal -> concrete_number .)
-    PADDING         reduce using rule 23 (literal -> concrete_number .)
+    NEWLINE         reduce using rule 23 (literal -> concrete_number .)
     $end            reduce using rule 23 (literal -> concrete_number .)
+    PADDING         reduce using rule 23 (literal -> concrete_number .)
     KEYWORD_IN      reduce using rule 23 (literal -> concrete_number .)
     SPACE           reduce using rule 23 (literal -> concrete_number .)
     DOT_OPERATOR    reduce using rule 23 (literal -> concrete_number .)
@@ -1307,8 +1327,9 @@ state 49
 
     KEYWORD_WHERE   reduce using rule 24 (literal -> string .)
     TICK_OPERATOR   reduce using rule 24 (literal -> string .)
-    PADDING         reduce using rule 24 (literal -> string .)
+    NEWLINE         reduce using rule 24 (literal -> string .)
     $end            reduce using rule 24 (literal -> string .)
+    PADDING         reduce using rule 24 (literal -> string .)
     KEYWORD_IN      reduce using rule 24 (literal -> string .)
     SPACE           reduce using rule 24 (literal -> string .)
     DOT_OPERATOR    reduce using rule 24 (literal -> string .)
@@ -1330,8 +1351,9 @@ state 50
 
     KEYWORD_WHERE   reduce using rule 25 (literal -> char .)
     TICK_OPERATOR   reduce using rule 25 (literal -> char .)
-    PADDING         reduce using rule 25 (literal -> char .)
+    NEWLINE         reduce using rule 25 (literal -> char .)
     $end            reduce using rule 25 (literal -> char .)
+    PADDING         reduce using rule 25 (literal -> char .)
     KEYWORD_IN      reduce using rule 25 (literal -> char .)
     SPACE           reduce using rule 25 (literal -> char .)
     DOT_OPERATOR    reduce using rule 25 (literal -> char .)
@@ -1353,8 +1375,9 @@ state 51
 
     KEYWORD_WHERE   reduce using rule 26 (literal -> date .)
     TICK_OPERATOR   reduce using rule 26 (literal -> date .)
-    PADDING         reduce using rule 26 (literal -> date .)
+    NEWLINE         reduce using rule 26 (literal -> date .)
     $end            reduce using rule 26 (literal -> date .)
+    PADDING         reduce using rule 26 (literal -> date .)
     KEYWORD_IN      reduce using rule 26 (literal -> date .)
     SPACE           reduce using rule 26 (literal -> date .)
     DOT_OPERATOR    reduce using rule 26 (literal -> date .)
@@ -1376,8 +1399,9 @@ state 52
 
     KEYWORD_WHERE   reduce using rule 27 (literal -> datetime .)
     TICK_OPERATOR   reduce using rule 27 (literal -> datetime .)
-    PADDING         reduce using rule 27 (literal -> datetime .)
+    NEWLINE         reduce using rule 27 (literal -> datetime .)
     $end            reduce using rule 27 (literal -> datetime .)
+    PADDING         reduce using rule 27 (literal -> datetime .)
     KEYWORD_IN      reduce using rule 27 (literal -> datetime .)
     SPACE           reduce using rule 27 (literal -> datetime .)
     DOT_OPERATOR    reduce using rule 27 (literal -> datetime .)
@@ -1399,8 +1423,9 @@ state 53
 
     KEYWORD_WHERE   reduce using rule 28 (literal -> date_interval .)
     TICK_OPERATOR   reduce using rule 28 (literal -> date_interval .)
-    PADDING         reduce using rule 28 (literal -> date_interval .)
+    NEWLINE         reduce using rule 28 (literal -> date_interval .)
     $end            reduce using rule 28 (literal -> date_interval .)
+    PADDING         reduce using rule 28 (literal -> date_interval .)
     KEYWORD_IN      reduce using rule 28 (literal -> date_interval .)
     SPACE           reduce using rule 28 (literal -> date_interval .)
     DOT_OPERATOR    reduce using rule 28 (literal -> date_interval .)
@@ -1422,8 +1447,9 @@ state 54
 
     KEYWORD_WHERE   reduce using rule 29 (literal -> datetime_interval .)
     TICK_OPERATOR   reduce using rule 29 (literal -> datetime_interval .)
-    PADDING         reduce using rule 29 (literal -> datetime_interval .)
+    NEWLINE         reduce using rule 29 (literal -> datetime_interval .)
     $end            reduce using rule 29 (literal -> datetime_interval .)
+    PADDING         reduce using rule 29 (literal -> datetime_interval .)
     KEYWORD_IN      reduce using rule 29 (literal -> datetime_interval .)
     SPACE           reduce using rule 29 (literal -> datetime_interval .)
     DOT_OPERATOR    reduce using rule 29 (literal -> datetime_interval .)
@@ -1445,8 +1471,9 @@ state 55
 
     KEYWORD_WHERE   reduce using rule 37 (identifier -> _identifier .)
     TICK_OPERATOR   reduce using rule 37 (identifier -> _identifier .)
-    PADDING         reduce using rule 37 (identifier -> _identifier .)
+    NEWLINE         reduce using rule 37 (identifier -> _identifier .)
     $end            reduce using rule 37 (identifier -> _identifier .)
+    PADDING         reduce using rule 37 (identifier -> _identifier .)
     KEYWORD_IN      reduce using rule 37 (identifier -> _identifier .)
     SPACE           reduce using rule 37 (identifier -> _identifier .)
     DOT_OPERATOR    reduce using rule 37 (identifier -> _identifier .)
@@ -1624,8 +1651,9 @@ state 59
     ANNOTATION      reduce using rule 60 (number -> BASE10_INTEGER .)
     KEYWORD_WHERE   reduce using rule 60 (number -> BASE10_INTEGER .)
     TICK_OPERATOR   reduce using rule 60 (number -> BASE10_INTEGER .)
-    PADDING         reduce using rule 60 (number -> BASE10_INTEGER .)
+    NEWLINE         reduce using rule 60 (number -> BASE10_INTEGER .)
     $end            reduce using rule 60 (number -> BASE10_INTEGER .)
+    PADDING         reduce using rule 60 (number -> BASE10_INTEGER .)
     KEYWORD_IN      reduce using rule 60 (number -> BASE10_INTEGER .)
     SPACE           reduce using rule 60 (number -> BASE10_INTEGER .)
     DOT_OPERATOR    reduce using rule 60 (number -> BASE10_INTEGER .)
@@ -1648,8 +1676,9 @@ state 60
     ANNOTATION      reduce using rule 61 (number -> BASE16_INTEGER .)
     KEYWORD_WHERE   reduce using rule 61 (number -> BASE16_INTEGER .)
     TICK_OPERATOR   reduce using rule 61 (number -> BASE16_INTEGER .)
-    PADDING         reduce using rule 61 (number -> BASE16_INTEGER .)
+    NEWLINE         reduce using rule 61 (number -> BASE16_INTEGER .)
     $end            reduce using rule 61 (number -> BASE16_INTEGER .)
+    PADDING         reduce using rule 61 (number -> BASE16_INTEGER .)
     KEYWORD_IN      reduce using rule 61 (number -> BASE16_INTEGER .)
     SPACE           reduce using rule 61 (number -> BASE16_INTEGER .)
     DOT_OPERATOR    reduce using rule 61 (number -> BASE16_INTEGER .)
@@ -1672,8 +1701,9 @@ state 61
     ANNOTATION      reduce using rule 62 (number -> BASE8_INTEGER .)
     KEYWORD_WHERE   reduce using rule 62 (number -> BASE8_INTEGER .)
     TICK_OPERATOR   reduce using rule 62 (number -> BASE8_INTEGER .)
-    PADDING         reduce using rule 62 (number -> BASE8_INTEGER .)
+    NEWLINE         reduce using rule 62 (number -> BASE8_INTEGER .)
     $end            reduce using rule 62 (number -> BASE8_INTEGER .)
+    PADDING         reduce using rule 62 (number -> BASE8_INTEGER .)
     KEYWORD_IN      reduce using rule 62 (number -> BASE8_INTEGER .)
     SPACE           reduce using rule 62 (number -> BASE8_INTEGER .)
     DOT_OPERATOR    reduce using rule 62 (number -> BASE8_INTEGER .)
@@ -1696,8 +1726,9 @@ state 62
     ANNOTATION      reduce using rule 63 (number -> BASE2_INTEGER .)
     KEYWORD_WHERE   reduce using rule 63 (number -> BASE2_INTEGER .)
     TICK_OPERATOR   reduce using rule 63 (number -> BASE2_INTEGER .)
-    PADDING         reduce using rule 63 (number -> BASE2_INTEGER .)
+    NEWLINE         reduce using rule 63 (number -> BASE2_INTEGER .)
     $end            reduce using rule 63 (number -> BASE2_INTEGER .)
+    PADDING         reduce using rule 63 (number -> BASE2_INTEGER .)
     KEYWORD_IN      reduce using rule 63 (number -> BASE2_INTEGER .)
     SPACE           reduce using rule 63 (number -> BASE2_INTEGER .)
     DOT_OPERATOR    reduce using rule 63 (number -> BASE2_INTEGER .)
@@ -1720,8 +1751,9 @@ state 63
     ANNOTATION      reduce using rule 64 (number -> FLOAT .)
     KEYWORD_WHERE   reduce using rule 64 (number -> FLOAT .)
     TICK_OPERATOR   reduce using rule 64 (number -> FLOAT .)
-    PADDING         reduce using rule 64 (number -> FLOAT .)
+    NEWLINE         reduce using rule 64 (number -> FLOAT .)
     $end            reduce using rule 64 (number -> FLOAT .)
+    PADDING         reduce using rule 64 (number -> FLOAT .)
     KEYWORD_IN      reduce using rule 64 (number -> FLOAT .)
     SPACE           reduce using rule 64 (number -> FLOAT .)
     DOT_OPERATOR    reduce using rule 64 (number -> FLOAT .)
@@ -1743,8 +1775,9 @@ state 64
 
     KEYWORD_WHERE   reduce using rule 36 (string -> STRING .)
     TICK_OPERATOR   reduce using rule 36 (string -> STRING .)
-    PADDING         reduce using rule 36 (string -> STRING .)
+    NEWLINE         reduce using rule 36 (string -> STRING .)
     $end            reduce using rule 36 (string -> STRING .)
+    PADDING         reduce using rule 36 (string -> STRING .)
     KEYWORD_IN      reduce using rule 36 (string -> STRING .)
     SPACE           reduce using rule 36 (string -> STRING .)
     DOT_OPERATOR    reduce using rule 36 (string -> STRING .)
@@ -1766,8 +1799,9 @@ state 65
 
     KEYWORD_WHERE   reduce using rule 35 (char -> CHAR .)
     TICK_OPERATOR   reduce using rule 35 (char -> CHAR .)
-    PADDING         reduce using rule 35 (char -> CHAR .)
+    NEWLINE         reduce using rule 35 (char -> CHAR .)
     $end            reduce using rule 35 (char -> CHAR .)
+    PADDING         reduce using rule 35 (char -> CHAR .)
     KEYWORD_IN      reduce using rule 35 (char -> CHAR .)
     SPACE           reduce using rule 35 (char -> CHAR .)
     DOT_OPERATOR    reduce using rule 35 (char -> CHAR .)
@@ -1789,8 +1823,9 @@ state 66
 
     KEYWORD_WHERE   reduce using rule 30 (date -> DATE .)
     TICK_OPERATOR   reduce using rule 30 (date -> DATE .)
-    PADDING         reduce using rule 30 (date -> DATE .)
+    NEWLINE         reduce using rule 30 (date -> DATE .)
     $end            reduce using rule 30 (date -> DATE .)
+    PADDING         reduce using rule 30 (date -> DATE .)
     KEYWORD_IN      reduce using rule 30 (date -> DATE .)
     SPACE           reduce using rule 30 (date -> DATE .)
     DOT_OPERATOR    reduce using rule 30 (date -> DATE .)
@@ -1812,8 +1847,9 @@ state 67
 
     KEYWORD_WHERE   reduce using rule 31 (datetime -> DATETIME .)
     TICK_OPERATOR   reduce using rule 31 (datetime -> DATETIME .)
-    PADDING         reduce using rule 31 (datetime -> DATETIME .)
+    NEWLINE         reduce using rule 31 (datetime -> DATETIME .)
     $end            reduce using rule 31 (datetime -> DATETIME .)
+    PADDING         reduce using rule 31 (datetime -> DATETIME .)
     KEYWORD_IN      reduce using rule 31 (datetime -> DATETIME .)
     SPACE           reduce using rule 31 (datetime -> DATETIME .)
     DOT_OPERATOR    reduce using rule 31 (datetime -> DATETIME .)
@@ -1835,8 +1871,9 @@ state 68
 
     KEYWORD_WHERE   reduce using rule 32 (date_interval -> DATE_INTERVAL .)
     TICK_OPERATOR   reduce using rule 32 (date_interval -> DATE_INTERVAL .)
-    PADDING         reduce using rule 32 (date_interval -> DATE_INTERVAL .)
+    NEWLINE         reduce using rule 32 (date_interval -> DATE_INTERVAL .)
     $end            reduce using rule 32 (date_interval -> DATE_INTERVAL .)
+    PADDING         reduce using rule 32 (date_interval -> DATE_INTERVAL .)
     KEYWORD_IN      reduce using rule 32 (date_interval -> DATE_INTERVAL .)
     SPACE           reduce using rule 32 (date_interval -> DATE_INTERVAL .)
     DOT_OPERATOR    reduce using rule 32 (date_interval -> DATE_INTERVAL .)
@@ -1858,8 +1895,9 @@ state 69
 
     KEYWORD_WHERE   reduce using rule 33 (datetime_interval -> DATETIME_INTERVAL .)
     TICK_OPERATOR   reduce using rule 33 (datetime_interval -> DATETIME_INTERVAL .)
-    PADDING         reduce using rule 33 (datetime_interval -> DATETIME_INTERVAL .)
+    NEWLINE         reduce using rule 33 (datetime_interval -> DATETIME_INTERVAL .)
     $end            reduce using rule 33 (datetime_interval -> DATETIME_INTERVAL .)
+    PADDING         reduce using rule 33 (datetime_interval -> DATETIME_INTERVAL .)
     KEYWORD_IN      reduce using rule 33 (datetime_interval -> DATETIME_INTERVAL .)
     SPACE           reduce using rule 33 (datetime_interval -> DATETIME_INTERVAL .)
     DOT_OPERATOR    reduce using rule 33 (datetime_interval -> DATETIME_INTERVAL .)
@@ -1890,16 +1928,16 @@ state 70
 
 state 71
 
-    (101) _definition_set -> PADDING definition _definition_set .
+    (101) _definition_set -> NEWLINE definition _definition_set .
 
-    $end            reduce using rule 101 (_definition_set -> PADDING definition _definition_set .)
+    $end            reduce using rule 101 (_definition_set -> NEWLINE definition _definition_set .)
 
 
 state 72
 
     (107) nametype_decl -> _identifier COLON COLON st_type_expr .
 
-    PADDING         reduce using rule 107 (nametype_decl -> _identifier COLON COLON st_type_expr .)
+    NEWLINE         reduce using rule 107 (nametype_decl -> _identifier COLON COLON st_type_expr .)
     $end            reduce using rule 107 (nametype_decl -> _identifier COLON COLON st_type_expr .)
 
 
@@ -1907,7 +1945,7 @@ state 73
 
     (21) st_type_expr -> type_expr .
 
-    PADDING         reduce using rule 21 (st_type_expr -> type_expr .)
+    NEWLINE         reduce using rule 21 (st_type_expr -> type_expr .)
     $end            reduce using rule 21 (st_type_expr -> type_expr .)
 
 
@@ -1915,8 +1953,9 @@ state 74
 
     (81) type_expr -> type_function_expr .
 
-    PADDING         reduce using rule 81 (type_expr -> type_function_expr .)
+    NEWLINE         reduce using rule 81 (type_expr -> type_function_expr .)
     $end            reduce using rule 81 (type_expr -> type_function_expr .)
+    PADDING         reduce using rule 81 (type_expr -> type_function_expr .)
     RPAREN          reduce using rule 81 (type_expr -> type_function_expr .)
     RBRACKET        reduce using rule 81 (type_expr -> type_function_expr .)
 
@@ -1927,18 +1966,21 @@ state 75
     (83) type_function_expr -> type_term . ARROW _maybe_padding type_function_expr
     (84) type_function_expr -> type_term .
 
-  ! reduce/reduce conflict for PADDING resolved using rule 82 (type_expr -> type_term .)
+  ! reduce/reduce conflict for NEWLINE resolved using rule 82 (type_expr -> type_term .)
   ! reduce/reduce conflict for $end resolved using rule 82 (type_expr -> type_term .)
+  ! reduce/reduce conflict for PADDING resolved using rule 82 (type_expr -> type_term .)
   ! reduce/reduce conflict for RPAREN resolved using rule 82 (type_expr -> type_term .)
   ! reduce/reduce conflict for RBRACKET resolved using rule 82 (type_expr -> type_term .)
-    PADDING         reduce using rule 82 (type_expr -> type_term .)
+    NEWLINE         reduce using rule 82 (type_expr -> type_term .)
     $end            reduce using rule 82 (type_expr -> type_term .)
+    PADDING         reduce using rule 82 (type_expr -> type_term .)
     RPAREN          reduce using rule 82 (type_expr -> type_term .)
     RBRACKET        reduce using rule 82 (type_expr -> type_term .)
     ARROW           shift and go to state 128
 
-  ! PADDING         [ reduce using rule 84 (type_function_expr -> type_term .) ]
+  ! NEWLINE         [ reduce using rule 84 (type_function_expr -> type_term .) ]
   ! $end            [ reduce using rule 84 (type_function_expr -> type_term .) ]
+  ! PADDING         [ reduce using rule 84 (type_function_expr -> type_term .) ]
   ! RPAREN          [ reduce using rule 84 (type_function_expr -> type_term .) ]
   ! RBRACKET        [ reduce using rule 84 (type_function_expr -> type_term .) ]
 
@@ -1948,8 +1990,9 @@ state 76
     (85) type_term -> type_app_expression .
 
     ARROW           reduce using rule 85 (type_term -> type_app_expression .)
-    PADDING         reduce using rule 85 (type_term -> type_app_expression .)
+    NEWLINE         reduce using rule 85 (type_term -> type_app_expression .)
     $end            reduce using rule 85 (type_term -> type_app_expression .)
+    PADDING         reduce using rule 85 (type_term -> type_app_expression .)
     RPAREN          reduce using rule 85 (type_term -> type_app_expression .)
     RBRACKET        reduce using rule 85 (type_term -> type_app_expression .)
 
@@ -1961,8 +2004,9 @@ state 77
     (89) _app_args_non_empty -> . SPACE type_factor _app_args
 
     ARROW           reduce using rule 86 (type_term -> type_factor .)
-    PADDING         reduce using rule 86 (type_term -> type_factor .)
+    NEWLINE         reduce using rule 86 (type_term -> type_factor .)
     $end            reduce using rule 86 (type_term -> type_factor .)
+    PADDING         reduce using rule 86 (type_term -> type_factor .)
     RPAREN          reduce using rule 86 (type_term -> type_factor .)
     RBRACKET        reduce using rule 86 (type_term -> type_factor .)
     SPACE           shift and go to state 130
@@ -1975,8 +2019,9 @@ state 78
 
     SPACE           reduce using rule 93 (type_factor -> type_variable .)
     ARROW           reduce using rule 93 (type_factor -> type_variable .)
-    PADDING         reduce using rule 93 (type_factor -> type_variable .)
+    NEWLINE         reduce using rule 93 (type_factor -> type_variable .)
     $end            reduce using rule 93 (type_factor -> type_variable .)
+    PADDING         reduce using rule 93 (type_factor -> type_variable .)
     RPAREN          reduce using rule 93 (type_factor -> type_variable .)
     RBRACKET        reduce using rule 93 (type_factor -> type_variable .)
 
@@ -1987,8 +2032,9 @@ state 79
 
     SPACE           reduce using rule 94 (type_factor -> type_cons .)
     ARROW           reduce using rule 94 (type_factor -> type_cons .)
-    PADDING         reduce using rule 94 (type_factor -> type_cons .)
+    NEWLINE         reduce using rule 94 (type_factor -> type_cons .)
     $end            reduce using rule 94 (type_factor -> type_cons .)
+    PADDING         reduce using rule 94 (type_factor -> type_cons .)
     RPAREN          reduce using rule 94 (type_factor -> type_cons .)
     RBRACKET        reduce using rule 94 (type_factor -> type_cons .)
 
@@ -2031,8 +2077,9 @@ state 82
 
     SPACE           reduce using rule 91 (type_variable -> LOWER_IDENTIFIER .)
     ARROW           reduce using rule 91 (type_variable -> LOWER_IDENTIFIER .)
-    PADDING         reduce using rule 91 (type_variable -> LOWER_IDENTIFIER .)
+    NEWLINE         reduce using rule 91 (type_variable -> LOWER_IDENTIFIER .)
     $end            reduce using rule 91 (type_variable -> LOWER_IDENTIFIER .)
+    PADDING         reduce using rule 91 (type_variable -> LOWER_IDENTIFIER .)
     PIPE            reduce using rule 91 (type_variable -> LOWER_IDENTIFIER .)
     RPAREN          reduce using rule 91 (type_variable -> LOWER_IDENTIFIER .)
     RBRACKET        reduce using rule 91 (type_variable -> LOWER_IDENTIFIER .)
@@ -2044,8 +2091,9 @@ state 83
 
     SPACE           reduce using rule 92 (type_cons -> UPPER_IDENTIFIER .)
     ARROW           reduce using rule 92 (type_cons -> UPPER_IDENTIFIER .)
-    PADDING         reduce using rule 92 (type_cons -> UPPER_IDENTIFIER .)
+    NEWLINE         reduce using rule 92 (type_cons -> UPPER_IDENTIFIER .)
     $end            reduce using rule 92 (type_cons -> UPPER_IDENTIFIER .)
+    PADDING         reduce using rule 92 (type_cons -> UPPER_IDENTIFIER .)
     PIPE            reduce using rule 92 (type_cons -> UPPER_IDENTIFIER .)
     RPAREN          reduce using rule 92 (type_cons -> UPPER_IDENTIFIER .)
     RBRACKET        reduce using rule 92 (type_cons -> UPPER_IDENTIFIER .)
@@ -2063,7 +2111,7 @@ state 85
 
     (112) _data_rhs -> data_cons _data_conses .
 
-    PADDING         reduce using rule 112 (_data_rhs -> data_cons _data_conses .)
+    NEWLINE         reduce using rule 112 (_data_rhs -> data_cons _data_conses .)
     $end            reduce using rule 112 (_data_rhs -> data_cons _data_conses .)
 
 
@@ -2079,7 +2127,7 @@ state 87
     (114) _data_conses -> empty .
     (98) _maybe_padding -> empty .
 
-    PADDING         reduce using rule 114 (_data_conses -> empty .)
+    NEWLINE         reduce using rule 114 (_data_conses -> empty .)
     $end            reduce using rule 114 (_data_conses -> empty .)
     PIPE            reduce using rule 98 (_maybe_padding -> empty .)
 
@@ -2103,6 +2151,7 @@ state 89
 
     PADDING         reduce using rule 116 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
     PIPE            reduce using rule 116 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
+    NEWLINE         reduce using rule 116 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
     $end            reduce using rule 116 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
 
 
@@ -2133,6 +2182,7 @@ state 91
 
     PADDING         reduce using rule 118 (_cons_args -> empty .)
     PIPE            reduce using rule 118 (_cons_args -> empty .)
+    NEWLINE         reduce using rule 118 (_cons_args -> empty .)
     $end            reduce using rule 118 (_cons_args -> empty .)
 
 
@@ -2973,8 +3023,9 @@ state 108
 
     KEYWORD_WHERE   reduce using rule 43 (expr_factor -> expr_factor enclosed_expr .)
     TICK_OPERATOR   reduce using rule 43 (expr_factor -> expr_factor enclosed_expr .)
-    PADDING         reduce using rule 43 (expr_factor -> expr_factor enclosed_expr .)
+    NEWLINE         reduce using rule 43 (expr_factor -> expr_factor enclosed_expr .)
     $end            reduce using rule 43 (expr_factor -> expr_factor enclosed_expr .)
+    PADDING         reduce using rule 43 (expr_factor -> expr_factor enclosed_expr .)
     KEYWORD_IN      reduce using rule 43 (expr_factor -> expr_factor enclosed_expr .)
     SPACE           reduce using rule 43 (expr_factor -> expr_factor enclosed_expr .)
     DOT_OPERATOR    reduce using rule 43 (expr_factor -> expr_factor enclosed_expr .)
@@ -3169,8 +3220,9 @@ state 111
   ! reduce/reduce conflict for TICK_OPERATOR resolved using rule 3 (expr_term9 -> expr_factor .)
   ! shift/reduce conflict for LPAREN resolved as shift
   ! shift/reduce conflict for DOT_OPERATOR resolved as shift
-    PADDING         reduce using rule 42 (expr_factor -> enclosed_expr expr_factor .)
+    NEWLINE         reduce using rule 42 (expr_factor -> enclosed_expr expr_factor .)
     $end            reduce using rule 42 (expr_factor -> enclosed_expr expr_factor .)
+    PADDING         reduce using rule 42 (expr_factor -> enclosed_expr expr_factor .)
     KEYWORD_IN      reduce using rule 42 (expr_factor -> enclosed_expr expr_factor .)
     RPAREN          reduce using rule 42 (expr_factor -> enclosed_expr expr_factor .)
     SPACE           shift and go to state 107
@@ -3259,8 +3311,9 @@ state 115
 
     KEYWORD_WHERE   reduce using rule 34 (unit_value -> LPAREN RPAREN .)
     TICK_OPERATOR   reduce using rule 34 (unit_value -> LPAREN RPAREN .)
-    PADDING         reduce using rule 34 (unit_value -> LPAREN RPAREN .)
+    NEWLINE         reduce using rule 34 (unit_value -> LPAREN RPAREN .)
     $end            reduce using rule 34 (unit_value -> LPAREN RPAREN .)
+    PADDING         reduce using rule 34 (unit_value -> LPAREN RPAREN .)
     KEYWORD_IN      reduce using rule 34 (unit_value -> LPAREN RPAREN .)
     SPACE           reduce using rule 34 (unit_value -> LPAREN RPAREN .)
     DOT_OPERATOR    reduce using rule 34 (unit_value -> LPAREN RPAREN .)
@@ -3402,8 +3455,9 @@ state 129
     (87) type_app_expression -> type_factor _app_args_non_empty .
 
     ARROW           reduce using rule 87 (type_app_expression -> type_factor _app_args_non_empty .)
-    PADDING         reduce using rule 87 (type_app_expression -> type_factor _app_args_non_empty .)
+    NEWLINE         reduce using rule 87 (type_app_expression -> type_factor _app_args_non_empty .)
     $end            reduce using rule 87 (type_app_expression -> type_factor _app_args_non_empty .)
+    PADDING         reduce using rule 87 (type_app_expression -> type_factor _app_args_non_empty .)
     RPAREN          reduce using rule 87 (type_app_expression -> type_factor _app_args_non_empty .)
     RBRACKET        reduce using rule 87 (type_app_expression -> type_factor _app_args_non_empty .)
 
@@ -3520,6 +3574,7 @@ state 135
     SPACE           shift and go to state 90
     PADDING         reduce using rule 68 (empty -> .)
     PIPE            reduce using rule 68 (empty -> .)
+    NEWLINE         reduce using rule 68 (empty -> .)
     $end            reduce using rule 68 (empty -> .)
 
     _cons_args                     shift and go to state 165
@@ -3532,6 +3587,7 @@ state 136
     SPACE           reduce using rule 119 (cons_arg -> type_variable .)
     PADDING         reduce using rule 119 (cons_arg -> type_variable .)
     PIPE            reduce using rule 119 (cons_arg -> type_variable .)
+    NEWLINE         reduce using rule 119 (cons_arg -> type_variable .)
     $end            reduce using rule 119 (cons_arg -> type_variable .)
 
 
@@ -3542,6 +3598,7 @@ state 137
     SPACE           reduce using rule 120 (cons_arg -> type_cons .)
     PADDING         reduce using rule 120 (cons_arg -> type_cons .)
     PIPE            reduce using rule 120 (cons_arg -> type_cons .)
+    NEWLINE         reduce using rule 120 (cons_arg -> type_cons .)
     $end            reduce using rule 120 (cons_arg -> type_cons .)
 
 
@@ -3552,6 +3609,7 @@ state 138
     SPACE           reduce using rule 121 (cons_arg -> _cons_arg_factor .)
     PADDING         reduce using rule 121 (cons_arg -> _cons_arg_factor .)
     PIPE            reduce using rule 121 (cons_arg -> _cons_arg_factor .)
+    NEWLINE         reduce using rule 121 (cons_arg -> _cons_arg_factor .)
     $end            reduce using rule 121 (cons_arg -> _cons_arg_factor .)
 
 
@@ -3636,8 +3694,9 @@ state 142
   ! reduce/reduce conflict for TICK_OPERATOR resolved using rule 10 (expr_term0 -> expr infix_operator_0 expr_term0 .)
     KEYWORD_WHERE   reduce using rule 10 (expr_term0 -> expr infix_operator_0 expr_term0 .)
     TICK_OPERATOR   reduce using rule 10 (expr_term0 -> expr infix_operator_0 expr_term0 .)
-    PADDING         reduce using rule 10 (expr_term0 -> expr infix_operator_0 expr_term0 .)
+    NEWLINE         reduce using rule 10 (expr_term0 -> expr infix_operator_0 expr_term0 .)
     $end            reduce using rule 10 (expr_term0 -> expr infix_operator_0 expr_term0 .)
+    PADDING         reduce using rule 10 (expr_term0 -> expr infix_operator_0 expr_term0 .)
     KEYWORD_IN      reduce using rule 10 (expr_term0 -> expr infix_operator_0 expr_term0 .)
     SPACE           reduce using rule 10 (expr_term0 -> expr infix_operator_0 expr_term0 .)
     DOT_OPERATOR    reduce using rule 10 (expr_term0 -> expr infix_operator_0 expr_term0 .)
@@ -3714,8 +3773,9 @@ state 145
   ! shift/reduce conflict for MINUS resolved as shift
     KEYWORD_WHERE   reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .)
     TICK_OPERATOR   reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .)
-    PADDING         reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .)
+    NEWLINE         reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .)
     $end            reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .)
+    PADDING         reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .)
     KEYWORD_IN      reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .)
     SPACE           reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .)
     DOT_OPERATOR    reduce using rule 8 (expr_term2 -> expr_term2 infix_operator_2 expr_term6 .)
@@ -3761,8 +3821,9 @@ state 146
   ! shift/reduce conflict for PERCENT resolved as shift
     KEYWORD_WHERE   reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .)
     TICK_OPERATOR   reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .)
-    PADDING         reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .)
+    NEWLINE         reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .)
     $end            reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .)
+    PADDING         reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .)
     KEYWORD_IN      reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .)
     SPACE           reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .)
     DOT_OPERATOR    reduce using rule 6 (expr_term6 -> expr_term6 infix_operator_6 expr_term7 .)
@@ -3807,8 +3868,9 @@ state 147
   ! reduce/reduce conflict for TICK_OPERATOR resolved using rule 4 (expr_term7 -> expr_term7 infix_operator_7 expr_term9 .)
     KEYWORD_WHERE   reduce using rule 4 (expr_term7 -> expr_term7 infix_operator_7 expr_term9 .)
     TICK_OPERATOR   reduce using rule 4 (expr_term7 -> expr_term7 infix_operator_7 expr_term9 .)
-    PADDING         reduce using rule 4 (expr_term7 -> expr_term7 infix_operator_7 expr_term9 .)
+    NEWLINE         reduce using rule 4 (expr_term7 -> expr_term7 infix_operator_7 expr_term9 .)
     $end            reduce using rule 4 (expr_term7 -> expr_term7 infix_operator_7 expr_term9 .)
+    PADDING         reduce using rule 4 (expr_term7 -> expr_term7 infix_operator_7 expr_term9 .)
     KEYWORD_IN      reduce using rule 4 (expr_term7 -> expr_term7 infix_operator_7 expr_term9 .)
     SPACE           reduce using rule 4 (expr_term7 -> expr_term7 infix_operator_7 expr_term9 .)
     DOT_OPERATOR    reduce using rule 4 (expr_term7 -> expr_term7 infix_operator_7 expr_term9 .)
@@ -3852,8 +3914,9 @@ state 148
   ! reduce/reduce conflict for TICK_OPERATOR resolved using rule 2 (expr_term9 -> expr_factor infix_operator_9 expr_term9 .)
     KEYWORD_WHERE   reduce using rule 2 (expr_term9 -> expr_factor infix_operator_9 expr_term9 .)
     TICK_OPERATOR   reduce using rule 2 (expr_term9 -> expr_factor infix_operator_9 expr_term9 .)
-    PADDING         reduce using rule 2 (expr_term9 -> expr_factor infix_operator_9 expr_term9 .)
+    NEWLINE         reduce using rule 2 (expr_term9 -> expr_factor infix_operator_9 expr_term9 .)
     $end            reduce using rule 2 (expr_term9 -> expr_factor infix_operator_9 expr_term9 .)
+    PADDING         reduce using rule 2 (expr_term9 -> expr_factor infix_operator_9 expr_term9 .)
     KEYWORD_IN      reduce using rule 2 (expr_term9 -> expr_factor infix_operator_9 expr_term9 .)
     SPACE           reduce using rule 2 (expr_term9 -> expr_factor infix_operator_9 expr_term9 .)
     DOT_OPERATOR    reduce using rule 2 (expr_term9 -> expr_factor infix_operator_9 expr_term9 .)
@@ -3904,8 +3967,9 @@ state 149
   ! reduce/reduce conflict for TICK_OPERATOR resolved using rule 1 (expr_factor -> expr_factor SPACE expr_factor .)
     KEYWORD_WHERE   reduce using rule 1 (expr_factor -> expr_factor SPACE expr_factor .)
     TICK_OPERATOR   reduce using rule 1 (expr_factor -> expr_factor SPACE expr_factor .)
-    PADDING         reduce using rule 1 (expr_factor -> expr_factor SPACE expr_factor .)
+    NEWLINE         reduce using rule 1 (expr_factor -> expr_factor SPACE expr_factor .)
     $end            reduce using rule 1 (expr_factor -> expr_factor SPACE expr_factor .)
+    PADDING         reduce using rule 1 (expr_factor -> expr_factor SPACE expr_factor .)
     KEYWORD_IN      reduce using rule 1 (expr_factor -> expr_factor SPACE expr_factor .)
     SPACE           reduce using rule 1 (expr_factor -> expr_factor SPACE expr_factor .)
     DOT_OPERATOR    reduce using rule 1 (expr_factor -> expr_factor SPACE expr_factor .)
@@ -3943,8 +4007,9 @@ state 150
 
     KEYWORD_WHERE   reduce using rule 65 (concrete_number -> number ANNOTATION string .)
     TICK_OPERATOR   reduce using rule 65 (concrete_number -> number ANNOTATION string .)
-    PADDING         reduce using rule 65 (concrete_number -> number ANNOTATION string .)
+    NEWLINE         reduce using rule 65 (concrete_number -> number ANNOTATION string .)
     $end            reduce using rule 65 (concrete_number -> number ANNOTATION string .)
+    PADDING         reduce using rule 65 (concrete_number -> number ANNOTATION string .)
     KEYWORD_IN      reduce using rule 65 (concrete_number -> number ANNOTATION string .)
     SPACE           reduce using rule 65 (concrete_number -> number ANNOTATION string .)
     DOT_OPERATOR    reduce using rule 65 (concrete_number -> number ANNOTATION string .)
@@ -3966,8 +4031,9 @@ state 151
 
     KEYWORD_WHERE   reduce using rule 66 (concrete_number -> number ANNOTATION char .)
     TICK_OPERATOR   reduce using rule 66 (concrete_number -> number ANNOTATION char .)
-    PADDING         reduce using rule 66 (concrete_number -> number ANNOTATION char .)
+    NEWLINE         reduce using rule 66 (concrete_number -> number ANNOTATION char .)
     $end            reduce using rule 66 (concrete_number -> number ANNOTATION char .)
+    PADDING         reduce using rule 66 (concrete_number -> number ANNOTATION char .)
     KEYWORD_IN      reduce using rule 66 (concrete_number -> number ANNOTATION char .)
     SPACE           reduce using rule 66 (concrete_number -> number ANNOTATION char .)
     DOT_OPERATOR    reduce using rule 66 (concrete_number -> number ANNOTATION char .)
@@ -3989,8 +4055,9 @@ state 152
 
     KEYWORD_WHERE   reduce using rule 67 (concrete_number -> number ANNOTATION identifier .)
     TICK_OPERATOR   reduce using rule 67 (concrete_number -> number ANNOTATION identifier .)
-    PADDING         reduce using rule 67 (concrete_number -> number ANNOTATION identifier .)
+    NEWLINE         reduce using rule 67 (concrete_number -> number ANNOTATION identifier .)
     $end            reduce using rule 67 (concrete_number -> number ANNOTATION identifier .)
+    PADDING         reduce using rule 67 (concrete_number -> number ANNOTATION identifier .)
     KEYWORD_IN      reduce using rule 67 (concrete_number -> number ANNOTATION identifier .)
     SPACE           reduce using rule 67 (concrete_number -> number ANNOTATION identifier .)
     DOT_OPERATOR    reduce using rule 67 (concrete_number -> number ANNOTATION identifier .)
@@ -4029,8 +4096,9 @@ state 153
     LOWER_IDENTIFIER reduce using rule 41 (enclosed_expr -> LPAREN expr RPAREN .)
     KEYWORD_WHERE   reduce using rule 41 (enclosed_expr -> LPAREN expr RPAREN .)
     TICK_OPERATOR   reduce using rule 41 (enclosed_expr -> LPAREN expr RPAREN .)
-    PADDING         reduce using rule 41 (enclosed_expr -> LPAREN expr RPAREN .)
+    NEWLINE         reduce using rule 41 (enclosed_expr -> LPAREN expr RPAREN .)
     $end            reduce using rule 41 (enclosed_expr -> LPAREN expr RPAREN .)
+    PADDING         reduce using rule 41 (enclosed_expr -> LPAREN expr RPAREN .)
     KEYWORD_IN      reduce using rule 41 (enclosed_expr -> LPAREN expr RPAREN .)
     SPACE           reduce using rule 41 (enclosed_expr -> LPAREN expr RPAREN .)
     DOT_OPERATOR    reduce using rule 41 (enclosed_expr -> LPAREN expr RPAREN .)
@@ -4068,8 +4136,9 @@ state 154
     LOWER_IDENTIFIER reduce using rule 44 (enclosed_expr -> LPAREN DOT_OPERATOR RPAREN .)
     KEYWORD_WHERE   reduce using rule 44 (enclosed_expr -> LPAREN DOT_OPERATOR RPAREN .)
     TICK_OPERATOR   reduce using rule 44 (enclosed_expr -> LPAREN DOT_OPERATOR RPAREN .)
-    PADDING         reduce using rule 44 (enclosed_expr -> LPAREN DOT_OPERATOR RPAREN .)
+    NEWLINE         reduce using rule 44 (enclosed_expr -> LPAREN DOT_OPERATOR RPAREN .)
     $end            reduce using rule 44 (enclosed_expr -> LPAREN DOT_OPERATOR RPAREN .)
+    PADDING         reduce using rule 44 (enclosed_expr -> LPAREN DOT_OPERATOR RPAREN .)
     KEYWORD_IN      reduce using rule 44 (enclosed_expr -> LPAREN DOT_OPERATOR RPAREN .)
     SPACE           reduce using rule 44 (enclosed_expr -> LPAREN DOT_OPERATOR RPAREN .)
     DOT_OPERATOR    reduce using rule 44 (enclosed_expr -> LPAREN DOT_OPERATOR RPAREN .)
@@ -4107,8 +4176,9 @@ state 155
     LOWER_IDENTIFIER reduce using rule 45 (enclosed_expr -> LPAREN operator RPAREN .)
     KEYWORD_WHERE   reduce using rule 45 (enclosed_expr -> LPAREN operator RPAREN .)
     TICK_OPERATOR   reduce using rule 45 (enclosed_expr -> LPAREN operator RPAREN .)
-    PADDING         reduce using rule 45 (enclosed_expr -> LPAREN operator RPAREN .)
+    NEWLINE         reduce using rule 45 (enclosed_expr -> LPAREN operator RPAREN .)
     $end            reduce using rule 45 (enclosed_expr -> LPAREN operator RPAREN .)
+    PADDING         reduce using rule 45 (enclosed_expr -> LPAREN operator RPAREN .)
     KEYWORD_IN      reduce using rule 45 (enclosed_expr -> LPAREN operator RPAREN .)
     SPACE           reduce using rule 45 (enclosed_expr -> LPAREN operator RPAREN .)
     DOT_OPERATOR    reduce using rule 45 (enclosed_expr -> LPAREN operator RPAREN .)
@@ -4141,6 +4211,7 @@ state 157
     PADDING         shift and go to state 172
     KEYWORD_WHERE   reduce using rule 68 (empty -> .)
     TICK_OPERATOR   reduce using rule 68 (empty -> .)
+    NEWLINE         reduce using rule 68 (empty -> .)
     $end            reduce using rule 68 (empty -> .)
     KEYWORD_IN      reduce using rule 68 (empty -> .)
     SPACE           reduce using rule 68 (empty -> .)
@@ -4311,8 +4382,9 @@ state 161
 
     SPACE           shift and go to state 178
     ARROW           reduce using rule 68 (empty -> .)
-    PADDING         reduce using rule 68 (empty -> .)
+    NEWLINE         reduce using rule 68 (empty -> .)
     $end            reduce using rule 68 (empty -> .)
+    PADDING         reduce using rule 68 (empty -> .)
     RPAREN          reduce using rule 68 (empty -> .)
     RBRACKET        reduce using rule 68 (empty -> .)
 
@@ -4354,12 +4426,10 @@ state 164
     (98) _maybe_padding -> . empty
     (68) empty -> .
 
-  ! shift/reduce conflict for PADDING resolved as shift
     PADDING         shift and go to state 88
+    NEWLINE         reduce using rule 68 (empty -> .)
     $end            reduce using rule 68 (empty -> .)
     PIPE            reduce using rule 68 (empty -> .)
-
-  ! PADDING         [ reduce using rule 68 (empty -> .) ]
 
     _maybe_padding                 shift and go to state 86
     _data_conses                   shift and go to state 183
@@ -4371,6 +4441,7 @@ state 165
 
     PADDING         reduce using rule 117 (_cons_args -> SPACE cons_arg _cons_args .)
     PIPE            reduce using rule 117 (_cons_args -> SPACE cons_arg _cons_args .)
+    NEWLINE         reduce using rule 117 (_cons_args -> SPACE cons_arg _cons_args .)
     $end            reduce using rule 117 (_cons_args -> SPACE cons_arg _cons_args .)
 
 
@@ -4394,8 +4465,9 @@ state 168
 
     KEYWORD_WHERE   reduce using rule 79 (where_expr -> expr KEYWORD_WHERE SPACE equations .)
     TICK_OPERATOR   reduce using rule 79 (where_expr -> expr KEYWORD_WHERE SPACE equations .)
-    PADDING         reduce using rule 79 (where_expr -> expr KEYWORD_WHERE SPACE equations .)
+    NEWLINE         reduce using rule 79 (where_expr -> expr KEYWORD_WHERE SPACE equations .)
     $end            reduce using rule 79 (where_expr -> expr KEYWORD_WHERE SPACE equations .)
+    PADDING         reduce using rule 79 (where_expr -> expr KEYWORD_WHERE SPACE equations .)
     KEYWORD_IN      reduce using rule 79 (where_expr -> expr KEYWORD_WHERE SPACE equations .)
     SPACE           reduce using rule 79 (where_expr -> expr KEYWORD_WHERE SPACE equations .)
     DOT_OPERATOR    reduce using rule 79 (where_expr -> expr KEYWORD_WHERE SPACE equations .)
@@ -4417,8 +4489,9 @@ state 169
 
     KEYWORD_WHERE   reduce using rule 80 (where_expr -> expr KEYWORD_WHERE PADDING equations .)
     TICK_OPERATOR   reduce using rule 80 (where_expr -> expr KEYWORD_WHERE PADDING equations .)
-    PADDING         reduce using rule 80 (where_expr -> expr KEYWORD_WHERE PADDING equations .)
+    NEWLINE         reduce using rule 80 (where_expr -> expr KEYWORD_WHERE PADDING equations .)
     $end            reduce using rule 80 (where_expr -> expr KEYWORD_WHERE PADDING equations .)
+    PADDING         reduce using rule 80 (where_expr -> expr KEYWORD_WHERE PADDING equations .)
     KEYWORD_IN      reduce using rule 80 (where_expr -> expr KEYWORD_WHERE PADDING equations .)
     SPACE           reduce using rule 80 (where_expr -> expr KEYWORD_WHERE PADDING equations .)
     DOT_OPERATOR    reduce using rule 80 (where_expr -> expr KEYWORD_WHERE PADDING equations .)
@@ -4448,8 +4521,9 @@ state 171
     KEYWORD_IN      reduce using rule 75 (equations -> equation _equation_set .)
     KEYWORD_WHERE   reduce using rule 75 (equations -> equation _equation_set .)
     TICK_OPERATOR   reduce using rule 75 (equations -> equation _equation_set .)
-    PADDING         reduce using rule 75 (equations -> equation _equation_set .)
+    NEWLINE         reduce using rule 75 (equations -> equation _equation_set .)
     $end            reduce using rule 75 (equations -> equation _equation_set .)
+    PADDING         reduce using rule 75 (equations -> equation _equation_set .)
     SPACE           reduce using rule 75 (equations -> equation _equation_set .)
     DOT_OPERATOR    reduce using rule 75 (equations -> equation _equation_set .)
     LPAREN          reduce using rule 75 (equations -> equation _equation_set .)
@@ -4489,8 +4563,9 @@ state 173
 
     KEYWORD_WHERE   reduce using rule 77 (_equation_set -> empty .)
     TICK_OPERATOR   reduce using rule 77 (_equation_set -> empty .)
-    PADDING         reduce using rule 77 (_equation_set -> empty .)
+    NEWLINE         reduce using rule 77 (_equation_set -> empty .)
     $end            reduce using rule 77 (_equation_set -> empty .)
+    PADDING         reduce using rule 77 (_equation_set -> empty .)
     KEYWORD_IN      reduce using rule 77 (_equation_set -> empty .)
     SPACE           reduce using rule 77 (_equation_set -> empty .)
     DOT_OPERATOR    reduce using rule 77 (_equation_set -> empty .)
@@ -4514,8 +4589,9 @@ state 174
     (80) where_expr -> expr . KEYWORD_WHERE PADDING equations
     (55) infix_operator_0 -> . TICK_OPERATOR
 
-    PADDING         reduce using rule 69 (lambda_expr -> BACKSLASH parameters ARROW expr .)
+    NEWLINE         reduce using rule 69 (lambda_expr -> BACKSLASH parameters ARROW expr .)
     $end            reduce using rule 69 (lambda_expr -> BACKSLASH parameters ARROW expr .)
+    PADDING         reduce using rule 69 (lambda_expr -> BACKSLASH parameters ARROW expr .)
     KEYWORD_IN      reduce using rule 69 (lambda_expr -> BACKSLASH parameters ARROW expr .)
     SPACE           reduce using rule 69 (lambda_expr -> BACKSLASH parameters ARROW expr .)
     DOT_OPERATOR    reduce using rule 69 (lambda_expr -> BACKSLASH parameters ARROW expr .)
@@ -4550,8 +4626,9 @@ state 176
     (84) type_function_expr -> type_term .
 
     ARROW           shift and go to state 128
-    PADDING         reduce using rule 84 (type_function_expr -> type_term .)
+    NEWLINE         reduce using rule 84 (type_function_expr -> type_term .)
     $end            reduce using rule 84 (type_function_expr -> type_term .)
+    PADDING         reduce using rule 84 (type_function_expr -> type_term .)
     RPAREN          reduce using rule 84 (type_function_expr -> type_term .)
     RBRACKET        reduce using rule 84 (type_function_expr -> type_term .)
 
@@ -4560,8 +4637,9 @@ state 177
 
     (83) type_function_expr -> type_term ARROW _maybe_padding type_function_expr .
 
-    PADDING         reduce using rule 83 (type_function_expr -> type_term ARROW _maybe_padding type_function_expr .)
+    NEWLINE         reduce using rule 83 (type_function_expr -> type_term ARROW _maybe_padding type_function_expr .)
     $end            reduce using rule 83 (type_function_expr -> type_term ARROW _maybe_padding type_function_expr .)
+    PADDING         reduce using rule 83 (type_function_expr -> type_term ARROW _maybe_padding type_function_expr .)
     RPAREN          reduce using rule 83 (type_function_expr -> type_term ARROW _maybe_padding type_function_expr .)
     RBRACKET        reduce using rule 83 (type_function_expr -> type_term ARROW _maybe_padding type_function_expr .)
 
@@ -4590,8 +4668,9 @@ state 179
     (89) _app_args_non_empty -> SPACE type_factor _app_args .
 
     ARROW           reduce using rule 89 (_app_args_non_empty -> SPACE type_factor _app_args .)
-    PADDING         reduce using rule 89 (_app_args_non_empty -> SPACE type_factor _app_args .)
+    NEWLINE         reduce using rule 89 (_app_args_non_empty -> SPACE type_factor _app_args .)
     $end            reduce using rule 89 (_app_args_non_empty -> SPACE type_factor _app_args .)
+    PADDING         reduce using rule 89 (_app_args_non_empty -> SPACE type_factor _app_args .)
     RPAREN          reduce using rule 89 (_app_args_non_empty -> SPACE type_factor _app_args .)
     RBRACKET        reduce using rule 89 (_app_args_non_empty -> SPACE type_factor _app_args .)
 
@@ -4601,8 +4680,9 @@ state 180
     (90) _app_args -> empty .
 
     ARROW           reduce using rule 90 (_app_args -> empty .)
-    PADDING         reduce using rule 90 (_app_args -> empty .)
+    NEWLINE         reduce using rule 90 (_app_args -> empty .)
     $end            reduce using rule 90 (_app_args -> empty .)
+    PADDING         reduce using rule 90 (_app_args -> empty .)
     RPAREN          reduce using rule 90 (_app_args -> empty .)
     RBRACKET        reduce using rule 90 (_app_args -> empty .)
 
@@ -4625,7 +4705,7 @@ state 183
 
     (113) _data_conses -> _maybe_padding PIPE data_cons _data_conses .
 
-    PADDING         reduce using rule 113 (_data_conses -> _maybe_padding PIPE data_cons _data_conses .)
+    NEWLINE         reduce using rule 113 (_data_conses -> _maybe_padding PIPE data_cons _data_conses .)
     $end            reduce using rule 113 (_data_conses -> _maybe_padding PIPE data_cons _data_conses .)
 
 
@@ -4636,6 +4716,7 @@ state 184
     SPACE           reduce using rule 122 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
     PADDING         reduce using rule 122 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
     PIPE            reduce using rule 122 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
+    NEWLINE         reduce using rule 122 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
     $end            reduce using rule 122 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
 
 
@@ -4646,6 +4727,7 @@ state 185
     SPACE           reduce using rule 123 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
     PADDING         reduce using rule 123 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
     PIPE            reduce using rule 123 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
+    NEWLINE         reduce using rule 123 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
     $end            reduce using rule 123 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
 
 
@@ -4763,6 +4845,7 @@ state 187
     PADDING         shift and go to state 172
     KEYWORD_WHERE   reduce using rule 68 (empty -> .)
     TICK_OPERATOR   reduce using rule 68 (empty -> .)
+    NEWLINE         reduce using rule 68 (empty -> .)
     $end            reduce using rule 68 (empty -> .)
     KEYWORD_IN      reduce using rule 68 (empty -> .)
     SPACE           reduce using rule 68 (empty -> .)
@@ -4792,8 +4875,9 @@ state 188
 
     SPACE           shift and go to state 178
     ARROW           reduce using rule 68 (empty -> .)
-    PADDING         reduce using rule 68 (empty -> .)
+    NEWLINE         reduce using rule 68 (empty -> .)
     $end            reduce using rule 68 (empty -> .)
+    PADDING         reduce using rule 68 (empty -> .)
     RPAREN          reduce using rule 68 (empty -> .)
     RBRACKET        reduce using rule 68 (empty -> .)
 
@@ -4806,8 +4890,9 @@ state 189
 
     SPACE           reduce using rule 95 (type_factor -> LPAREN _maybe_padding type_expr _maybe_padding RPAREN .)
     ARROW           reduce using rule 95 (type_factor -> LPAREN _maybe_padding type_expr _maybe_padding RPAREN .)
-    PADDING         reduce using rule 95 (type_factor -> LPAREN _maybe_padding type_expr _maybe_padding RPAREN .)
+    NEWLINE         reduce using rule 95 (type_factor -> LPAREN _maybe_padding type_expr _maybe_padding RPAREN .)
     $end            reduce using rule 95 (type_factor -> LPAREN _maybe_padding type_expr _maybe_padding RPAREN .)
+    PADDING         reduce using rule 95 (type_factor -> LPAREN _maybe_padding type_expr _maybe_padding RPAREN .)
     RPAREN          reduce using rule 95 (type_factor -> LPAREN _maybe_padding type_expr _maybe_padding RPAREN .)
     RBRACKET        reduce using rule 95 (type_factor -> LPAREN _maybe_padding type_expr _maybe_padding RPAREN .)
 
@@ -4818,8 +4903,9 @@ state 190
 
     SPACE           reduce using rule 96 (type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET .)
     ARROW           reduce using rule 96 (type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET .)
-    PADDING         reduce using rule 96 (type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET .)
+    NEWLINE         reduce using rule 96 (type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET .)
     $end            reduce using rule 96 (type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET .)
+    PADDING         reduce using rule 96 (type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET .)
     RPAREN          reduce using rule 96 (type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET .)
     RBRACKET        reduce using rule 96 (type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET .)
 
@@ -4830,8 +4916,9 @@ state 191
 
     KEYWORD_WHERE   reduce using rule 78 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
     TICK_OPERATOR   reduce using rule 78 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
-    PADDING         reduce using rule 78 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    NEWLINE         reduce using rule 78 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
     $end            reduce using rule 78 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
+    PADDING         reduce using rule 78 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
     KEYWORD_IN      reduce using rule 78 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
     SPACE           reduce using rule 78 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
     DOT_OPERATOR    reduce using rule 78 (letexpr -> KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr .)
@@ -4857,8 +4944,9 @@ state 192
 
   ! shift/reduce conflict for KEYWORD_WHERE resolved as shift
   ! shift/reduce conflict for TICK_OPERATOR resolved as shift
-    PADDING         reduce using rule 12 (st_expr -> expr .)
+    NEWLINE         reduce using rule 12 (st_expr -> expr .)
     $end            reduce using rule 12 (st_expr -> expr .)
+    PADDING         reduce using rule 12 (st_expr -> expr .)
     KEYWORD_IN      reduce using rule 12 (st_expr -> expr .)
     SPACE           reduce using rule 12 (st_expr -> expr .)
     DOT_OPERATOR    reduce using rule 12 (st_expr -> expr .)
@@ -4886,8 +4974,9 @@ state 193
 
     KEYWORD_WHERE   reduce using rule 76 (_equation_set -> PADDING equation _equation_set .)
     TICK_OPERATOR   reduce using rule 76 (_equation_set -> PADDING equation _equation_set .)
-    PADDING         reduce using rule 76 (_equation_set -> PADDING equation _equation_set .)
+    NEWLINE         reduce using rule 76 (_equation_set -> PADDING equation _equation_set .)
     $end            reduce using rule 76 (_equation_set -> PADDING equation _equation_set .)
+    PADDING         reduce using rule 76 (_equation_set -> PADDING equation _equation_set .)
     KEYWORD_IN      reduce using rule 76 (_equation_set -> PADDING equation _equation_set .)
     SPACE           reduce using rule 76 (_equation_set -> PADDING equation _equation_set .)
     DOT_OPERATOR    reduce using rule 76 (_equation_set -> PADDING equation _equation_set .)
@@ -4908,15 +4997,15 @@ state 194
     (88) _app_args -> SPACE type_factor _app_args .
 
     ARROW           reduce using rule 88 (_app_args -> SPACE type_factor _app_args .)
-    PADDING         reduce using rule 88 (_app_args -> SPACE type_factor _app_args .)
+    NEWLINE         reduce using rule 88 (_app_args -> SPACE type_factor _app_args .)
     $end            reduce using rule 88 (_app_args -> SPACE type_factor _app_args .)
+    PADDING         reduce using rule 88 (_app_args -> SPACE type_factor _app_args .)
     RPAREN          reduce using rule 88 (_app_args -> SPACE type_factor _app_args .)
     RBRACKET        reduce using rule 88 (_app_args -> SPACE type_factor _app_args .)
 
 WARNING: 
 WARNING: Conflicts:
 WARNING: 
-WARNING: shift/reduce conflict for PADDING in state 30 resolved as shift
 WARNING: shift/reduce conflict for KEYWORD_WHERE in state 33 resolved as shift
 WARNING: shift/reduce conflict for TICK_OPERATOR in state 33 resolved as shift
 WARNING: shift/reduce conflict for OPERATOR in state 35 resolved as shift
@@ -4941,7 +5030,6 @@ WARNING: shift/reduce conflict for SLASH in state 146 resolved as shift
 WARNING: shift/reduce conflict for DOUBLESLASH in state 146 resolved as shift
 WARNING: shift/reduce conflict for PERCENT in state 146 resolved as shift
 WARNING: shift/reduce conflict for PADDING in state 157 resolved as shift
-WARNING: shift/reduce conflict for PADDING in state 164 resolved as shift
 WARNING: shift/reduce conflict for PADDING in state 187 resolved as shift
 WARNING: shift/reduce conflict for KEYWORD_WHERE in state 192 resolved as shift
 WARNING: shift/reduce conflict for TICK_OPERATOR in state 192 resolved as shift
