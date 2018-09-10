@@ -11,8 +11,8 @@ from hypothesis import strategies as s, given, example
 
 from ply import lex
 
-from xopgi.ql.lang.expressions import parse, tokenize, find_free_names
-from xopgi.ql.lang.expressions.base import (
+from xopgi.ql.lang.expressions import parse, tokenize
+from xopgi.ql.lang.expressions import (
     Identifier,
     Literal,
     Application,
@@ -20,7 +20,7 @@ from xopgi.ql.lang.expressions.base import (
     Let,
     Letrec,
 )
-from xopgi.ql.lang.expressions.parser import string_repr, ParserError
+from xopgi.ql.lang.parsers import string_repr, ParserError, find_free_names
 from xopgi.ql.lang.builtins import (
     NumberType,
     CharType,
@@ -33,7 +33,7 @@ from xopgi.ql.lang.builtins import (
 
 
 def test_trivially_malformed():
-    with pytest.raises(SyntaxError):
+    with pytest.raises(ParserError):
         parse('')
 
 
@@ -62,34 +62,52 @@ def test_wfe_string_literals(s):
 
 
 @given(s.integers())
-def test_wfe_integer_literals(i):
+def test_wfe_integer_literals_base10(i):
     code = str(i)
     assert parse(code) == Literal(i, NumberType)
 
+
+@given(s.integers())
+def test_wfe_integer_literals_base16(i):
     code = hex(i)
     assert parse(code) == Literal(i, NumberType)
 
+
+@given(s.integers())
+def test_wfe_integer_literals_base2(i):
     code = bin(i)
     assert parse(code) == Literal(i, NumberType)
 
+
+@given(s.integers())
+def test_wfe_integer_literals_base8(i):
     code = oct(i)
     assert parse(code) == Literal(i, NumberType)
 
 
 @given(s.integers(), s.integers(min_value=0))
-def test_wfe_integer_literals_with_under(i, g):
+def test_wfe_integer_literals_with_under_base10(i, g):
     code = str(i) + '__' + str(g) + '_'
     value = eval(str(i) + str(g) if i else str(g))
     assert parse(code) == Literal(value, NumberType)
 
+
+@given(s.integers(), s.integers(min_value=0))
+def test_wfe_integer_literals_with_under_base16(i, g):
     code = hex(i) + '__' + hex(g)[2:] + '_'
     value = eval(hex(i) + hex(g)[2:] if i else hex(g))
     assert parse(code) == Literal(value, NumberType)
 
+
+@given(s.integers(), s.integers(min_value=0))
+def test_wfe_integer_literals_with_under_base8(i, g):
     code = oct(i) + '__' + oct(g)[2:] + '_'
     value = eval(oct(i) + oct(g)[2:] if i else oct(g))
     assert parse(code) == Literal(value, NumberType)
 
+
+@given(s.integers(), s.integers(min_value=0))
+def test_wfe_integer_literals_with_under_base2(i, g):
     code = bin(i) + '__' + bin(g)[2:] + '_'
     value = eval(bin(i) + bin(g)[2:] if i else bin(g))
     assert parse(code) == Literal(value, NumberType)
@@ -138,12 +156,11 @@ def test_wfe_infix_func():
     assert parse('a . b `f` c') == parse('(a . b) `f` c')
 
 
-@pytest.mark.xfail(reason='programming error')
 def test_wfe_infix_func_precedence():
-    # The actual result is '(++) a (f b c)' which is kind of weird since
-    # 'a ++' is not a well formed expression.  Investigate.
     assert parse('a ++ b `f` c') == parse('(a ++ b) `f` c')
 
+
+def test_wfe_infix_func_precedence2():
     assert parse('a + b `f` c') == parse('(a + b) `f` c')
 
 
@@ -301,12 +318,10 @@ def test_datetime_literals(d):
     assert res == Literal(d, DateTimeType)
 
 
-@pytest.mark.xfail(reason='bad parsing')
 def test_regression_confusing_unary_plus():
     assert parse('f a + c') == parse('(f a) + c')
 
 
-@pytest.mark.xfail(reason='bad parsing')
 def test_regression_greedy_where():
     assert parse(
         'let a1 = id a in a1 + 1'
@@ -314,4 +329,38 @@ def test_regression_greedy_where():
         'a1 + 1 where a1 = id a'
     ) == parse(
         '(a1 + 1) where a1 = id a'
+    )
+
+
+def test_parens_aroun_dot_regression():
+    assert parse('f . g + 1') == parse('(f.g) + 1')
+
+
+def test_application_and_composition():
+    assert parse('f g . h') == parse('(f g) . h')
+
+
+def test_normal_precedence_of_mul_div():
+    assert parse('a * b / c') == parse('(a * b)/c')
+
+
+def test_bool_op_has_less_precedence():
+    assert parse('a + b <= c - d') == parse('(a + b) <= (c - d)')
+
+
+def test_infix_func_has_less_precedence():
+    assert parse('a > b `f` c - d') == parse('(a > b) `f` (c - d)')
+
+
+@pytest.mark.xfail(reason='We have no pattern matching')
+def test_pattern_matching_let():
+    code = '''let if True t f = t
+                  if False t f = f
+              in g . if'''
+    assert parse(code) == Let(
+        {
+            'if': None  # TODO: Pattern-matching lambda abstraction
+        },
+        Application(Application(Identifier('.'), Identifier('g')),
+                    Identifier('if'))
     )

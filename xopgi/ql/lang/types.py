@@ -15,11 +15,16 @@ Implementation of Functional Programming Languages'.
           appropriate.
 
 '''
-from typing import Iterable, Sequence
+from typing import Iterable, Sequence, List, Mapping
+from typing import Optional  # noqa
 from itertools import zip_longest
 
 
-class Type:
+class AST:
+    pass
+
+
+class Type(AST):
     @classmethod
     def from_str(cls, source):
         '''Parse a single type expression `code`.
@@ -27,8 +32,7 @@ class Type:
         Return a `type expression AST <xopgi.ql.lang.types.base>`:mod:.
 
         '''
-        from .parser import parser, lexer
-        return parser.parse(source, lexer=lexer)
+        return parse(source)
 
 
 class TypeVariable(Type):
@@ -61,6 +65,9 @@ class TypeVariable(Type):
 
 
 class TypeCons(Type):
+    '''The syntax for a type constructor expression.
+
+    '''
     def __init__(self, constructor: str, subtypes: Iterable[Type] = None,
                  *, binary=False) -> None:
         assert not subtypes or all(isinstance(t, Type) for t in subtypes), \
@@ -100,6 +107,75 @@ class TypeCons(Type):
         return 1 + sum(len(st) for st in self.subtypes)
 
 
+# Q: Should I make TypeScheme a sub-type?
+class TypeScheme:
+    '''A type scheme with generic (schematics) type variables.
+
+    Example:
+
+      >>> from xopgi.ql.lang.types import parse
+      >>> map_type = TypeScheme(['a', 'b'],
+      ...                       parse('(a -> b) -> List a -> List b'))
+
+      >>> map_type
+      <TypeScheme: forall a b. (a -> b) -> ((List a) -> (List b))>
+
+    '''
+    # I choose the word 'generic' instead of schematic (and thus non-generic
+    # instead of unknown), because that's probably more widespread.
+    def __init__(self, generics: Sequence[str], t: Type) -> None:
+        self.generics = generics
+        self.t = t
+
+    @property
+    def nongenerics(self) -> List[str]:
+        return [
+            name
+            for name in find_tvars(self.t)
+            if name not in self.generics
+        ]
+
+    def __eq__(self, other):
+        if isinstance(other, TypeScheme):
+            return self.generics == other.generics and self.t == other.t
+        else:
+            return NotImplemented
+
+    def __hash__(self):
+        return hash((TypeScheme, self.generics, self.t))
+
+    @property
+    def names(self):
+        return ' '.join(self.generics)
+
+    def __str__(self):
+        if self.generics:
+            return f'forall {self.names!s}. {self.t!s}'
+        else:
+            return str(self.t)
+
+    def __repr__(self):
+        return f'<TypeScheme: {self!s}>'
+
+    @classmethod
+    def from_typeexpr(cls, type_, *, generics=None):
+        # type: (Type, *, Optional[Sequence[str]]) -> TypeScheme
+        '''Create a type scheme from a type expression assuming all type
+        variables are generic.'''
+        if generics is None:
+            generics = list(set(find_tvars(type_)))  # avoid repetitions.
+        return cls(generics, type_)
+
+    @classmethod
+    def from_str(cls, source, *, generics=None):
+        # type: (str, *, Optional[Sequence[str]]) -> TypeScheme
+        '''Create a type scheme from a type expression (given a string)
+        assuming all type variables are generic.'''
+        from xopgi.ql.lang.types import parse
+        type_ = parse(source)
+        return cls.from_typeexpr(type_, generics=generics)
+
+
 #: Shortcut to create function types
 FunctionTypeCons = lambda a, b: TypeCons('->', [a, b], binary=True)
 
@@ -109,3 +185,31 @@ TupleTypeCons = lambda *ts: TypeCons('Tuple', list(ts))
 
 #: Shortcut to create a list type from type `t`.
 ListTypeCons = lambda t: TypeCons('[]', [t])
+
+
+TypeEnvironment = Mapping[str, TypeScheme]
+EMPTY_TYPE_ENV: TypeEnvironment = {}
+
+
+def parse(code: str, debug=False, tracking=False) -> Type:
+    '''Parse a single type expression `code`.
+
+    Return a `type expression AST <xopgi.ql.lang.types.base>`:mod:.
+
+    Example:
+
+       >>> parse('a -> b')
+       TypeCons('->', (TypeVariable('a'), TypeVariable('b')))
+
+    '''
+    from .parsers import type_parser, lexer
+    return type_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
+
+
+def find_tvars(t: Type) -> List[str]:
+    'Get all variables names (possibly repeated) in type `t`.'
+    if isinstance(t, TypeVariable):
+        return [t.name]
+    else:
+        assert isinstance(t, TypeCons)
+        return [tv for subt in t.subtypes for tv in find_tvars(subt)]

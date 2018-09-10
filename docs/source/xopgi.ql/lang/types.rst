@@ -7,7 +7,6 @@
 
 .. testsetup::
 
-   from xopgi.ql.lang.types.base import *
    from xopgi.ql.lang.types import *
 
 
@@ -15,18 +14,21 @@
 The AST of the type expressions
 ===============================
 
-.. automodule:: xopgi.ql.lang.types.base
-   :members: TypeVariable, TypeCons, FunctionTypeCons, ListTypeCons,
-             TupleTypeCons
+.. autoclass:: TypeVariable
+
+.. autoclass:: TypeCons
+
+.. autoclass:: FunctionTypeCons
+
+.. autoclass:: ListTypeCons
+
+.. autoclass:: TupleTypeCons
 
 
 The type expression language (and grammar)
 ==========================================
 
-.. module:: xopgi.ql.lang.types.parser
-
-.. note:: The purpose of the parsing module for type expressions is just to
-   ease experimentation (and tests).  Keep this mind.
+.. seealso:: :mod:`xopgi.ql.lang.parsers`
 
 In the type expression language we use *identifiers* starting with a
 lower-case letter to indicate a `type variable
@@ -89,7 +91,8 @@ controlled manner:
 - You can't break between constructors and its arguments, nor within the
   arguments themselves; unless you use parenthesis.
 
-- You can't break before the arrow '->', but breaking **after** it is ok.
+- You can't break before the arrow '->', but breaking **after** it is OK, but
+  also you need to *indent* the rest of the type expression.
 
 Invalid examples::
 
@@ -103,11 +106,10 @@ Invalid examples::
 
 Valid examples:
 
-  >>> parse('a -> \nb') == parse('a -> b')  # breaks after the arrow
+  >>> parse('a -> \n   b') == parse('a -> b')
   True
 
-  >>> # Breaks just after an opening '(', or just before a closing ')'.
-  >>> parse('a (\nb c\n)') == parse('a (b c)')
+  >>> parse('a (\n  b c\n  )') == parse('a (b c)')
   True
 
 

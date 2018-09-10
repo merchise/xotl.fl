@@ -7,52 +7,99 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
-from xopgi.ql.unification.parser.tokenizer import (
-    tokenize,
-    LEFT_PAREN,
-    RIGHT_PAREN,
-    PLUS_SIGN,
-    MINUS_SIGN,
-    NEW_LINE,
-    DOLLAR_SIGN,
-    UNDERSCORE,
-    get_identifier
-)
-from xopgi.ql.unification.parser.exceptions import ParserError
+from xopgi.ql.lang import parse
+from xopgi.ql.lang.types import Type, TypeScheme
+from xopgi.ql.lang.expressions import Equation, Pattern, Identifier
+from xopgi.ql.lang.expressions import DataType, DataCons
 
 
-def test_tokenizer():
-    # Notice tokenizer does not do grammar sense
-    assert list(tokenize('x+_y')) == [
-        get_identifier('x'),
-        PLUS_SIGN,
-        UNDERSCORE,
-        get_identifier('y')
-    ]
-    assert list(tokenize('f(+x_ - \ny\n ( $z _y:\nis.ok)')) == [
-        get_identifier('f'),
-        LEFT_PAREN,
-        PLUS_SIGN,
-        get_identifier('x_'),
-        MINUS_SIGN,
-        NEW_LINE,
-        get_identifier('y'),
-        NEW_LINE,
-        LEFT_PAREN,
-        DOLLAR_SIGN,
-        get_identifier('z'),
-        UNDERSCORE,
-        get_identifier('y:'), NEW_LINE, get_identifier('is.ok'),
-        RIGHT_PAREN,
-    ]
-    assert list(tokenize('f()\n')) == [
-        get_identifier('f'),
-        LEFT_PAREN,
-        RIGHT_PAREN,
-        NEW_LINE,
+def test_simple_one_definition():
+    assert parse('id x = x')
+
+
+def test_simple_functions_definition():
+    assert parse('''
+       id x = x
+
+       const :: a -> b -> a
+       const a x = a
+    ''')
+
+
+def test_typedecls():
+    assert parse('''
+       id :: a -> a
+       const :: a -> b -> a
+    ''') == [
+        {'id': TypeScheme.from_str('a -> a')},
+        {'const': TypeScheme.from_str('a -> b -> a')}
     ]
 
 
-def test_tokenizer_invalid_token():
-    with pytest.raises(ParserError):
-        list(tokenize(';'))
+def test_datatype_simple():
+    assert parse('data Then a = Then a') == [
+        DataType(
+            'Then',
+            Type.from_str('Then a'),
+            [DataCons('Then', [Type.from_str('a')])]
+        )
+    ]
+
+
+def test_datatype_tree():
+    assert parse('data Tree a = Leaf a | Branch (Tree a) (Tree a)') == [
+        DataType(
+            'Tree',
+            Type.from_str('Tree a'),
+            [
+                DataCons('Leaf', [Type.from_str('a')]),
+                DataCons('Branch', [
+                    Type.from_str('Tree a'),
+                    Type.from_str('Tree a'),
+                ])
+            ]
+        )
+    ]
+
+
+def test_datatype_simple2():
+    assert parse('''
+       data Then a = Then a
+       data Else a = Else a
+    ''') == [
+        DataType(
+            'Then',
+            Type.from_str('Then a'),
+            [DataCons('Then', [Type.from_str('a')])]
+        ),
+        DataType(
+            'Else',
+            Type.from_str('Else a'),
+            [DataCons('Else', [Type.from_str('a')])]
+        )
+    ]
+
+
+def test_simple_if_program():
+    parse('''
+        if :: Bool -> a -> a -> a
+        if True x _  = x
+        if False _ x = x
+    ''', debug=True) == [
+        {'id': TypeScheme.from_str('Bool -> a -> a -> a')},
+        Equation(Pattern('if', ('True', 'x', '_')), Identifier('x')),
+        Equation(Pattern('if', ('False', '_', 'x')), Identifier('x')),
+    ]
+
+
+@pytest.mark.xfail(reason='Failing to parse pattern-matching parameters')
+def test_if_program():
+    parse('''
+        data Then a = Then a
+        data Else a = Else a
+
+        if :: Bool -> Then a -> Else a -> a
+        if True (Then x) _  = x
+        if False _ (Else x) = x
+
+    ''', debug=True)

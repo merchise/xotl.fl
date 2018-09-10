@@ -3,25 +3,33 @@
 ==============================================================
 
 .. automodule:: xopgi.ql.lang.expressions
-   :members: parse, find_free_names
+   :members: parse
 
 .. testsetup::
 
-   from xopgi.ql.lang.expressions.base import *
    from xopgi.ql.lang.expressions import *
 
 
 The AST of the type expressions
 ===============================
 
-.. automodule:: xopgi.ql.lang.expressions.base
-   :members: Identifier, Literal, Lambda, Application, Let, Letrec
+.. autoclass:: Identifier
+
+.. autoclass:: Literal
+
+.. autoclass:: Lambda
+
+.. autoclass:: Application
+
+.. autoclass:: Let
+
+.. autoclass:: Letrec
 
 
 The type expression grammar
 ===========================
 
-.. module:: xopgi.ql.lang.expression.parser
+.. seealso:: :mod:`xopgi.ql.lang.parsers`
 
 
 The function `~xopgi.ql.lang.expressions.parse`:func: parses a single
@@ -62,9 +70,8 @@ are just three builtin types which have a literal representation.
      >>> parse(r"'\u0020'")
      Literal(' ', TypeCons('Char', ()))
 
-  Notice that the value in the
-  `~xopgi.ql.lang.expressions.base.Literal`:class: object is a Python string;
-  but it will always one character.
+  Notice that the value in the `~xopgi.ql.lang.expressions.Literal`:class:
+  object is a Python string; but it will always one character.
 
 - Strings are surrounded with quotation mark ``"``.  You can use the backslash
   to enter the quotation mark, the backslash itself and other Unicode code
@@ -86,14 +93,19 @@ are just three builtin types which have a literal representation.
 - Numbers.  We collapse integers and floats into a single type the numbers.
   Integers can be written in base 10, 2, 8 and 16:
 
-     >>> parse('1_000') == parse('0x03_e8') == parse('0b0011_1110_1000')
+     >>> parse('1000') == parse('0x03e8') == parse('0b001111101000')
      True
 
-     >>> parse('1_000') == parse('0o1750')
+     >>> parse('1000') == parse('0o1750')
      True
 
-  You can use '_' as a padding to make your numbers more readable.  You can
-  use as much as you like and wherever you need it (except at the beginning):
+  You can use '_' as a padding to make your numbers more readable:
+
+     >>> parse('1_000') == parse('0x03e8') == parse('0b0011_1110_1000')
+     True
+
+  You can use as many as you like and wherever you need it (except at the
+  beginning):
 
      >>> parse('0b0_1_01___0') == parse('0b1010')
      True
@@ -103,13 +115,13 @@ are just three builtin types which have a literal representation.
      >>> parse('1e+200')  # doctest: +ELLIPSIS
      Literal(1e+200, ...)
 
-  But beware of '_':
+  But beware of a leading '_':
 
      >>> parse('_1e+200')  # doctest: +ELLIPSIS
      Application(Application(Identifier('+'), Identifier('_1e')), ...)
 
 - The unit value.  This is the only value of the
-  `~xopgi.ql.lang.builtins.UnitType`:object:\ :
+  `~xopgi.ql.lang.builtins.UnitType`:obj:\ :
 
     >>> parse('()')
     Literal((), TypeCons('Tuple', ()))
@@ -134,7 +146,7 @@ priority:
 
 
 Composition
-~~~~~~~~~~~
+-----------
 
 The dot operator (``.``) represents composition of functions.  In the AST this
 is just the application of the identifier '.' to its arguments:
@@ -151,13 +163,13 @@ is just the application of the identifier '.' to its arguments:
   >>> parse('(.)')
   Identifier('.')
 
-But it gains special treatment because it associates to the right and, after
-the application, is next in priority:
+It gains special treatment because it associates to the right and, after the
+application, is next in priority:
 
   >>> parse('f . g . h') == parse('f . (g . h)')
   True
 
-  >>> parse('f g . h') == parse('((f g) . h')
+  >>> parse('f g . h') == parse('(f g) . h')
   True
 
   >>> # This funny expression is syntactically valid, but it won't type-check.
@@ -166,7 +178,7 @@ the application, is next in priority:
 
 
 Operators
-~~~~~~~~~
+---------
 
 The standard operators ``+``, ``-``, ``*``, ``/``, ``//``, ``%`` stand for
 binary operations between numbers.  They all associate to the left.  The
@@ -191,12 +203,13 @@ Notice that standard comparison operators (``<``, ``>``, ``<=``, ``>=``,
    Application(Application(Identifier('>=>'), Identifier('return')), Identifier('m'))
 
 
-Any identifier can become an infix operator by enclosing it in ticks (`````):
+Any identifier can become an infix operator by enclosing it in ticks (`````).
+Infix has the lowest precedence:
 
    >>> parse('a `f` b') == parse('f a b')
    True
 
-   >>> parse('a + b `f` c - d') == parse('(a + b) `f` (c - d)')
+   >>> parse('a > b `f` c - d') == parse('(a > b) `f` (c - d)')
    True
 
 
@@ -207,7 +220,7 @@ Lambda abstractions are represented with the concise syntax of Haskell::
 
   \args -> body
 
-Even though the AST `~xopgi.ql.lang.expressions.base.Lambda`:class: supports a
+Even though the AST `~xopgi.ql.lang.expressions.Lambda`:class: supports a
 single argument the parser admits several and does the expected currying:
 
    >>> parse(r'\a b -> a') == parse(r'\a -> \b -> a')
@@ -247,9 +260,9 @@ You can't have several definitions for the same name:
       ...
    ParserError: More than one definition ...
 
-The parser will produce a `~xopgi.ql.lang.expressions.base.Let`:class: node if
+The parser will produce a `~xopgi.ql.lang.expressions.Let`:class: node if
 there are no recursive definitions, otherwise it will create a
-`~xopgi.ql.lang.expressions.base.Letrec`:class:.
+`~xopgi.ql.lang.expressions.Letrec`:class:.
 
 The 'where' expressions produce the same AST.  The general schema is::
 
@@ -264,4 +277,4 @@ restrictions of the 'let' expressions apply.
 The builtin types
 =================
 
-.. module:: xopgi.ql.lang.builtins
+.. automodule:: xopgi.ql.lang.builtins
