@@ -11,8 +11,8 @@ from hypothesis import strategies as s, given, example
 
 from ply import lex
 
-from xopgi.ql.lang.expressions import parse, tokenize
-from xopgi.ql.lang.expressions import (
+from xotl.fl.expressions import parse, tokenize
+from xotl.fl.expressions import (
     Identifier,
     Literal,
     Application,
@@ -20,8 +20,8 @@ from xopgi.ql.lang.expressions import (
     Let,
     Letrec,
 )
-from xopgi.ql.lang.parsers import string_repr, ParserError, find_free_names
-from xopgi.ql.lang.builtins import (
+from xotl.fl.parsers import string_repr, ParserError, find_free_names
+from xotl.fl.builtins import (
     NumberType,
     CharType,
     StringType,

@@ -1,11 +1,7 @@
-===================================
- A xotl.ql translator for Odoo ORM
-===================================
+============================
+ A tiny functional language
+============================
 
-Implements a `xotl.ql` translator for Odoo ORM.
-
-Current features:
-
-- Translate simple filters.  The `filtered` and `mapped` methods are rewritten
-  to be executed in the underlying PostgreSQL if possible and run Python code
-  only when actually needed.
+Parses a interprets a functional language with basic definitions.  It's
+closest to the simply typed lambda calculus than to any other system, but I
+did allow definitions of simple data-types.

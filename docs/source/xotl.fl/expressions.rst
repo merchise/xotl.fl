@@ -1,13 +1,13 @@
 ==============================================================
- :mod:`xopgi.ql.lang.expressions` -- The expressions language
+ :mod:`xotl.fl.expressions` -- The expressions language
 ==============================================================
 
-.. automodule:: xopgi.ql.lang.expressions
+.. automodule:: xotl.fl.expressions
    :members: parse
 
 .. testsetup::
 
-   from xopgi.ql.lang.expressions import *
+   from xotl.fl.expressions import *
 
 
 The AST of the type expressions
@@ -29,10 +29,10 @@ The AST of the type expressions
 The type expression grammar
 ===========================
 
-.. seealso:: :mod:`xopgi.ql.lang.parsers`
+.. seealso:: :mod:`xotl.fl.parsers`
 
 
-The function `~xopgi.ql.lang.expressions.parse`:func: parses a single
+The function `~xotl.fl.expressions.parse`:func: parses a single
 standalone expression; not *full programs*.
 
 The simplest expressions are those made up of a single identifier or a literal
@@ -70,7 +70,7 @@ are just three builtin types which have a literal representation.
      >>> parse(r"'\u0020'")
      Literal(' ', TypeCons('Char', ()))
 
-  Notice that the value in the `~xopgi.ql.lang.expressions.Literal`:class:
+  Notice that the value in the `~xotl.fl.expressions.Literal`:class:
   object is a Python string; but it will always one character.
 
 - Strings are surrounded with quotation mark ``"``.  You can use the backslash
@@ -121,7 +121,7 @@ are just three builtin types which have a literal representation.
      Application(Application(Identifier('+'), Identifier('_1e')), ...)
 
 - The unit value.  This is the only value of the
-  `~xopgi.ql.lang.builtins.UnitType`:obj:\ :
+  `~xotl.fl.builtins.UnitType`:obj:\ :
 
     >>> parse('()')
     Literal((), TypeCons('Tuple', ()))
@@ -220,7 +220,7 @@ Lambda abstractions are represented with the concise syntax of Haskell::
 
   \args -> body
 
-Even though the AST `~xopgi.ql.lang.expressions.Lambda`:class: supports a
+Even though the AST `~xotl.fl.expressions.Lambda`:class: supports a
 single argument the parser admits several and does the expected currying:
 
    >>> parse(r'\a b -> a') == parse(r'\a -> \b -> a')
@@ -260,9 +260,9 @@ You can't have several definitions for the same name:
       ...
    ParserError: More than one definition ...
 
-The parser will produce a `~xopgi.ql.lang.expressions.Let`:class: node if
-there are no recursive definitions, otherwise it will create a
-`~xopgi.ql.lang.expressions.Letrec`:class:.
+The parser will produce a `~xotl.fl.expressions.Let`:class: node if there are
+no recursive definitions, otherwise it will create a
+`~xotl.fl.expressions.Letrec`:class:.
 
 The 'where' expressions produce the same AST.  The general schema is::
 
@@ -277,4 +277,4 @@ restrictions of the 'let' expressions apply.
 The builtin types
 =================
 
-.. automodule:: xopgi.ql.lang.builtins
+.. automodule:: xotl.fl.builtins

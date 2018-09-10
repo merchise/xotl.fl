@@ -4,9 +4,9 @@
 
 .. testsetup::
 
-   from xopgi.ql.lang.expressions import parse
-   from xopgi.ql.lang.parsers import find_free_names
+   from xotl.fl.expressions import parse
+   from xotl.fl.parsers import find_free_names
 
 
-.. automodule:: xopgi.ql.lang.parsers
+.. automodule:: xotl.fl.parsers
    :members: find_free_names

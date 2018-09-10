@@ -1,1 +1,5 @@
-- Initial release with just a simple `xopgi.ql.translate.basic`:mod:.
+Initial release with:
+
+- A `parser <xotl.fl.parsers>`:mod: for the language.
+
+- A `typechecker <xotl.fl.typecheck>`:mod:.

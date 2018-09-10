@@ -29,7 +29,7 @@ class Type(AST):
     def from_str(cls, source):
         '''Parse a single type expression `code`.
 
-        Return a `type expression AST <xopgi.ql.lang.types.base>`:mod:.
+        Return a `type expression AST <xotl.fl.types.base>`:mod:.
 
         '''
         return parse(source)
@@ -113,7 +113,7 @@ class TypeScheme:
 
     Example:
 
-      >>> from xopgi.ql.lang.types import parse
+      >>> from xotl.fl.types import parse
       >>> map_type = TypeScheme(['a', 'b'],
       ...                       parse('(a -> b) -> List a -> List b'))
 
@@ -171,7 +171,7 @@ class TypeScheme:
         # type: (str, *, Optional[Sequence[str]]) -> TypeScheme
         '''Create a type scheme from a type expression (given a string)
         assuming all type variables are generic.'''
-        from xopgi.ql.lang.types import parse
+        from xotl.fl.types import parse
         type_ = parse(source)
         return cls.from_typeexpr(type_, generics=generics)
 
@@ -194,7 +194,7 @@ EMPTY_TYPE_ENV: TypeEnvironment = {}
 def parse(code: str, debug=False, tracking=False) -> Type:
     '''Parse a single type expression `code`.
 
-    Return a `type expression AST <xopgi.ql.lang.types.base>`:mod:.
+    Return a `type expression AST <xotl.fl.types.base>`:mod:.
 
     Example:
 

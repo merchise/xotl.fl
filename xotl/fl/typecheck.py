@@ -17,7 +17,7 @@ from typing import (
 from typing import Any  # noqa
 from collections import ChainMap
 
-from xopgi.ql.lang.types import (
+from xotl.fl.types import (
     AST,
     Type,
     TypeVariable,
@@ -27,7 +27,7 @@ from xopgi.ql.lang.types import (
     find_tvars,
     TypeEnvironment,
 )
-from xopgi.ql.lang.expressions import (
+from xotl.fl.expressions import (
     Identifier,
     Literal,
     Lambda,

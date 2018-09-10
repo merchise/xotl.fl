@@ -1,13 +1,13 @@
-===================================================================
- `xopgi.ql.lang`:mod: - Simple functional language on expressions.
-===================================================================
+=============================================
+ `xotl.fl`:mod: - Simple functional language
+=============================================
 
 .. warning:: This is a work in progress.
 
    Not everything described here can be taken for granted.  See the
-   :mod:`xopgi.ql.lang.types` and :mod:`xopgi.ql.lang.expressions`.
+   :mod:`xotl.fl.types` and :mod:`xotl.fl.expressions`.
 
-.. module:: xopgi.ql.lang
+.. module:: xotl.fl
 
 
 Overview of the language syntax and semantics

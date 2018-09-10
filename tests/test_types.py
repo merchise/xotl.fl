@@ -7,16 +7,14 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
-from ply import lex
-
-from xopgi.ql.lang.types import (
+from xotl.fl.types import (
     TypeVariable as T,
     FunctionTypeCons as F,
     TypeCons as C,
     ListTypeCons,
 )
-from xopgi.ql.lang.types import parse
-from xopgi.ql.lang.typecheck import namesupply
+from xotl.fl.types import parse
+from xotl.fl.typecheck import namesupply
 
 
 # The id function type

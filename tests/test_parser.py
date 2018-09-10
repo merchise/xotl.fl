@@ -7,10 +7,10 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
-from xopgi.ql.lang import parse
-from xopgi.ql.lang.types import Type, TypeScheme
-from xopgi.ql.lang.expressions import Equation, Pattern, Identifier
-from xopgi.ql.lang.expressions import DataType, DataCons
+from xotl.fl import parse
+from xotl.fl.types import Type, TypeScheme
+from xotl.fl.expressions import Equation, Pattern, Identifier
+from xotl.fl.expressions import DataType, DataCons
 
 
 def test_simple_one_definition():

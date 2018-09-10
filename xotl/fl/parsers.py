@@ -35,7 +35,7 @@ from .expressions import (
     DataCons,
 )
 
-from xopgi.ql.lang.builtins import (
+from xotl.fl.builtins import (
     StringType,
     CharType,
     NumberType,

@@ -1,16 +1,16 @@
-xopgi.ql -- A `xotl.ql`_ translator for Odoo ORM
-================================================
+=======================================
+ xotl.fl -- A tiny functional language
+=======================================
 
 .. toctree::
    :glob:
    :maxdepth: 2
    :caption: Contents:
 
-   xopgi.ql/translate/**
-   xopgi.ql/lang/index.rst
-   xopgi.ql/lang/expressions.rst
-   xopgi.ql/lang/types.rst
-   xopgi.ql/lang/parsers.rst
+   xotl.fl/index.rst
+   xotl.fl/expressions.rst
+   xotl.fl/types.rst
+   xotl.fl/parsers.rst
    history
 
 
@@ -20,6 +20,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-
-.. _xotl.ql: http://xotl-ql.readthedocs.io/en/latest/

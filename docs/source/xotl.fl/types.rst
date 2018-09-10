@@ -1,13 +1,13 @@
 =============================================================
- :mod:`xopgi.ql.lang.types` -- The type expressions language
+ :mod:`xotl.fl.types` -- The type expressions language
 =============================================================
 
-.. automodule:: xopgi.ql.lang.types
+.. automodule:: xotl.fl.types
    :members: parse
 
 .. testsetup::
 
-   from xopgi.ql.lang.types import *
+   from xotl.fl.types import *
 
 
 
@@ -28,12 +28,12 @@ The AST of the type expressions
 The type expression language (and grammar)
 ==========================================
 
-.. seealso:: :mod:`xopgi.ql.lang.parsers`
+.. seealso:: :mod:`xotl.fl.parsers`
 
 In the type expression language we use *identifiers* starting with a
 lower-case letter to indicate a `type variable
-<xopgi.ql.lang.types.base.TypeVariable>`:class:, unless they are applied to
-other type expression, in which case they're regarded as type constructors.
+<xotl.fl.types.base.TypeVariable>`:class:, unless they are applied to other
+type expression, in which case they're regarded as type constructors.
 Identifiers starting with an upper-case letter always denote a type
 constructor.
 
@@ -75,7 +75,7 @@ expect that components that assign meaning to these constructions (i.e
 semantics) assign them with the usual ones.
 
 There's no syntactical support to express tuples yet.  The
-`~xopgi.ql.lang.types.base.TupleTypeCons`:func: uses the syntax-friendly name
+`~xotl.fl.types.base.TupleTypeCons`:func: uses the syntax-friendly name
 'Tuple':
 
   >>> parse('Tuple a a')
@@ -116,10 +116,10 @@ Valid examples:
 Quirks
 ------
 
-`~xopgi.ql.lang.types.base.TypeCons`:class: does not have an implicit limit to
-the type arguments any given constructor admits.  This is the job of the
-semantic analyzer.  This also means that the parser has a very liberal rule
-about type arguments in a constructor:
+`~xotl.fl.types.base.TypeCons`:class: does not have an implicit limit to the
+type arguments any given constructor admits.  This is the job of the semantic
+analyzer.  This also means that the parser has a very liberal rule about type
+arguments in a constructor:
 
   Any type expression to the **left** of a space and another type expression
   admits it as an argument.

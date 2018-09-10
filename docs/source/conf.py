@@ -43,7 +43,7 @@ sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'xopgi.ql'
+project = 'xotl.fl'
 from datetime import datetime    # noqa
 copyright = '{}, Merchise Autrement [~º/~]'
 copyright = copyright.format(datetime.now().year)
@@ -54,29 +54,10 @@ author = 'Merchise Autrement [~º/~]'
 # built documents.
 #
 # The short X.Y version.
-try:
-    from xopgi.ql.release import VERSION
-except ImportError:
-    def up(path, level=1):
-        result = path
-        while level:
-            result = os.path.dirname(result)
-            level -= 1
-        return result
-    _current_dir = os.path.dirname(os.path.abspath(__file__))
-    _project_dir = os.path.abspath(os.path.join(up(_current_dir, 2)))
-    sys.path.append(_project_dir)
-    from xopgi.ql.release import VERSION
-version = VERSION[:VERSION.rfind('.')]
-
-try:
-    from xopgi.ql.release import RELEASE_TAG
-    release = VERSION
-    if RELEASE_TAG:
-        release += RELEASE_TAG
-except:  # noqa
-    # The full version, including alpha/beta/rc tags.
-    release = VERSION
+import pkg_resources
+dist = pkg_resources.get_distribution('xotl.fl')
+version = dist.version
+release = version
 
 
 # -- General configuration ---------------------------------------------------
@@ -160,7 +141,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'xopgiqldoc'
+htmlhelp_basename = 'xotlfldoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -187,7 +168,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'xopgiql.tex', 'xopgi.ql Documentation',
+    (master_doc, 'xotl.fl.tex', 'xotl.fl Documentation',
      'Merchise Autrement {[}\\textasciitilde{}º/\\textasciitilde{}{]}', 'manual'),
 ]
 
@@ -197,7 +178,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'xopgiql', 'xopgi.ql Documentation',
+    (master_doc, 'xotlfl', 'xotl.fl Documentation',
      [author], 1)
 ]
 
@@ -208,8 +189,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'xopgiql', 'xopgi.ql Documentation',
-     author, 'xopgiql', 'One line description of project.',
+    (master_doc, 'xotlfl', 'xotl.fl Documentation',
+     author, 'xotlfl', 'One line description of project.',
      'Miscellaneous'),
 ]
 

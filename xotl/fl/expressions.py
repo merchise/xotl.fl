@@ -45,9 +45,8 @@ class Identifier(AST):
 class Literal(AST):
     '''A literal value with its type.
 
-    The `parser <xopgi.ql.lang.expressions.parse>`:func: only recognizes
-    strings, chars, and numbers (integers and floats are represented by a
-    single type).
+    The `parser <xotl.fl.expressions.parse>`:func: only recognizes strings,
+    chars, and numbers (integers and floats are represented by a single type).
 
     '''
     def __init__(self, value: Any, type_: Type, annotation: Any = None) -> None:
@@ -171,7 +170,7 @@ class _LetExpr(AST):
 class Let(_LetExpr):
     '''A non-recursive Let expression.
 
-    The `parser <xopgi.ql.lang.expressions.parse>`:func: automatically selects
+    The `parser <xotl.fl.expressions.parse>`:func: automatically selects
     between `Let`:class: and `Letrec`:class.  If you're creating the program
     by hand you should choose appropriately.
 
@@ -330,15 +329,8 @@ class DataType:
         return hash((DataType, self.name, self.t, self.dataconses))
 
 
-def parse(code: str, debug=False, tracking=False) -> Type:
+def parse(code: str, debug=False, tracking=False) -> AST:
     '''Parse a single expression `code`.
     '''
     from .parsers import expr_parser, lexer
     return expr_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
-
-
-def tokenize(source):
-    from .parsers import lexer
-    lexer = lexer.clone()
-    lexer.input(source)
-    return [tok for tok in lexer]

@@ -10,16 +10,16 @@ import pytest
 from functools import partial
 from xoutil.fp.tools import compose
 
-from xopgi.ql.lang.types import parse
-from xopgi.ql.lang.types import (
+from xotl.fl.types import parse
+from xotl.fl.types import (
     TypeVariable as T,
     FunctionTypeCons as F,
     TypeCons as C,
     ListTypeCons,
 )
 
-from xopgi.ql.lang.typecheck import scompose, subtype, delta
-from xopgi.ql.lang.typecheck import unify, UnificationError
+from xotl.fl.typecheck import scompose, subtype, delta
+from xotl.fl.typecheck import unify, UnificationError
 
 
 I = parse('a -> a')
