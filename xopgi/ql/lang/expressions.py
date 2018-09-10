@@ -33,6 +33,13 @@ class Identifier(AST):
         else:
             return NotImplemented
 
+    def __ne__(self, other):
+        if isinstance(other, Identifier):
+            return not (self == other)
+        else:
+            return NotImplemented
+
+
 
 # An extension to the algorithm.  Literals are allowed, but have a the
 # most specific type possible.
@@ -64,6 +71,12 @@ class Literal(AST):
         else:
             return NotImplemented
 
+    def __ne__(self, other):
+        if isinstance(other, Literal):
+            return not (self == other)
+        else:
+            return NotImplemented
+
     def __hash__(self):
         return hash((Literal, self.value, self.type_, self.annotation))
 
@@ -83,6 +96,12 @@ class Lambda(AST):
     def __eq__(self, other):
         if isinstance(other, Lambda):
             return self.varname == other.varname and self.body == other.body
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, Lambda):
+            return not (self == other)
         else:
             return NotImplemented
 
@@ -108,6 +127,12 @@ class Application(AST):
         else:
             return NotImplemented
 
+    def __ne__(self, other):
+        if isinstance(other, Application):
+            return not (self == other)
+        else:
+            return NotImplemented
+
     def __hash__(self):
         return hash((Application, self.e1, self.e2))
 
@@ -125,6 +150,12 @@ class _LetExpr(AST):
     def __eq__(self, other):
         if isinstance(other, type(self)):
             return self.bindings == other.bindings and self.body == self.body
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, type(self)):
+            return not (self == other)
         else:
             return NotImplemented
 
