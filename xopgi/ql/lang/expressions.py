@@ -191,6 +191,90 @@ class Letrec(_LetExpr):
         return f'Letrec({self.bindings!r}, {self.body!r})'
 
 
+# Patterns and Equations.  In the final AST, an expression like:
+#
+#     let id x = x in ...
+#
+# would actually be like
+#
+#     let id = \x -> x
+#
+# with some complications if pattern-matching is allowed:
+#
+#     let length [] = 0
+#         lenght (x:xs) = 1 + length xs
+#     in  ...
+#
+# For now, we allow only the SIMPLEST of all definitions (we don't have a
+# 'case' keyword to implement pattern matching.)  But, in any case, having the
+# names of productions be 'pattern' and 'equations' is fit.
+#
+#
+# The Pattern and Equation definitions are not part of the final AST, but more
+# concrete syntactical object in the source code.  In the final AST, the let
+# expressions shown above are indistinguishable.
+#
+# For value (function) definitions the parser still returns *bare* Equation
+# object for each line of the definition.
+
+class Pattern:
+    def __init__(self, cons, params=None):
+        self.cons: str = cons
+        self.params = tuple(params or [])
+
+    def __repr__(self):
+        return f'<pattern {self.cons!r} {self.params!r}>'
+
+    def __str__(self):
+        if self.params:
+            return f'{self.cons} {self.parameters}'
+        else:
+            return self.cons
+
+    @property
+    def parameters(self):
+        return ' '.join(self.params)
+
+    def __eq__(self, other):
+        if isinstance(other, Pattern):
+            return self.cons == other.cons and self.params == other.params
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, Pattern):
+            return not (self == other)
+        else:
+            return NotImplemented
+
+    def __hash__(self):
+        return hash((Pattern, self.cons, self.params))
+
+
+class Equation:
+    def __init__(self, pattern: Pattern, body: AST) -> None:
+        self.pattern = pattern
+        self.body = body
+
+    def __repr__(self):
+        return f'<equation {self.pattern!s} = {self.body!r}>'
+
+    def __eq__(self, other):
+        if isinstance(other, Equation):
+            return self.pattern == other.pattern and self.body == other.body
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, Equation):
+            return not (self == other)
+        else:
+            return NotImplemented
+
+    def __hash__(self):
+        return hash((Equation, self.pattern, self.body))
+
+
 def parse(code: str, debug=False, tracking=False) -> Type:
     '''Parse a single expression `code`.
     '''

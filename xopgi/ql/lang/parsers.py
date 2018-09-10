@@ -31,6 +31,8 @@ from .expressions import (
     Let,
     Letrec,
     _LetExpr,
+    Pattern,
+    Equation,
 )
 
 from xopgi.ql.lang.builtins import (
@@ -93,17 +95,6 @@ reserved = [
     ('data', None),
     ('class', None),
     ('instance', None),
-
-    # To dissambiguate the parser.  Otherwise the two lines:
-    #
-    #     id x = x
-    #     const a x = a
-    #
-    # match a single 'valuedef'.  There are two ways to remove the ambiguity:
-    # require type annotations for all functions, or introduce this keyword
-    # 'def'.  Other solution is the communicate with PLY to *backtrack*...
-    #
-    ('def', r'\bdef\s+\b'),
 
     ('where', r'\s+where\b'),
     ('let', None),
@@ -674,62 +665,10 @@ def p_empty__parameters(prod):
     prod[0] = []
 
 
-# Patterns and Equations.  In the final AST, an expression like:
-#
-#     let id x = x in ...
-#
-# would actually be like
-#
-#     let id = \x -> x
-#
-# with some complications if pattern-matching is allowed:
-#
-#     let length [] = 0
-#         lenght (x:xs) = 1 + length xs
-#     in  ...
-#
-# For now, we allow only the SIMPLEST of all definitions (we don't have a
-# 'case' keyword to implement pattern matching.)  But, in any case, having the
-# names of productions be 'pattern' and 'equations' is fit.
-#
-#
-# The Pattern and Equation definitions are purposely not part of the AST, but
-# more concrete syntactical object in the source code.  In the final AST, the
-# let expressions shown above are indistinguishable.
-
-
-class Pattern:
-    def __init__(self, cons, params=None):
-        self.cons = cons
-        self.params = params or []
-
-    def __repr__(self):
-        return f'<pattern {self.cons!r} {self.params!r}>'
-
-    def __str__(self):
-        if self.params:
-            return f'{self.cons} {self.parameters}'
-        else:
-            return self.cons
-
-    @property
-    def parameters(self):
-        return ' '.join(self.params)
-
-
 def p_pattern(prod):
     '''pattern : parameters'''
     cons, *params = prod[1]
     prod[0] = Pattern(cons, params)
-
-
-class Equation:
-    def __init__(self, pattern: Pattern, body: AST) -> None:
-        self.pattern = pattern
-        self.body = body
-
-    def __repr__(self):
-        return f'<equation {self.pattern!s} = {self.body!r}>'
 
 
 def p_equation(prod):
@@ -920,19 +859,9 @@ def p_definition(prod):
 
 
 def p_valuedef(prod):
-    '''valuedef : KEYWORD_DEF equations
+    '''valuedef : equation
     '''
-    # Let's make the temporary let expression which handles all the things of
-    # creating lambdas, and then assert we are defining a single function and
-    # fill the body with the name of the function.
-    let: _LetExpr = _build_let(prod[2], None)
-    names = {name for name, _ in let.bindings}
-    if len(names) > 1:
-        names = ','.join(repr(n) for n in names)
-        raise ParserError(f'Creating several names {names}')
-    defname = names.pop()
-    let.body = Identifier(defname)
-    prod[0] = let
+    prod[0] = prod[1]
 
 
 def p_nametype_decl(prod):

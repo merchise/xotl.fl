@@ -11,15 +11,15 @@ from xopgi.ql.lang.types import TypeScheme
 
 
 def test_simple_one_definition():
-    assert parse('def id x = x')
+    assert parse('id x = x')
 
 
 def test_simple_functions_definition():
     assert parse('''
-       def id x = x
+       id x = x
 
        const :: a -> b -> a
-       def const a x = a
+       const a x = a
 
     ''')
 
@@ -49,13 +49,21 @@ def test_datatype_simple2():
     ''')
 
 
+def test_simple_if_program():
+    parse('''
+        if :: Bool -> a -> a -> a
+        if True x _  = x
+        if False _ x = x
+    ''', debug=True)
+
+
 def test_if_program():
     parse('''
         data Then a = Then a
         data Else a = Else a
 
         if :: Bool -> Then a -> Else a -> a
-        def if True (Then x) _  = x
-            if False _ (Else x) = x
+        if True (Then x) _  = x
+        if False _ (Else x) = x
 
     ''', debug=True)
