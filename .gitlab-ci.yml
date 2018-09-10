@@ -140,9 +140,9 @@ publish_pypi:
 build documentation:
   stage: build
   script:
-    - mkdir -p envs
-    - virtualenv envs/$CI_COMMIT_SHA
-    - source envs/$CI_COMMIT_SHA/bin/activate
+    - rm -rf `pipenv --venv`
+    - pipenv install --dev
+    - source `pipenv --venv`/bin/activate
     - pip install sphinx sphinx-rtd-theme
     - pip install -e .
     - make -C docs/ html
@@ -153,7 +153,7 @@ build documentation:
       - $CI_PROJECT_NAME-$CI_COMMIT_SHA.tar.bz2
     expire_in: 4 days
   tags:
-    - virtualenv
+    - pipenv
   only:
     - tags
     - /^releases-/
