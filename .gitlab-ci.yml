@@ -141,7 +141,7 @@ build documentation:
   stage: build
   script:
     - rm -rf `pipenv --venv`
-    - pipenv install --dev
+    - pipenv install --dev --skip-lock
     - source `pipenv --venv`/bin/activate
     - pip install sphinx sphinx-rtd-theme
     - pip install -e .
