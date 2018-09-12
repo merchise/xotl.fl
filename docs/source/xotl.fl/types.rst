@@ -18,11 +18,11 @@ The AST of the type expressions
 
 .. autoclass:: TypeCons
 
-.. autoclass:: FunctionTypeCons
+.. autofunction:: FunctionTypeCons
 
-.. autoclass:: ListTypeCons
+.. autofunction:: ListTypeCons
 
-.. autoclass:: TupleTypeCons
+.. autofunction:: TupleTypeCons
 
 
 The type expression language (and grammar)
