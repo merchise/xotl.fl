@@ -49,8 +49,7 @@ Examples:
    >>> parse('_1e')
    Identifier('_1e')
 
-The expression language allows literal values of `the builtin types`_.  There
-are just three builtin types which have a literal representation.
+The expression language allows literal values:
 
 - Unicode characters are surrounded  with apostrophes ``'``.  You can use the
   backslash (``\``) to enter the apostrophe, the backslash itself and other
@@ -71,7 +70,7 @@ are just three builtin types which have a literal representation.
      Literal(' ', TypeCons('Char', ()))
 
   Notice that the value in the `~xotl.fl.expressions.Literal`:class:
-  object is a Python string; but it will always one character.
+  object is a Python string; but it will always be one character long.
 
 - Strings are surrounded with quotation mark ``"``.  You can use the backslash
   to enter the quotation mark, the backslash itself and other Unicode code
@@ -149,7 +148,7 @@ Composition
 -----------
 
 The dot operator (``.``) represents composition of functions.  In the AST this
-is just the application of the identifier '.' to its arguments:
+is just the application of the identifier ``.`` to its arguments:
 
   >>> parse('f . g')
   Application(Application(Identifier('.'), Identifier('f')), Identifier('g'))
