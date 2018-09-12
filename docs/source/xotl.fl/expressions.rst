@@ -249,7 +249,8 @@ body as parameters of a lambda:
    >>> parse('let id x = x in id') == parse(r'let id = \x -> x in id')
    True
 
-When doing several definitions you must split each definition with a newline.
+When doing several definitions you must split each definition with a newline
+[#newline]_.
 
 You can't have several definitions for the same name:
 
@@ -271,9 +272,6 @@ The 'where' expressions produce the same AST.  The general schema is::
      <expression> where <pattern 1> = <body 1>
                         <pattern 2> = <body 2>
                         ...
-
-There may be a newline after and before the 'where' keyword.  The same
-restrictions of the 'let' expressions apply.
 
 
 Application as "attribute access"
@@ -303,3 +301,10 @@ The builtin types
 =================
 
 .. automodule:: xotl.fl.builtins
+
+
+Notes
+=====
+
+.. [#newline] See the `account of new lines and indentation
+              <indentation>`:ref:.
