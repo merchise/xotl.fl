@@ -334,7 +334,7 @@ def test_regression_greedy_where():
 
 
 def test_parens_aroun_dot_regression():
-    assert parse('f . g + 1') == parse('(f.g) + 1')
+    assert parse('f . g + 1') == parse('(f . g) + 1')
 
 
 def test_application_and_composition():
@@ -351,6 +351,11 @@ def test_bool_op_has_less_precedence():
 
 def test_infix_func_has_less_precedence():
     assert parse('a > b `f` c - d') == parse('(a > b) `f` (c - d)')
+
+
+def test_attr_access():
+    assert parse('p.children.len') == parse('len p.children')
+    assert parse('p.children.len') == parse('len (children p)')
 
 
 @pytest.mark.xfail(reason='We have no pattern matching')

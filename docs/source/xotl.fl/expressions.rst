@@ -173,8 +173,10 @@ application, is next in priority:
   True
 
   >>> # This funny expression is syntactically valid, but it won't type-check.
-  >>> parse('f . g + 1') == parse('(f.g) + 1')
+  >>> parse('f . g + 1') == parse('(f . g) + 1')
   True
+
+.. warning:: There must be a space before and/or after the dot operator.
 
 
 Operators
@@ -272,6 +274,29 @@ The 'where' expressions produce the same AST.  The general schema is::
 
 There may be a newline after and before the 'where' keyword.  The same
 restrictions of the 'let' expressions apply.
+
+
+Application as "attribute access"
+---------------------------------
+
+To accommodate a special use case we allow (syntactically) an application form
+that resembles attributes access in OO languages:
+
+   >>> parse('p.children.len') == parse('len (children p)')
+   True
+
+This is why for Composition_ we need to put at least a space before or after
+the dot operator.
+
+This form of application has more precedence than standard application:
+
+   >>> parse('p.children.len') == parse('len p.children')
+   True
+
+It only works for runs of *identifiers* separated by dots.  The expression
+``(f g).attr`` is the composition of the result of ``f g`` with ``attr``.  The
+expression ``f.(g.attr)`` is equivalent to ``f . (attr g)`` -- in this example
+``g.attr`` is an attribute access.
 
 
 The builtin types

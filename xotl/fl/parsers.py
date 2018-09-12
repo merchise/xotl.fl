@@ -87,6 +87,7 @@ tokens = [
     'DATETIME_INTERVAL',
     'DATE_INTERVAL',
     'PIPE',
+    'ATTR_ACCESS',
 ]
 
 # Reserved keywords: pairs of (keyword, regexp).  If the regexp is None, it
@@ -433,6 +434,11 @@ def t_OPERATOR(t):
     return t
 
 
+def t_ATTR_ACCESS(t):
+    r'[A-Za-z_]\w*\.[A-Za-z_]\w*(\.[A-Za-z_]\w*)*'
+    return t
+
+
 def t_IDENTIFIER(t):
     r'[A-Za-z_]\w*'
     value = t.value
@@ -474,6 +480,16 @@ precedence = (
 def p_application(prod):
     'expr_factor : expr_factor SPACE expr_factor'
     prod[0] = Application(prod[1], prod[3])
+
+
+def p_attr_access(prod):
+    'expr_factor : ATTR_ACCESS'
+    names = prod[1].split('.')
+    obj, attr, *attrs = names   # the regular expr ensures 'obj' and 'attr'
+    result = Application(Identifier(attr), Identifier(obj))
+    for attr in attrs:
+        result = Application(Identifier(attr), result)
+    prod[0] = result
 
 
 # XXX: The only infix op at level 9 is DOT and it is right-associative.
