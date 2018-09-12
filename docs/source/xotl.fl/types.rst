@@ -92,7 +92,8 @@ controlled manner:
   arguments themselves; unless you use parenthesis.
 
 - You can't break before the arrow '->', but breaking **after** it is OK, but
-  also you need to *indent* the rest of the type expression.
+  also you need to `indent <indentation>`:ref: the rest of the type
+  expression.
 
 Invalid examples::
 
@@ -122,7 +123,7 @@ analyzer.  This also means that the parser has a very liberal rule about type
 arguments in a constructor:
 
   Any type expression to the **left** of a space and another type expression
-  admits it as an argument.
+  is admitted it as an argument.
 
 This makes the parser to recognize funny, unusual types expressions:
 
