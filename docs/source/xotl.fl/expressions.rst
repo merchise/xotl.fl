@@ -297,12 +297,6 @@ expression ``f.(g.attr)`` is equivalent to ``f . (attr g)`` -- in this example
 ``g.attr`` is an attribute access.
 
 
-The builtin types
-=================
-
-.. automodule:: xotl.fl.builtins
-
-
 Notes
 =====
 
