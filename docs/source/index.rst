@@ -4,15 +4,19 @@
 
 .. toctree::
    :glob:
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: The language and its API
 
-   xotl.fl/index.rst
-   xotl.fl/expressions.rst
-   xotl.fl/types.rst
-   xotl.fl/parsers.rst
-   papers/*
+   narrative/*
+   xotl.fl/*
    history
+
+.. toctree::
+   :glob:
+   :maxdepth: 2
+   :caption: Papers
+
+   papers/*
    drafts/*
 
 

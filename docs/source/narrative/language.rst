@@ -1,39 +1,123 @@
-==============================================================
- :mod:`xotl.fl.expressions` -- The expressions language
-==============================================================
+=============================
+ Description of the language
+=============================
 
-.. automodule:: xotl.fl.expressions
-   :members: parse
-
-.. testsetup::
-
-   from xotl.fl.expressions import *
+.. warning:: This is a work in progress. Not everything described here can be
+   taken for granted until we produce a stable release.
 
 
-The AST of the type expressions
-===============================
+Goals and inspiration
+=====================
 
-.. autoclass:: Identifier
+The language is inspired in other functional languages, but if you find it
+too Haskell-like, that's not a coincidence.  We're using Haskell as the gold
+standard, but our language is much less ambitious.
 
-.. autoclass:: Literal
+We only aim to integrate a statically typed language into Python, with type
+checking and type inference (Damas-Hindley-Milner) and where pattern matching
+is used to do most of the branching.
 
-.. autoclass:: Lambda
+The idea is to complement programs that expose some sort of programming to its
+users, but do not require a general programming language.
 
-.. autoclass:: Application
+We have such a system; users needs to define complex procedures to compute
+prices.  However complex, all price schemes seem to be programmable with
+simple expressions, function application and composition and a powerful
+pattern matching (probably with some extensions for matching dates and date
+intervals).
 
-.. autoclass:: Let
+It's not clear if we're going to need type classes.  We suspect we do.
 
-.. autoclass:: Letrec
-
-
-The type expression grammar
-===========================
-
-.. seealso:: :mod:`xotl.fl.parsers`
+We provide a `parser <xotl.fl.parse>`:func:, but the system using this
+language may choose to present its user with a very different way to build
+programs.
 
 
-The function `~xotl.fl.expressions.parse`:func: parses a single
-standalone expression; not *full programs*.
+The language
+============
+
+The language allows to *define* algebraic data types (ADTs) and values
+(functions, most likely).  A full program is just a *non-empty* sequence of
+definitions.
+
+Definitions come in three types:
+
+- Type (scheme) declarations;
+
+- Algebraic data types; and
+
+- Value definitions (functions belong here).
+
+The order of the definitions in a program is unimportant.  But the order of
+the equations within a function definition **is** important.
+
+A very simple program:
+
+  >>> from xotl.fl import parse
+  >>> parse(r'''
+  ...     alias :: [Char]
+  ...     alias = name
+  ...
+  ...     name = "xotl.fl"
+  ...
+  ...     myId :: a -> a
+  ...     myId x = x
+  ...
+  ...     myId2 = \x -> x
+  ...
+  ...     myConst :: a -> b -> a
+  ...     myConst a _ = a
+  ...
+  ...     data MyList a = EmptyList
+  ...                   | Cons a (MyList a)
+  ...
+  ...     insert a xs  = Cons a xs
+  ...
+  ...     isnull :: MyList a -> Bool
+  ...     isnull EmptyList = True
+  ...     isnull _         = False
+  ...
+  ...     insert :: a -> MyList a -> MyList a
+  ...
+  ...     concat :: MyList a -> MyList a -> MyList a
+  ... ''')
+  [...]
+
+
+Notice that:
+
+- We use the identifier 'name' in the definition of 'alias', before the very
+  definition of 'name'.  This is no problem at all.
+
+- We are not required to provide type declarations for all values.
+
+- We can provide the type declarations after or before the value definition.
+
+- We may even provide type declarations for things we didn't define
+  ('concat').
+
+  There are things the `~xotl.fl.parse`:func: allows to do that you shouldn't.
+  We might change our mind and prohibit them in the future.
+
+
+Parsing is not the whole story.  Parsing just creates an Abstract Syntax Tree
+out of your source code.  For things to really work, you need to type-check
+them.  The `xotl.fl.parse`:func: does not run the type checker.
+
+
+Expressions
+-----------
+
+The right hand side of values (and function) definitions are made up from
+expressions.  The AST of expressions is documented in
+`xotl.fl.expressions`:mod:.
+
+In the examples below, the return of the `xotl.fl.expression.parse`:func: is
+always an instance of some AST class.
+
+
+Literals and identifiers
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 The simplest expressions are those made up of a single identifier or a literal
 value.
@@ -43,6 +127,7 @@ with a digit.
 
 Examples:
 
+   >>> from xotl.fl.expressions import parse
    >>> parse('a')
    Identifier('a')
 
@@ -127,7 +212,7 @@ The expression language allows literal values:
 
 
 Application
------------
+~~~~~~~~~~~
 
 Application (function invocation in other languages) is represented by
 white space.
@@ -145,7 +230,7 @@ priority:
 
 
 Composition
------------
+~~~~~~~~~~~
 
 The dot operator (``.``) represents composition of functions.  In the AST this
 is just the application of the identifier ``.`` to its arguments:
@@ -179,7 +264,7 @@ application, is next in priority:
 
 
 Operators
----------
+~~~~~~~~~
 
 The standard operators ``+``, ``-``, ``*``, ``/``, ``//``, ``%`` stand for
 binary operations between numbers.  They all associate to the left.  The
@@ -207,7 +292,7 @@ Notice that standard comparison operators (``<``, ``>``, ``<=``, ``>=``,
 .. _infixed:
 
 Infix form of a function application
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Any identifier can become an infix operator by enclosing it in ticks (`````).
 Infix has the lowest precedence:
@@ -220,7 +305,7 @@ Infix has the lowest precedence:
 
 
 Lambdas
--------
+~~~~~~~
 
 Lambda abstractions are represented with the concise syntax of Haskell::
 
@@ -237,7 +322,7 @@ single argument the parser admits several and does the expected currying:
 
 
 Let and where
--------------
+~~~~~~~~~~~~~
 
 A let expression has the general schema::
 
@@ -256,7 +341,7 @@ body as parameters of a lambda:
 When doing several definitions you must split each definition with a newline
 [#newline]_.
 
-You can't have several definitions for the same name:
+You can't have several definitions for the same name [#pattern]_:
 
    >>> code = '''let if True t f = t
    ...               if False t f = f
@@ -323,8 +408,120 @@ It has less precedence than any other operator except the `infix form
    True
 
 
+Type declarations
+-----------------
+
+Type declarations state the type of a symbol.  The function
+`xotl.fl.types.parse`:func: parses the type expression (the thing after the
+two colons) and return an instance of AST for types.
+
+The AST of types as only two constructors:
+`~xotl.fl.types.TypeVariable`:class: and `~xotl.fl.types.TypeCons`:class:.
+
+The `~xotl.fl.types.TypeScheme`:class: is not (yet) considered an AST node.
+There's no way to express type schemes in the syntax.  Nevertheless, the
+`parser <xotl.fl.parse>`:func: do return type schemes:
+
+   >>> from xotl.fl import parse
+   >>> from xotl.fl.types import TypeScheme
+   >>> parse('id :: a -> a') == [{'id': TypeScheme.from_str('a -> a')}]
+   True
+
+In the type expression language we use *identifiers* starting with a
+lower-case letter to indicate a `type variable
+<xotl.fl.types.base.TypeVariable>`:class:, unless they are applied to other
+type expression, in which case they're regarded as type constructors.
+Identifiers starting with an upper-case letter always denote a type
+constructor.
+
+Examples:
+
+  >>> from xotl.fl.types import parse
+  >>> parse('a')
+  TypeVariable('a')
+
+  >>> parse('a b')
+  TypeCons('a', (TypeVariable('b'),))
+
+  >>> parse('a B c')
+  TypeCons('a', (TypeCons('B', ()), TypeVariable('c')))
+
+
+Notice that the type variable 'c' is an argument for the type constructor 'a',
+and not for 'B'.  You can use parenthesis to make it so:
+
+  >>> parse('a (B c)')
+  TypeCons('a', (TypeCons('B', (TypeVariable('c'),)),))
+
+
+The function type constructor is the arrow '->':
+
+  >>> parse('a -> B')
+  TypeCons('->', (TypeVariable('a'), TypeCons('B', ())))
+
+
+The list type constructor is the pair of brackets '[]':
+
+  >>> parse('[a]')
+  TypeCons('[]', (TypeVariable('a'),))
+
+
+Even though the type expression language recognizes those type constructions
+specially there's nothing really special about them in terms of the type
+language AST; they are simply TypeCons with some funny names; for which we
+expect that components that assign meaning to these constructions (i.e
+semantics) assign them with the usual ones.
+
+There's no syntactical support to express tuples yet.  The
+`~xotl.fl.types.TupleTypeCons`:func: uses the syntax-friendly name 'Tuple':
+
+  >>> parse('Tuple a a')
+  TypeCons('Tuple', (TypeVariable('a'), TypeVariable('a')))
+
+
+New lines
+~~~~~~~~~
+
+You can split long type expressions in several lines, but you only do so in a
+controlled manner:
+
+- You can't break between constructors and its arguments, nor within the
+  arguments themselves; unless you use parenthesis.
+
+- You can't break before the arrow '->', but breaking **after** it is OK, but
+  also you need to `indent <indentation>`:ref: the rest of the type
+  expression.
+
+
+Quirks of type expression language
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`~xotl.fl.types.TypeCons`:class: does not have an implicit limit to the type
+arguments any given constructor admits.  This is the job of the semantic
+analyzer.  This also means that the parser has a very liberal rule about type
+arguments in a constructor:
+
+  Any type expression to the **left** of a space and another type expression
+  is admitted it as an argument.
+
+This makes the parser to recognize funny, unusual types expressions:
+
+  >>> parse('[a] b')
+  TypeCons('[]', (TypeVariable('a'), TypeVariable('b')))
+
+  >>> parse('(a -> b) c')
+  TypeCons('->', (TypeVariable('a'), TypeVariable('b'), TypeVariable('c')))
+
+Those types have no semantics assigned but the parser recognizes them.  It's
+the job of another component (kinds?) to recognize those errors.
+
+
 Notes
 =====
 
 .. [#newline] See the `account of new lines and indentation
               <indentation>`:ref:.
+
+.. [#pattern] This is because at the time of writing, pattern matching is not
+   implemented.  In order for this language to be of any use, this restriction
+   will be removed before reaching the release 1.0.
