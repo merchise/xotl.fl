@@ -278,6 +278,8 @@ The 'where' expressions produce the same AST.  The general schema is::
                         ...
 
 
+.. _attr-access:
+
 Application as "attribute access"
 ---------------------------------
 

@@ -11,9 +11,9 @@
    xotl.fl/expressions.rst
    xotl.fl/types.rst
    xotl.fl/parsers.rst
-   xotl.fl/indentation.rst
    papers/*
    history
+   drafts/*
 
 
 Indices and tables

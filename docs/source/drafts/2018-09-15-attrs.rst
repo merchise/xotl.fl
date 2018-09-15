@@ -1,0 +1,58 @@
+===========================================================
+ Pros and cons of the attribute access application pattern
+===========================================================
+
+A few days ago I introduced the `attribute access application pattern
+<attr-access>`:ref: which allows to perform application on a single argument
+**as if** you were accessing an attribute.
+
+I've been worried about the effectiveness or inconveniences of such
+construction.  The following is a list of pros and cons I've collected to
+decide whether to leave the feature or remove before a release.
+
+
+Pros
+====
+
+.. _pros-novice:
+
+The novice programmer
+---------------------
+
+The aim of this language is to interface with Python somehow.  So the
+programmers are really used to say something like ``parent.get_children()`` or
+(using `property`:class: probably) ``parent.children``.
+
+This feature is just a nicety for those programmers.  But it has a `dark side
+<cons-novice_>`__ for them as well.
+
+
+Cons
+====
+
+.. _cons-novice:
+
+The novice programmer
+---------------------
+
+The novice programmer may be fooled into thinking this is not function
+application.  Since ``p.children`` is the same as ``children p``, there must a
+*global* function ``children`` with the right (polymorphic) type.
+
+In the current state of this project we don't have type classes, meaning that
+different *types* must have different function names.
+
+But the programmer may be fooled into thinking each attribute is in a given
+namespace.
+
+
+.. _cons-namespace-clash:
+
+Clash with possible future namespaces
+-------------------------------------
+
+If we find our language successful, and larger programs begin to feel the
+pressure of having a single global namespace (maybe we're just reliving the
+JavaScript mistake); committing to the attribute access application pattern
+would mean that our namespaces would not be able to the standard dot ('.') to
+access names in namespaces.
