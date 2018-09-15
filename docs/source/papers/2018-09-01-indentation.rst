@@ -75,9 +75,8 @@ If we remove ``where`` expressions from our syntax and rewrite the programs
 with ``let`` alone, the ``in`` keyword is enough to disambiguate.
 
 
-==========
- Decision
-==========
+Decision
+========
 
 1) Keep the ``where`` as it is.   To disambiguate you'll need parenthesis::
 
