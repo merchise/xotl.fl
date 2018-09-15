@@ -323,70 +323,6 @@ def t_RBRACKET(t):
     return t
 
 
-# PLUS, MINUS, EQ and DOT are treated specially to disambiguate (binary + from
-# unary +, etc); DOT is right associative.
-def t_PLUS(t):
-    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|,])\+(?![/\.\-\+\*<>\$%\^&!@\#=\|,])'
-    return t
-
-
-def t_MINUS(t):
-    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|,])\-(?![/\.\-\+\*<>\$%\^&!@\#=\|,])'
-    return t
-
-
-def t_STAR(t):
-    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|,])\*(?![/\.\-\+\*<>\$%\^&!@\#=\|,])'
-    return t
-
-
-def t_DOUBLESLASH(t):
-    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|,])\/\/(?![/\.\-\+\*<>\$%\^&!@\#=\|,])'
-    return t
-
-
-def t_SLASH(t):
-    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|,])\/(?![/\.\-\+\*<>\$%\^&!@\#=\|,])'
-    return t
-
-
-def t_ARROW(t):
-    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|,])\-\>(?![/\.\-\+\*<>\$%\^&!@\#=\|,])'
-    return t
-
-
-def t_BACKSLASH(t):
-    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|,])\\(?![/\.\-\+\*<>\$%\^&!@\#=\|,])'
-    return t
-
-
-def t_PERCENT(t):
-    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|,])%(?![/\.\-\+\*<>\$%\^&!@\#=\|,])'
-    return t
-
-
-def t_EQ(t):
-    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|,])=(?![/\.\-\+\*<>\$%\^&!@\#=\|,])'
-    return t
-
-
-def t_PIPE(t):
-    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|,])\|(?![/\.\-\+\*<>\$%\^&!@\#=\|,])'
-    return t
-
-
-def t_COMMA(t):
-    r'(?<![/\.\-\+\*<>\$%\^&!@\#=\|,]),(?![/\.\-\+\*<>\$%\^&!@\#=\|,])'
-    return t
-
-
-# Don't merge this with OPERATOR, we need it to make sure is
-# right-associative.
-def t_DOT_OPERATOR(t):
-    r'\.(?![/\.\-\+\*<>\$%\^&!@\#=\|,])'
-    return t
-
-
 def t_TICK_OPERATOR(t):
     r'`[A-Za-z]\w*`'
     t.value = t.value[1:-1]
@@ -435,8 +371,25 @@ def t_DATE_INTERVAL(t):
     return t
 
 
+_OPERATOR_MAP = {
+    '.': 'DOT_OPERATOR',
+    '+': 'PLUS',
+    '-': 'MINUS',
+    '*': 'STAR',
+    '/': 'SLASH',
+    '//': 'DOUBLESLASH',
+    '->': 'ARROW',
+    '\\': 'BACKSLASH',
+    '%': 'PERCENT',
+    '=': 'EQ',
+    '|': 'PIPE',
+    ',': 'COMMA',
+}
+
+
 def t_OPERATOR(t):
-    r'[/\.\-\+\*<>\$%\^&!@\#=\|,]+'
+    r'[/\.\-\+\*<>\$%\^&!@\#=\\\|,]+'
+    t.type = _OPERATOR_MAP.get(t.value, 'OPERATOR')
     return t
 
 
