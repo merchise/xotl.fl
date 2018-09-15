@@ -204,6 +204,11 @@ Notice that standard comparison operators (``<``, ``>``, ``<=``, ``>=``,
    Application(Application(Identifier('>=>'), Identifier('return')), Identifier('m'))
 
 
+.. _infixed:
+
+Infix form of a function application
+------------------------------------
+
 Any identifier can become an infix operator by enclosing it in ticks (`````).
 Infix has the lowest precedence:
 
@@ -294,6 +299,26 @@ It only works for runs of *identifiers* separated by dots.  The expression
 ``(f g).attr`` is the composition of the result of ``f g`` with ``attr``.  The
 expression ``f.(g.attr)`` is equivalent to ``f . (attr g)`` -- in this example
 ``g.attr`` is an attribute access.
+
+
+The ``:`` operator
+------------------
+
+Although the expression language does not support literal lists, we do support
+the ``:`` operator, which has the builtin type ``a -> [a] -> [a]``.  ``:`` is
+right-associative:
+
+   >>> parse('a:b:xs') == parse('a:(b:xs)')
+   True
+
+It has less precedence than any other operator except the `infix form
+<infixed_>`__:
+
+   >>> parse('a + b:xs') == parse('(a + b):xs')
+   True
+
+   >>> parse('a `f` b:xs') == parse('a `f` (b:xs)')
+   True
 
 
 Notes
