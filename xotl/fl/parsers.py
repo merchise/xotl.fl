@@ -495,19 +495,20 @@ def p_attr_access(prod):
 # XXX: The only infix op at level 9 is DOT and it is right-associative.
 def p_expressions_precedence_rules(prod):
     '''
-    expr_term9 : expr_factor infix_operator_9 expr_term9
+    expr_term9 : expr_factor infixr_operator_9 expr_term9
                | expr_factor
 
-    expr_term7 : expr_term7 infix_operator_7 expr_term9
+    expr_term7 : expr_term7 infixl_operator_7 expr_term9
                | expr_term9
 
-    expr_term6 : expr_term6 infix_operator_6 expr_term7
+    expr_term6 : expr_term6 infixl_operator_6 expr_term7
                | expr_term7
 
-    expr_term2 : expr_term2 infix_operator_2 expr_term6
+    expr_term2 : expr_term2 infixl_operator_2 expr_term6
+               | expr_term6 infixr_operator_2 expr_term2
                | expr_term6
 
-    expr_term0 : expr infix_operator_0 expr_term0
+    expr_term0 : expr infixl_operator_0 expr_term0
                | expr_term2
 
     '''
@@ -633,25 +634,28 @@ def p_operators_as_expressios(prod):
 # the infix_operator_2 rule.
 def p_operator(prod):
     '''
-    infix_operator_9 : DOT_OPERATOR
+    infixr_operator_9 : DOT_OPERATOR
 
-    infix_operator_7 : STAR
+    infixl_operator_7 : STAR
                      | SLASH
                      | DOUBLESLASH
                      | PERCENT
 
-    infix_operator_6 : PLUS
+    infixl_operator_6 : PLUS
                      | MINUS
 
-    infix_operator_2 : OPERATOR
+    infixr_operator_2 : COLON
+
+    infixl_operator_2 : OPERATOR
                      | ARROW
 
-    infix_operator_0 : TICK_OPERATOR
+    infixl_operator_0 : TICK_OPERATOR
 
-    operator : infix_operator_0
-             | infix_operator_2
-             | infix_operator_6
-             | infix_operator_7
+    operator : infixl_operator_0
+             | infixl_operator_2
+             | infixr_operator_2
+             | infixl_operator_6
+             | infixl_operator_7
 
     '''
     prod[0] = prod[1]

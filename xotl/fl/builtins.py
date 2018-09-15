@@ -118,8 +118,8 @@ def builtins_env(self) -> TypeEnvironment:
         'safe_tail': TypeScheme.from_str('[a] -> Maybe [a]'),
 
         'nil': TypeScheme.from_str('[a]'),
+        ':': TypeScheme.from_str('a -> [a] -> [a]'),
         'append': TypeScheme.from_str('a -> [a] -> [a]'),
-        'insert': TypeScheme.from_str('a -> [a] -> [a]'),
 
         'is_member': TypeScheme.from_str('a -> [a] -> Bool'),
         'is_null': TypeScheme.from_str('[a] -> Bool'),

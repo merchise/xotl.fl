@@ -370,3 +370,13 @@ def test_pattern_matching_let():
         Application(Application(Identifier('.'), Identifier('g')),
                     Identifier('if'))
     )
+
+
+def test_list_cons_operator():
+    assert parse('a:b:xs') == parse('a:(b:xs)') == Application(
+        Application(Identifier(':'), Identifier('a')),
+        Application(
+            Application(Identifier(':'), Identifier('b')),
+            Identifier('xs')
+        )
+    )
