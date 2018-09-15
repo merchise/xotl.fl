@@ -388,3 +388,10 @@ def test_list_cons_precedence():
 
     # A custom operator <++>
     assert parse('a <++> b : xs', debug=True) == parse('(a <++> b):xs')
+
+
+def test_comma_as_an_operator():
+    assert parse('a, b') == parse('(,) a b') == Application(
+        Application(Identifier(','), Identifier('a')),
+        Identifier('b')
+    )
