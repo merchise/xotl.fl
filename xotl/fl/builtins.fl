@@ -1,0 +1,157 @@
+-- Just the types of the builtins values.
+
+($) :: (a -> b) -> a -> b
+(.) :: (b -> c) -> (a -> b) -> a -> c
+
+id :: a -> a
+map :: (a -> b) -> [a] -> [b]
+foldr :: (a -> b -> b) -> b -> [a] -> b
+
+data Bool = True | False
+
+and :: Bool -> Bool -> Bool
+or :: Bool -> Bool -> Bool
+xor :: Bool -> Bool -> Bool
+not :: Bool -> Bool
+
+(+) :: Number -> Number -> Number
+(-) :: Number -> Number -> Number
+(*) :: Number -> Number -> Number
+(/) :: Number -> Number -> Number
+(//) :: Number -> Number -> Number
+(%) :: Number -> Number -> Number
+(^) :: Number -> Number -> Number
+
+
+(==) :: a -> a -> Bool
+(!=) :: a -> a -> Bool
+(<) :: a -> a -> Bool
+(>) :: a -> a -> Bool
+(<=) :: a -> a -> Bool
+(>=) :: a -> a -> Bool
+
+
+-- I'm putting Left, Right and (,) not because they are necessarily
+-- built-in; but to show that data constructors have the same type as
+-- functions.
+--
+-- However, there's no way you can't actually write those functions in the
+-- expression language, because you would not be able to *build* the
+-- values.  This reveals the need for a data type language would allow the
+-- classical:
+--
+--    data Either a b = Left a | Right b
+--
+-- and it would create the Left and Right functions.
+--
+-- The case of tuples do require some parsing extensions if we're two allow
+-- triplets, 4-tuples, etc..
+--
+-- Notice however, we don't have any execution model in the language and no
+-- real values beyond what literals allow.  I presume that we will use
+-- Python values while executing; but that would have to revised in order
+-- to make non-strict Python referentially transparent.
+
+(,) :: a -> b -> Tuple a b
+(,,) :: a -> b -> c Tuple a b c
+(,,,) :: a -> b -> c -> d -> Tuple a b c d
+(,,,,) :: a -> b -> c -> d -> e -> Tuple a b c d e
+(,,,,,) :: a -> b -> c -> d -> e -> f -> Tuple a b c d e f
+
+
+data Either a b = Left a | Right b
+
+-- From the definition it follows that:
+--
+-- Left :: a -> Either a b
+-- Right :: b -> Either a b
+
+either :: (a -> c) -> (b -> c) -> Either a b -> c
+either f _ (Left a) = f a
+either _ g (Right b) = g b
+
+data Maybe a = Nothing | Just a
+
+maybe :: b -> (a -> b) -> Maybe a -> b
+maybe b _ Nothing  = b
+maybe _ f (Just a) = f a
+
+isJust :: Maybe a -> Bool
+isJust (Just _) = True
+isJust _        = False
+
+isNothing :: Maybe a -> Bool
+isNothing = isJust . not
+
+fromMaybe :: a -> Maybe a -> a
+fromMaybe a Nothing  = a
+fromMaybe _ (Just a) = a
+
+
+-- Lists; they require special pattern matching support in the parser.
+
+head :: [a] -> a
+tail :: [a] -> [a]
+single :: a -> [a]
+
+safe_head :: [a] -> Maybe a
+safe_tail :: [a] -> Maybe [a]
+
+(:) :: a -> [a] -> [a]
+append :: a -> [a] -> [a]
+
+is_member :: a -> [a] -> Bool
+is_null :: [a] -> Bool
+
+(++) :: [a] -> [a] -> [a]
+
+-- Pairs; they require special pattern matching support in the parser.
+
+pair :: a -> b -> Tuple a b
+fst :: Tuple a b -> a
+snd :: Tuple a b -> b
+
+
+-- Date operations.  It's quite evident that I will need type-classes and
+-- instances; otherwise, writing the simplest formulae may get really
+-- involved.
+
+data Date = Date Int Int Int
+data Time = Time Int Int Int
+data DateTime = DateTime Date Time
+
+date_to_datetime :: Date -> DateTime
+date_to_datetime d = DateTime d (Time 0 0 0)
+
+is_date_before :: Date -> Date -> Bool
+is_date_before (Date y1 m1 d1) (Date y2 m2 d2) =
+
+
+is_date_after :: Date -> Date -> Bool
+is_date_after (Date y1 m1 d1) (Date y2 m2 d2) = y1 > y2 `or` m1 > m2 `or` d1 > d2
+
+is_time_before :: Time -> Time -> Bool
+is_time_before (Time h1 m1 s1) (Time h2 m2 s2) = h1 < h2 `or` m1 < m2 `or` s1 < s2
+
+is_time_after :: Time -> Time -> Bool
+is_time_after (Time h1 m1 s1) (Time h2 m2 s2) = h1 > h2 `or` m1 > m2 `or` s1 > s2
+
+
+get_date :: DateTime -> Date
+get_date (DateTime d _) = d
+
+get_time :: DateTime -> Hour
+get_time (DateTime _ t) = t
+
+is_earlier :: DateTime -> DateTime -> Bool
+is_earlier (_ d1 t1) (_ d2 t2) = let date_before = is_date_before d1 d2
+                                     time_before = is_time_before t1 t2
+                                 in date_before `or` time_before
+
+is_later :: DateTime -> DateTime -> Bool
+
+interval_overlap :: DateInterval -> DateInterval -> DateInterval
+
+is_fully_contained :: DateInterval -> DateInterval -> Bool
+is_interval_empty :: DateInterval -> Bool
+interval :: Maybe Date -> Maybe Date -> DateInterval

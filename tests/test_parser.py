@@ -103,3 +103,19 @@ def test_if_program():
         if False _ (Else x) = x
 
     ''', debug=True)
+
+
+@pytest.mark.xfail(reason='Failing to split equations')
+def test_large_definitions():
+    assert parse('''
+       name =
+          let id x = x in id
+    ''', debug=True) == parse('name = let id x = x in id')
+
+
+@pytest.mark.xfail(reason='Failing to define operators')
+def test_defs_operators():
+    assert parse('''
+       (.) :: (b -> c) -> (a -> b) -> a -> c
+       (.) f g x = f (g x)
+    ''')

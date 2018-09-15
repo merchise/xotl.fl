@@ -18,7 +18,11 @@ def parse(program_source: str, *, debug: bool = False):
 
     '''
     from .parsers import program_parser, lexer
-    return program_parser.parse(program_source, lexer=lexer, debug=debug)
+    defs = program_parser.parse(program_source, lexer=lexer, debug=debug)
+    # Here we try to perform sanity checks and also *group* otherwise
+    # separated stuff (several equations for the same name are given
+    # separately, but we group them under a single Equations object).
+    return defs
 
 
 def type_parse(code: str, debug=False, tracking=False):
