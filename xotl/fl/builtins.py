@@ -103,7 +103,7 @@ def builtins_env(self) -> TypeEnvironment:
 
         'Nothing': TypeScheme.from_str('Maybe a'),
         'Just': TypeScheme.from_str('a -> Maybe a'),
-        'maybe': TypeScheme.from_str('a -> (a -> b) -> Maybe a -> b'),
+        'maybe': TypeScheme.from_str('b -> (a -> b) -> Maybe a -> b'),
         'isJust': TypeScheme.from_str('Maybe a -> Bool'),
         'isNothing': TypeScheme.from_str('Maybe a -> Bool'),
         'fromMaybe': TypeScheme.from_str('a -> Maybe a -> a'),
