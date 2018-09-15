@@ -380,3 +380,11 @@ def test_list_cons_operator():
             Identifier('xs')
         )
     )
+
+
+def test_list_cons_precedence():
+    assert parse('a + b : xs') == parse('(a + b):xs')
+    assert parse('a `f` b : xs') == parse('a `f` (b:xs)')
+
+    # A custom operator <++>
+    assert parse('a <++> b : xs', debug=True) == parse('(a <++> b):xs')
