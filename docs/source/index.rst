@@ -12,6 +12,7 @@
    xotl.fl/types.rst
    xotl.fl/parsers.rst
    xotl.fl/indentation.rst
+   papers/*
    history
 
 
