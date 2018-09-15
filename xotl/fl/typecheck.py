@@ -17,7 +17,7 @@ from typing import (
 from typing import Any  # noqa
 from collections import ChainMap
 
-from xotl.fl.types import (
+from .types import (
     AST,
     Type,
     TypeVariable,
@@ -27,7 +27,7 @@ from xotl.fl.types import (
     find_tvars,
     TypeEnvironment,
 )
-from xotl.fl.expressions import (
+from .expressions import (
     Identifier,
     Literal,
     Lambda,

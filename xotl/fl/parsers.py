@@ -35,7 +35,7 @@ from .expressions import (
     DataCons,
 )
 
-from xotl.fl.builtins import (
+from .builtins import (
     StringType,
     CharType,
     NumberType,

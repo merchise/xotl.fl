@@ -113,9 +113,9 @@ class TypeScheme:
 
     Example:
 
-      >>> from xotl.fl.types import parse
+      >>> from xotl.fl import type_parse
       >>> map_type = TypeScheme(['a', 'b'],
-      ...                       parse('(a -> b) -> List a -> List b'))
+      ...                       type_parse('(a -> b) -> List a -> List b'))
 
       >>> map_type
       <TypeScheme: forall a b. (a -> b) -> ((List a) -> (List b))>
@@ -171,7 +171,6 @@ class TypeScheme:
         # type: (str, *, Optional[Sequence[str]]) -> TypeScheme
         '''Create a type scheme from a type expression (given a string)
         assuming all type variables are generic.'''
-        from xotl.fl.types import parse
         type_ = parse(source)
         return cls.from_typeexpr(type_, generics=generics)
 
