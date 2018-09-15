@@ -505,11 +505,13 @@ def p_expressions_precedence_rules(prod):
                | expr_term7
 
     expr_term2 : expr_term2 infixl_operator_2 expr_term6
-               | expr_term6 infixr_operator_2 expr_term2
                | expr_term6
 
-    expr_term0 : expr infixl_operator_0 expr_term0
+    expr_term1 : expr_term2 infixr_operator_2 expr_term1
                | expr_term2
+
+    expr_term0 : expr infixl_operator_0 expr_term0
+               | expr_term1
 
     '''
     rhs = prod[1:]
