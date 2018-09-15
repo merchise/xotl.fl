@@ -28,11 +28,11 @@ def parse(program_source: str, *, debug: bool = False):
 def type_parse(code: str, debug=False, tracking=False):
     '''Parse a single type expression `code`.
 
-    Return a `type expression AST <xotl.fl.types.base>`:mod:.
+    Return a `type expression AST <xotl.fl.types>`:mod:.
 
     Example:
 
-       >>> parse('a -> b')
+       >>> type_parse('a -> b')
        TypeCons('->', (TypeVariable('a'), TypeVariable('b')))
 
     '''
