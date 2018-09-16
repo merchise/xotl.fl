@@ -15,7 +15,8 @@ Implementation of Functional Programming Languages'.
           appropriate.
 
 '''
-from typing import Iterable, Sequence, List, Mapping
+from collections import deque
+from typing import Iterable, Sequence, List, Mapping, Deque
 from typing import Optional  # noqa
 from itertools import zip_longest
 
@@ -206,9 +207,21 @@ def parse(code: str, debug=False, tracking=False) -> Type:
 
 
 def find_tvars(t: Type) -> List[str]:
-    'Get all variables names (possibly repeated) in type `t`.'
-    if isinstance(t, TypeVariable):
-        return [t.name]
-    else:
-        assert isinstance(t, TypeCons)
-        return [tv for subt in t.subtypes for tv in find_tvars(subt)]
+    '''Get all variables names (possibly repeated) in type `t`.
+
+    Example:
+
+       >>> find_tvars(Type.from_str('a -> b -> a'))
+       ['a', 'b', 'a']
+
+    '''
+    result: Deque[str] = deque([])
+    queue: Deque[Type] = deque([t])
+    while queue:
+        t = queue.pop()
+        if isinstance(t, TypeVariable):
+            result.append(t.name)
+        else:
+            assert isinstance(t, TypeCons)
+            queue.extend(t.subtypes)
+    return list(result)
