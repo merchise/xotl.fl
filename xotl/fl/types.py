@@ -27,10 +27,13 @@ class AST:
 
 class Type(AST):
     @classmethod
-    def from_str(cls, source):
-        '''Parse a single type expression `code`.
+    def from_str(cls, source: str) -> 'Type':
+        '''Parse a single type expression.
 
-        Return a `type expression AST <xotl.fl.types.base>`:mod:.
+        Example:
+
+            >>> Type.from_str('a -> b -> a')
+            TypeCons('->', (TypeVariable('a'), TypeCons('->', (...))))
 
         '''
         return parse(source)
@@ -159,19 +162,26 @@ class TypeScheme:
         return f'<TypeScheme: {self!s}>'
 
     @classmethod
-    def from_typeexpr(cls, type_, *, generics=None):
-        # type: (Type, *, Optional[Sequence[str]]) -> TypeScheme
+    def from_typeexpr(cls, type_: Type, *,
+                      generics: Sequence[str] = None) -> 'TypeScheme':
         '''Create a type scheme from a type expression assuming all type
         variables are generic.'''
         if generics is None:
-            generics = list(set(find_tvars(type_)))  # avoid repetitions.
+            generics = list(sorted(set(find_tvars(type_))))  # avoid repetitions.
         return cls(generics, type_)
 
     @classmethod
-    def from_str(cls, source, *, generics=None):
-        # type: (str, *, Optional[Sequence[str]]) -> TypeScheme
-        '''Create a type scheme from a type expression (given a string)
-        assuming all type variables are generic.'''
+    def from_str(cls, source: str, *, generics:
+                 Sequence[str] = None) -> 'TypeScheme':
+        '''Create a type scheme from a type expression assuming all type variables are
+        generic.
+
+        Example:
+
+           >>> TypeScheme.from_str('a -> b -> a')
+           <TypeScheme: forall a b. a -> (b -> a)>
+
+        '''
         type_ = parse(source)
         return cls.from_typeexpr(type_, generics=generics)
 
@@ -194,7 +204,7 @@ EMPTY_TYPE_ENV: TypeEnvironment = {}
 def parse(code: str, debug=False, tracking=False) -> Type:
     '''Parse a single type expression `code`.
 
-    Return a `type expression AST <xotl.fl.types.base>`:mod:.
+    Return a `type expression AST <xotl.fl.types>`:mod:.
 
     Example:
 

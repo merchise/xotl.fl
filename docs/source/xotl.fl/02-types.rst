@@ -3,18 +3,25 @@
 =========================================================
 
 .. automodule:: xotl.fl.types
-   :members: parse
+   :members: parse, find_tvars
 
 .. testsetup::
 
    from xotl.fl.types import *
 
 
+.. autoclass:: Type
+   :members:
+
 .. autoclass:: TypeVariable
+   :show-inheritance:
 
 .. autoclass:: TypeCons
+   :show-inheritance:
+
 
 .. autoclass:: TypeScheme
+   :members:
 
 .. autofunction:: FunctionTypeCons
 
