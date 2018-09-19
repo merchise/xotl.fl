@@ -99,10 +99,9 @@ Notice that:
   There are things the `~xotl.fl.parse`:func: allows to do that you shouldn't.
   We might change our mind and prohibit them in the future.
 
-
 Parsing is not the whole story.  Parsing just creates an Abstract Syntax Tree
 out of your source code.  For things to really work, you need to type-check
-them.  The `xotl.fl.parse`:func: does not run the type checker.
+them and `run them <running-programs>`:ref:.
 
 
 Expressions
