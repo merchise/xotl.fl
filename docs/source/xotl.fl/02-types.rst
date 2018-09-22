@@ -28,3 +28,14 @@
 .. autofunction:: ListTypeCons
 
 .. autofunction:: TupleTypeCons
+
+
+.. data:: TypeEnvironment
+
+   A `type object <typing>`:mod: defined as ``Mapping[str ,TypeScheme]``.
+   When type-checking you do so in such an environment.
+
+
+.. data:: EMPTY_TYPE_ENV
+
+   The empty `TypeEnvironment`:any:.

@@ -6,6 +6,11 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
+'''Implements the basic type checker described in Chapter 9 of 'The
+Implementation of Functional Programming Languages' by Simon L. Peyton Jones
+and others.
+
+'''
 from typing import (
     Sequence,
     List,
@@ -148,21 +153,7 @@ class delta:
 
     To avoid reusing instances of the same type expression, this function
     takes the type constructor and its arguments.  If you do want to use the
-    same instance pass an instance wrapped in a lambda.  Example:
-
-       >>> f = delta('a', T, 'id')
-       >>> f('a') is f('a')
-       False
-
-       >>> f('b') is f('b')
-       False
-
-       >>> f = delta('a', lambda: T('id'))
-       >>> f('a') is f('a')
-       True
-
-       >>> f('b') is f('b')
-       False
+    same instance pass an instance wrapped in a lambda.
 
     '''
     def __init__(self, vname: str, cons, *args) -> None:
@@ -191,7 +182,7 @@ class UnificationError(TypeError):
 def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:
     '''Extend `phi` so that it unifies `e1` and `e2`.
 
-    If `phi` is None, uses the `identity substitution <Identity>`:class.
+    If `phi` is None, uses the identity substitution `Identity`:class:.
 
     If there's no substitution that unifies the given terms, raise a
     `UnificationError`:class:.
