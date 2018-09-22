@@ -667,7 +667,10 @@ def p_concrete_number(prod):
     '''
     number = prod[1]
     assert isinstance(number, Literal)
-    number.annotation = prod[3]
+    # Use object.__setattr__ because Literal is a frozen dataclass.  But I
+    # know that at this point no hash has been done; so it's safe to break the
+    # rules.
+    object.__setattr__(number, 'annotation', prod[3])
     prod[0] = number
 
 

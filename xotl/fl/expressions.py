@@ -6,42 +6,23 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Any, Mapping, Iterator, Sequence
-from xoutil.objects import validate_attrs
+from dataclasses import dataclass, field, InitVar
+
+from typing import Any, Mapping, Iterator, Sequence, Tuple
 from xoutil.fp.tools import fst
 
 from .types import AST, Type, TypeCons
 
 
+@dataclass(frozen=True)
 class Identifier(AST):
     '''A name (variable if you like).'''
-    def __init__(self, name: str) -> None:
-        self.name = name
-
-    def __repr__(self):
-        return f'Identifier({self.name!r})'
-
-    def __str__(self):
-        return self.name
-
-    def __hash__(self):
-        return hash((Identifier, self.name))
-
-    def __eq__(self, other):
-        if isinstance(other, Identifier):
-            return self.name == other.name
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, Identifier):
-            return not (self == other)
-        else:
-            return NotImplemented
+    name: str
 
 
 # An extension to the algorithm.  Literals are allowed, but have a the
 # most specific type possible.
+@dataclass(frozen=True)
 class Literal(AST):
     '''A literal value with its type.
 
@@ -49,10 +30,9 @@ class Literal(AST):
     chars, and numbers (integers and floats are represented by a single type).
 
     '''
-    def __init__(self, value: Any, type_: Type, annotation: Any = None) -> None:
-        self.value = value
-        self.type = type_
-        self.annotation = annotation
+    value: Any
+    type: Type
+    annotation: Any = None
 
     def __repr__(self):
         if self.annotation is not None:
@@ -60,105 +40,45 @@ class Literal(AST):
         else:
             return f'Literal({self.value!r}, {self.type!r})'
 
-    def __str__(self):
-        return str(self.value)
 
-    def __eq__(self, other):
-        if isinstance(other, Literal):
-            return validate_attrs(self, other, ('type', 'value', 'annotation'))
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, Literal):
-            return not (self == other)
-        else:
-            return NotImplemented
-
-    def __hash__(self):
-        return hash((Literal, self.value, self.type_, self.annotation))
-
-
+@dataclass(frozen=True)
 class Lambda(AST):
     '''A lambda abstraction over a single parameter. '''
-    def __init__(self, varname: str, body: AST) -> None:
-        self.varname = varname
-        self.body = body
-
-    def __repr__(self):
-        return f'Lambda({self.varname!r}, {self.body!r})'
+    varname: str
+    body: AST
 
     def __str__(self):
         return f'\{self.varname!s} -> {self.body!s}'
 
-    def __eq__(self, other):
-        if isinstance(other, Lambda):
-            return self.varname == other.varname and self.body == other.body
-        else:
-            return NotImplemented
 
-    def __ne__(self, other):
-        if isinstance(other, Lambda):
-            return not (self == other)
-        else:
-            return NotImplemented
-
-    def __hash__(self):
-        return hash((Lambda, self.varname, self.body))
-
-
+@dataclass(frozen=True)
 class Application(AST):
     '''The application of `e1` to its *argument* e2.'''
-    def __init__(self, e1: AST, e2: AST) -> None:
-        self.e1 = e1
-        self.e2 = e2
-
-    def __repr__(self):
-        return f'Application({self.e1!r}, {self.e2!r})'
+    e1: AST
+    e2: AST
 
     def __str__(self):
         return f'{self.e1!s} {self.e2!s}'
 
-    def __eq__(self, other):
-        if isinstance(other, Application):
-            return self.e1 == other.e1 and self.e2 == other.e2
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, Application):
-            return not (self == other)
-        else:
-            return NotImplemented
-
-    def __hash__(self):
-        return hash((Application, self.e1, self.e2))
-
 
 # We assume (as the Book does) that there are no "translation" errors; i.e
 # that you haven't put a Let where you needed a Letrec.
+
+@dataclass(frozen=True)
 class _LetExpr(AST):
-    def __init__(self, bindings: Mapping[str, AST], body: AST) -> None:
+    bindings: Mapping[str, AST] = field(init=False)
+    _defs: InitVar[Mapping[str, AST]]
+    body: AST
+
+    def __post_init__(self, _defs) -> None:
         # Sort by names (in a _LetExpr names can't be repeated, repetition for
         # pattern-matching should be translated to a lambda using the MATCH
         # operator).
-        self.bindings = tuple(sorted(bindings.items(), key=fst))
-        self.body = body
-
-    def __eq__(self, other):
-        if isinstance(other, type(self)):
-            return self.bindings == other.bindings and self.body == self.body
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, type(self)):
-            return not (self == other)
-        else:
-            return NotImplemented
-
-    def __hash__(self):
-        return hash((type(self), self.keys(), self.values(), self.body))
+        object.__setattr__(
+            self,
+            'bindings',
+            tuple(sorted(_defs.items(), key=fst))
+        )
 
     def keys(self) -> Iterator[str]:
         return (k for k, _ in self.bindings)
@@ -214,14 +134,10 @@ class Letrec(_LetExpr):
 #
 # For value (function) definitions the parser still returns *bare* Equation
 # object for each line of the definition.
-
+@dataclass(frozen=True)
 class Pattern:
-    def __init__(self, cons, params=None):
-        self.cons: str = cons
-        self.params = tuple(params or [])
-
-    def __repr__(self):
-        return f'<pattern {self.cons!r} {self.params!r}>'
+    cons: str
+    params: Tuple[str] = field(default_factory=tuple)
 
     def __str__(self):
         if self.params:
@@ -233,50 +149,25 @@ class Pattern:
     def parameters(self):
         return ' '.join(self.params)
 
-    def __eq__(self, other):
-        if isinstance(other, Pattern):
-            return self.cons == other.cons and self.params == other.params
-        else:
-            return NotImplemented
 
-    def __ne__(self, other):
-        if isinstance(other, Pattern):
-            return not (self == other)
-        else:
-            return NotImplemented
-
-    def __hash__(self):
-        return hash((Pattern, self.cons, self.params))
-
-
+@dataclass(frozen=True)
 class Equation:
-    def __init__(self, pattern: Pattern, body: AST) -> None:
-        self.pattern = pattern
-        self.body = body
-
-    def __repr__(self):
-        return f'<equation {self.pattern!s} = {self.body!r}>'
-
-    def __eq__(self, other):
-        if isinstance(other, Equation):
-            return self.pattern == other.pattern and self.body == other.body
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, Equation):
-            return not (self == other)
-        else:
-            return NotImplemented
-
-    def __hash__(self):
-        return hash((Equation, self.pattern, self.body))
+    pattern: Pattern
+    body: AST
 
 
+@dataclass(frozen=True)
 class DataCons:
-    def __init__(self, cons: str, args: Sequence[Type]) -> None:
-        self.name = cons
-        self.args = tuple(args)
+    name: str
+    args: Sequence[Type] = field(init=False)
+    args_: InitVar[Sequence[Type]]
+
+    def __post_init__(self, args_: Sequence[Type]) -> None:
+        object.__setattr__(
+            self,
+            'args',
+            tuple(args_)
+        )
 
     def __repr__(self):
         names = ' '.join(map(str, self.args))
@@ -285,48 +176,24 @@ class DataCons:
         else:
             return f'<DataCons {self.name}>'
 
-    def __eq__(self, other):
-        if isinstance(other, DataCons):
-            return self.name == other.name and self.args == other.args
-        else:
-            return NotImplemented
 
-    def __ne__(self, other):
-        if isinstance(other, DataCons):
-            return not (self == other)
-        else:
-            return NotImplemented
-
-    def __hash__(self):
-        return hash((DataCons, self.name, self.args))
-
-
+@dataclass(frozen=True)
 class DataType:
-    def __init__(self, name: str, type_: TypeCons, defs: Sequence[DataCons]) -> None:
-        self.name = name
-        self.t = type_
-        self.dataconses = tuple(defs)
+    name: str
+    t: TypeCons
+    dataconses: Sequence[DataCons] = field(init=False)
+    _defs: InitVar[Sequence[DataCons]]
+
+    def __post_init__(self, _defs) -> None:
+        object.__setattr__(
+            self,
+            'dataconses',
+            tuple(_defs or [])
+        )
 
     def __repr__(self):
         defs = ' | '.join(map(str, self.dataconses))
         return f'<Data {self.t} = {defs}>'
-
-    def __eq__(self, other):
-        if isinstance(other, DataType):
-            return (self.name == other.name and
-                    self.t == other.t and
-                    set(self.dataconses) == set(other.dataconses))
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, DataType):
-            return not (self == other)
-        else:
-            return NotImplemented
-
-    def __hash__(self):
-        return hash((DataType, self.name, self.t, self.dataconses))
 
 
 def parse(code: str, debug=False, tracking=False) -> AST:
