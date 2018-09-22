@@ -16,9 +16,9 @@ Implementation of Functional Programming Languages'.
 
 '''
 from collections import deque
-from typing import Iterable, Sequence, List, Mapping, Deque
+from typing import Iterable, Sequence, List, Mapping, Deque, Tuple
 from typing import Optional  # noqa
-from itertools import zip_longest
+from dataclasses import dataclass, InitVar, field
 
 
 class AST:
@@ -39,46 +39,44 @@ class Type(AST):
         return parse(source)
 
 
+@dataclass(frozen=True)
 class TypeVariable(Type):
     '''A type variable, which may stand for any type.
 
     '''
-    def __init__(self, name: str, *, check=True) -> None:
+    name: str
+    check: InitVar[bool] = True
+
+    def __post_init__(self, check=True) -> None:
         # `check` is only here to avoid the check when generating internal
         # names (which start with a dot)
-        self.name = name
-        assert not check or name.isidentifier()
+        assert not check or self.name.isidentifier()
 
     def __str__(self):
         return f'{self.name}'
-
-    def __repr__(self):
-        return f'TypeVariable({self.name!r})'
-
-    def __eq__(self, other):
-        if isinstance(other, TypeVariable):
-            return self.name == other.name
-        else:
-            return NotImplemented
-
-    def __hash__(self):
-        return hash((TypeVariable, self.name))
 
     def __len__(self):
         return 0   # So that 'Int' has a bigger size than 'a'.
 
 
+@dataclass(frozen=True)
 class TypeCons(Type):
     '''The syntax for a type constructor expression.
 
     '''
-    def __init__(self, constructor: str, subtypes: Iterable[Type] = None,
-                 *, binary=False) -> None:
-        assert not subtypes or all(isinstance(t, Type) for t in subtypes), \
-            f'Invalid subtypes: {subtypes!r}'
-        self.cons = constructor
-        self.subtypes: Sequence[Type] = tuple(subtypes or [])
-        self.binary = binary
+    cons: str
+    subtypes: Tuple[Type] = field(init=False)
+    subtypes_: InitVar[Iterable[Type]] = []
+    binary: bool = False
+
+    def __post_init__(self, subtypes_: Iterable[Type] = None) -> None:
+        assert not subtypes_ or all(isinstance(t, Type) for t in subtypes_), \
+            f'Invalid subtypes: {subtypes_!r}'
+        object.__setattr__(
+            self,
+            'subtypes',
+            tuple(subtypes_ or [])
+        )
 
     def __str__(self):
         def wrap(s):
@@ -92,26 +90,12 @@ class TypeCons(Type):
         else:
             return self.cons
 
-    def __repr__(self):
-        return f'TypeCons({self.cons!r}, {self.subtypes!r})'
-
-    def __eq__(self, other):
-        if isinstance(other, TypeCons):
-            return self.cons == other.cons and all(
-                t1 == t2
-                for t1, t2 in zip_longest(self.subtypes, other.subtypes)
-            )
-        else:
-            return NotImplemented
-
-    def __hash__(self):
-        return hash((TypeCons, self.cons, self.subtypes))
-
     def __len__(self):
         return 1 + sum(len(st) for st in self.subtypes)
 
 
 # Q: Should I make TypeScheme a sub-type?
+@dataclass(frozen=True)
 class TypeScheme:
     '''A type scheme with generic (schematics) type variables.
 
@@ -127,9 +111,8 @@ class TypeScheme:
     '''
     # I choose the word 'generic' instead of schematic (and thus non-generic
     # instead of unknown), because that's probably more widespread.
-    def __init__(self, generics: Sequence[str], t: Type) -> None:
-        self.generics = generics
-        self.t = t
+    generics: Sequence[str]
+    t: Type
 
     @property
     def nongenerics(self) -> List[str]:
@@ -138,15 +121,6 @@ class TypeScheme:
             for name in find_tvars(self.t)
             if name not in self.generics
         ]
-
-    def __eq__(self, other):
-        if isinstance(other, TypeScheme):
-            return self.generics == other.generics and self.t == other.t
-        else:
-            return NotImplemented
-
-    def __hash__(self):
-        return hash((TypeScheme, self.generics, self.t))
 
     @property
     def names(self):
@@ -158,9 +132,6 @@ class TypeScheme:
         else:
             return str(self.t)
 
-    def __repr__(self):
-        return f'<TypeScheme: {self!s}>'
-
     @classmethod
     def from_typeexpr(cls, type_: Type, *,
                       generics: Sequence[str] = None) -> 'TypeScheme':
@@ -171,8 +142,8 @@ class TypeScheme:
         return cls(generics, type_)
 
     @classmethod
-    def from_str(cls, source: str, *, generics:
-                 Sequence[str] = None) -> 'TypeScheme':
+    def from_str(cls, source: str, *,
+                 generics: Sequence[str] = None) -> 'TypeScheme':
         '''Create a type scheme from a type expression assuming all type variables are
         generic.
 
@@ -191,7 +162,7 @@ FunctionTypeCons = lambda a, b: TypeCons('->', [a, b], binary=True)
 
 #: Shortcut to create a tuple type from types `ts`.  The Unit type can be
 #: regarded as the tuple type without arguments.
-TupleTypeCons = lambda *ts: TypeCons('Tuple', list(ts))
+TupleTypeCons = lambda *ts: TypeCons('Tuple', ts)
 
 #: Shortcut to create a list type from type `t`.
 ListTypeCons = lambda t: TypeCons('[]', [t])
