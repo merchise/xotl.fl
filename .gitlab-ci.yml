@@ -26,14 +26,14 @@ check code smells:
   stage: pre-check
   allow_failure: true
   script:
-    - tox -e 3.6-staticcheck
+    - tox -e 3.7-staticcheck
   tags:
     - tox
 
 .run_tox_doctest: &run_tox_doctest
   stage: test doc
   script:
-    - tox -e 3.6-doctest
+    - tox -e 3.7-doctest
   tags:
     - virtualenv
 
