@@ -105,8 +105,8 @@ class TypeScheme:
       >>> map_type = TypeScheme(['a', 'b'],
       ...                       type_parse('(a -> b) -> List a -> List b'))
 
-      >>> map_type
-      <TypeScheme: forall a b. (a -> b) -> ((List a) -> (List b))>
+      >>> str(map_type)
+      'forall a b. (a -> b) -> ((List a) -> (List b))'
 
     '''
     # I choose the word 'generic' instead of schematic (and thus non-generic
