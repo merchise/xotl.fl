@@ -20,7 +20,11 @@ from sphinx.ext.doctest import SphinxDocTestRunner
 
 
 def _runner_init(self, checker=None, verbose=None, optionflags=0):
-    super(SphinxDocTestRunner, self).__init__(CheckWithEval(), verbose, optionflags)
+    super(SphinxDocTestRunner, self).__init__(
+        CheckWithEval(),
+        verbose,
+        optionflags
+    )
 
 
 SphinxDocTestRunner.__init__ = _runner_init
@@ -28,14 +32,46 @@ SphinxDocTestRunner.__init__ = _runner_init
 
 class CheckWithEval(doctest.OutputChecker):
     def check_output(self, want, got, optionflags):
-        if optionflags & LITERAL_EVAL:
+        if optionflags & LITERAL_EVAL and not want.startswith('<'):
             want = ast.literal_eval(want)
             got = ast.literal_eval(got)
-            return want == got
+            return got == want
+        elif optionflags & REPR_EVAL and not want.startswith('<'):
+            # The interactions with repr and '...' can't be modeled:
+            #
+            #   TypeCons('a', ...)
+            #
+            # should have to match
+            #
+            #   TypeCons(cons='a', ...)
+            #
+            # So, when using REPR_EVAL avoid ELLIPSIS
+            from xotl.fl import types, expressions
+            from xotl import fl
+            globals_ = {}
+            globals_.update({
+                name: getattr(types, name)
+                for name in dir(types)
+                if not name.startswith('_')
+            })
+            globals_.update({
+                name: getattr(expressions, name)
+                for name in dir(expressions)
+                if not name.startswith('_')
+            })
+            globals_.update({
+                name: getattr(fl, name)
+                for name in dir(fl)
+                if not name.startswith('_')
+            })
+            got = eval(compile(got, '<got>', 'eval'), globals_)
+            want = eval(compile(want, '<want>', 'eval'), globals_)
+            return got == want
         return super().check_output(want, got, optionflags)
 
 
 LITERAL_EVAL = doctest.register_optionflag('LITERAL_EVAL')
+REPR_EVAL = doctest.register_optionflag('REPR_EVAL')
 
 
 sys.path.insert(0, os.path.abspath('../'))
@@ -201,3 +237,9 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/': None}
+
+
+doctest_default_flags = (doctest.DONT_ACCEPT_TRUE_FOR_1 |
+                         doctest.ELLIPSIS |
+                         doctest.IGNORE_EXCEPTION_DETAIL |
+                         REPR_EVAL)
