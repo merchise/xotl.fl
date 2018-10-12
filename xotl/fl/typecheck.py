@@ -151,28 +151,19 @@ sidentity = Identity()
 class delta:
     '''A `delta substitution` from a variable name `vname`.
 
-    To avoid reusing instances of the same type expression, this function
-    takes the type constructor and its arguments.  If you do want to use the
-    same instance pass an instance wrapped in a lambda.
-
     '''
-    def __init__(self, vname: str, cons, *args) -> None:
+    def __init__(self, vname: str, t: Type) -> None:
         self.vname = vname
-        self.cons = cons
-        self.args = args
+        self.t = t
 
     def __call__(self, s: str) -> Type:
-        return self.result if s == self.vname else TypeVariable(s, check=False)
-
-    @property
-    def result(self) -> Type:
-        return self.cons(*self.args)
+        return self.t if s == self.vname else TypeVariable(s, check=False)
 
     def __repr__(self):
-        return f'delta({self.vname!r}, {self.result!r})'
+        return f'delta({self.vname!r}, {self.t!r})'
 
     def __str__(self):
-        return f'delta: {self.vname.ljust(20)}{self.result!s}'
+        return f'delta: {self.vname.ljust(20)}{self.t!s}'
 
 
 class UnificationError(TypeError):
@@ -195,7 +186,7 @@ def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:
             raise UnificationError(f'Cannot unify {name!s} with {t!s}')
         else:
             # TODO: Make the result *descriptible*
-            return scompose(delta(name, lambda: t), phi)
+            return scompose(delta(name, t), phi)
 
     def unify_with_tvar(tvar, t):
         phitvn = phi(tvar.name)

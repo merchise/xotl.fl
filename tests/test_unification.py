@@ -13,9 +13,7 @@ from xoutil.fp.tools import compose
 from xotl.fl.types import parse
 from xotl.fl.types import (
     TypeVariable as T,
-    FunctionTypeCons as F,
     TypeCons as C,
-    ListTypeCons,
 )
 
 from xotl.fl.typecheck import scompose, subtype, delta
@@ -31,8 +29,8 @@ S = parse('(a -> b -> c) -> (a -> b) -> a -> c')
 
 def test_scompose_property():
     # subtype (scompose f g) = (subtype f) . (subtype g)
-    f = delta('a', T, 'id')
-    g = delta('b', T, 'bb')
+    f = delta('a', T('id'))
+    g = delta('b', T('bb'))
     fog1 = partial(subtype, scompose(f, g))
     fog2 = compose(partial(subtype, f), partial(subtype, g))
     assert fog1(I) == fog2(I), f'{fog1(I)} != {fog2(I)}'
