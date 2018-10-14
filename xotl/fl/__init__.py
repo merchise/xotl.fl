@@ -14,7 +14,28 @@
 def parse(program_source: str, *, debug: bool = False):
     '''Parse the program source and return its AST.
 
+    It returns a list of definitions.  Definitions come in three types:
+
+    - Type annotations, which are dictionaries of type
+      `xotl.fl.types.TypeEnvironment`:data:;
+
+    - Value definitions, which may span several `equations
+      <xotl.fl.expressions.Equation>`:class:; and
+
+    - Data type definitions, `xotl.fl.expressions.DataType`:class:.
+
     This function doesn't type-check the program.
+
+    Example:
+
+       >>> parse("""
+       ...    data List a = Nil | Cons a (List a)
+       ...    lhead :: List a -> a
+       ...    lhead (Cons a _) = a
+       ... """)
+       [<Data List a = <DataCons Nil> | <DataCons Cons a (List a)>>,
+        {'lhead': <TypeScheme: forall a. (List a) -> a>},
+        <equation lhead (Cons a _) = Identifier('a')>]
 
     '''
     from .parsers import program_parser, lexer
