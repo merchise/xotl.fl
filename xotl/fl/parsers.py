@@ -689,8 +689,8 @@ def p_lambda_definition(prod):
 
 
 def p_parameters(prod):
-    '''parameters : _identifier _parameters
-       _parameters : SPACE _identifier _parameters
+    '''parameters : _param _parameters
+       _parameters : SPACE _param _parameters
     '''
     count = len(prod)
     names = prod[count - 1]
@@ -702,6 +702,16 @@ def p_empty__parameters(prod):
     '''_parameters : empty
     '''
     prod[0] = []
+
+
+def p_param_identitifier(prod):
+    '''_param : _identifier'''
+    prod[0] = prod[1]
+
+
+def p_param_pattern(prod):
+    '''_param : LPAREN pattern RPAREN'''
+    prod[0] = prod[2]
 
 
 def p_pattern(prod):

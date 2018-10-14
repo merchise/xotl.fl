@@ -234,7 +234,13 @@ class Pattern:
 
     @property
     def parameters(self):
-        return ' '.join(self.params)
+        def _str(x):
+            if isinstance(x, str):
+                return x
+            elif isinstance(x, Pattern):
+                return f'({x})'
+
+        return ' '.join(map(_str, self.params))
 
     def __eq__(self, other):
         if isinstance(other, Pattern):
