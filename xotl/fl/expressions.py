@@ -298,7 +298,14 @@ class DataCons:
         self.args = tuple(args)
 
     def __repr__(self):
-        names = ' '.join(map(str, self.args))
+        def _str(x):
+            res = str(x)
+            if ' ' in res:
+                return f'({res})'
+            else:
+                return res
+
+        names = ' '.join(map(_str, self.args))
         if names:
             return f'<DataCons {self.name} {names}>'
         else:
