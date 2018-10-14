@@ -10,7 +10,7 @@ from typing import Any, Mapping, Iterator, Sequence
 from xoutil.objects import validate_attrs
 from xoutil.fp.tools import fst
 
-from .types import AST, Type, TypeCons
+from .types import AST, Type, TypeCons, TypeEnvironment
 
 
 class Identifier(AST):
@@ -216,6 +216,9 @@ class Letrec(_LetExpr):
 # object for each line of the definition.
 
 class Pattern:
+    '''The syntactical notion of a pattern.
+
+    '''
     def __init__(self, cons, params=None):
         self.cons: str = cons
         self.params = tuple(params or [])
@@ -250,6 +253,13 @@ class Pattern:
 
 
 class Equation:
+    '''The syntactical notion of an equation.
+
+    This is just the syntax of a left-hand side being equated to a right-hand
+    side.  The LHS is a `Pattern`:class:, while the RHS is any of the objects
+    of the `AST <ast-objects>`:ref:.
+
+    '''
     def __init__(self, pattern: Pattern, body: AST) -> None:
         self.pattern = pattern
         self.body = body
@@ -274,6 +284,9 @@ class Equation:
 
 
 class DataCons:
+    '''A data constructor.
+
+    '''
     def __init__(self, cons: str, args: Sequence[Type]) -> None:
         self.name = cons
         self.args = tuple(args)
@@ -302,6 +315,16 @@ class DataCons:
 
 
 class DataType:
+    '''A data type definition.
+
+    A data type defines both a type and several values of that type.
+
+    You should note that `DataCons`:class: is NOT the value.  Therefore these
+    are not actual objects carrying values in the running program; but they
+    imply the compiler (or interpreter) must produce those values and match
+    the type.
+
+    '''
     def __init__(self, name: str, type_: TypeCons, defs: Sequence[DataCons]) -> None:
         self.name = name
         self.t = type_
@@ -327,6 +350,46 @@ class DataType:
 
     def __hash__(self):
         return hash((DataType, self.name, self.t, self.dataconses))
+
+    @property
+    def implied_env(self) -> TypeEnvironment:
+        '''The implied type environment by the data type.
+
+        Each data constructor is a function (or value) of type of the data
+        type.
+
+        A simple example is the Bool data type:
+
+            >>> from xotl.fl import parse
+            >>> datatype = parse('data Bool = True | False')[0]
+            >>> datatype.implied_env
+            {'True': <TypeScheme: Bool>, 'False': <TypeScheme: Bool>}
+
+        Both True and False are just values of type Bool.
+
+        The Either data type shows data constructors with parameters:
+
+            >>> datatype = parse('data Either a b = Left a | Right b')[0]
+            >>> datatype.implied_env
+            {'Left': <TypeScheme: forall a b. a -> (Either a b)>,
+             'Right': <TypeScheme: forall a b. b -> (Either a b)>}
+
+        Right takes any value of type `a` and returns a value of type `Either
+        a b` (for any type `b`).
+
+        '''
+        from .types import TypeScheme, FunctionTypeCons
+        def _implied_type(dc: DataCons) -> Type:
+            result = self.t
+            for arg in reversed(dc.args):
+                result = FunctionTypeCons(arg, result)
+            return result
+
+        return {
+            dc.name: TypeScheme.from_typeexpr(_implied_type(dc))
+            for dc in self.dataconses
+        }
+
 
 
 def parse(code: str, debug=False, tracking=False) -> AST:

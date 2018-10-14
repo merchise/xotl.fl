@@ -46,112 +46,44 @@ DateIntervalType = TypeCons('DateInterval')
 DateTimeIntervalType = TypeCons('DateTimeInterval')
 
 
+_gamma = None
+
+
 @moduleproperty
 def builtins_env(self) -> TypeEnvironment:
-    # This has to be wrapped in a property because we import builtins
-    # (indirectly) in the 'parsers' module and the .from_str below use the
-    # parser.
-    gamma = {
-        '$': TypeScheme.from_str('(a -> b) -> a -> b'),
-        '.': TypeScheme.from_str('(b -> c) -> (a -> b) -> a -> c'),
-
-        'id': TypeScheme.from_str('a -> a'),
-        'map': TypeScheme.from_str('(a -> b) -> [a] -> [b]'),
-        'foldr': TypeScheme.from_str('(a -> b -> b) -> b -> [a] -> b'),
-
-        'and': TypeScheme.from_str('Bool -> Bool -> Bool'),
-        'or': TypeScheme.from_str('Bool -> Bool -> Bool'),
-        'xor': TypeScheme.from_str('Bool -> Bool -> Bool'),
-        'not': TypeScheme.from_str('Bool -> Bool'),
-
-        'true': TypeScheme.from_typeexpr(BoolType),
-        'false': TypeScheme.from_typeexpr(BoolType),
-
-        '//': TypeScheme.from_str('Number -> Number -> Number'),
-
-        # I'm putting Left, Right and (,) not because they are necessarily
-        # built-in; but to show that data constructors have the same type as
-        # functions.
-        #
-        # However, there's no way you can't actually write those functions in the
-        # expression language, because you would not be able to *build* the
-        # values.  This reveals the need for a data type language would allow the
-        # classical:
-        #
-        #    data Either a b = Left a | Right b
-        #
-        # and it would create the Left and Right functions.
-        #
-        # The case of tuples do require some parsing extensions if we're two allow
-        # triplets, 4-tuples, etc..
-        #
-        # Notice however, we don't have any execution model in the language and no
-        # real values beyond what literals allow.  I presume that we will use
-        # Python values while executing; but that would have to revised in order
-        # to make non-strict Python referentially transparent.
-        #
-        ',': TypeScheme.from_str('a -> b -> Tuple a b'),
-        ',,': TypeScheme.from_str('a -> b -> c Tuple a b c'),
-        ',,,': TypeScheme.from_str('a -> b -> c -> d -> Tuple a b c d'),
-        ',,,,': TypeScheme.from_str('a -> b -> c -> d -> e -> Tuple a b c d e'),
-        ',,,,,': TypeScheme.from_str('a -> b -> c -> d -> e -> f -> Tuple a b c d e f'),
-
-        'Left': TypeScheme.from_str('a -> Either a b'),
-        'Right': TypeScheme.from_str('b -> Either a b'),
-        'either': TypeScheme.from_str('(a -> c) -> (b -> c) -> Either a b -> c'),
+    global _gamma
+    if _gamma is None:
+        _gamma = _load_builtins()
+    return dict(_gamma)
 
 
-        'Nothing': TypeScheme.from_str('Maybe a'),
-        'Just': TypeScheme.from_str('a -> Maybe a'),
-        'maybe': TypeScheme.from_str('b -> (a -> b) -> Maybe a -> b'),
-        'isJust': TypeScheme.from_str('Maybe a -> Bool'),
-        'isNothing': TypeScheme.from_str('Maybe a -> Bool'),
-        'fromMaybe': TypeScheme.from_str('a -> Maybe a -> a'),
+def _load_builtins():
+    import pkg_resources
+    from xotl.fl import parse
+    from xotl.fl.expressions import DataType
+    builtins = pkg_resources.resource_filename('xotl.fl', 'builtins.fl')
+    with open(builtins, 'r') as f:
+        code = f.read()
+    # I have to remove comments my self because the parser doesn't have
+    # comments.  But I do it line by line.
+    source = [
+        line
+        for source_line in code.split('\n')
+        for line in (_strip_comment(source_line), )
+        if line
+    ]
+    res = parse('\n'.join(source))
+    gamma = {}
+    for definition in res:
+        if isinstance(definition, dict):
+            gamma.update(definition)
+        elif isinstance(definition, DataType):
+            gamma.update(definition.implied_env)
+    return gamma
 
-        # Common operations on lists.
 
-        'head': TypeScheme.from_str('[a] -> a'),
-        'tail': TypeScheme.from_str('[a] -> [a]'),
-        'single': TypeScheme.from_str('a -> [a]'),
-
-        'safe_head': TypeScheme.from_str('[a] -> Maybe a'),
-        'safe_tail': TypeScheme.from_str('[a] -> Maybe [a]'),
-
-        'nil': TypeScheme.from_str('[a]'),
-        ':': TypeScheme.from_str('a -> [a] -> [a]'),
-        'append': TypeScheme.from_str('a -> [a] -> [a]'),
-
-        'is_member': TypeScheme.from_str('a -> [a] -> Bool'),
-        'is_null': TypeScheme.from_str('[a] -> Bool'),
-
-        '++': TypeScheme.from_str('[a] -> [a] -> [a]'),
-
-        'pair': TypeScheme.from_str('a -> b -> Tuple a b'),
-        'fst': TypeScheme.from_str('Tuple a b -> a'),
-        'snd': TypeScheme.from_str('Tuple a b -> b'),
-
-        # Date operations.  It's quite evident that I will need type-classes and
-        # instances; otherwise, writing the simplest formulae may get really
-        # involved.
-        'date_to_datetime': TypeScheme.from_str('Date -> DateTime'),
-        'is_earlier': TypeScheme.from_str('DateTime -> DateTime -> Bool'),
-        'is_later': TypeScheme.from_str('DateTime -> DateTime -> Bool'),
-
-        'interval_overlap': TypeScheme.from_str(
-            'DateInterval -> DateInterval -> DateInterval'
-        ),
-        'is_fully_contained': TypeScheme.from_str('DateInterval -> DateInterval -> Bool'),
-        'is_interval_empty': TypeScheme.from_str('DateInterval -> Bool'),
-        'interval': TypeScheme.from_str('Maybe Date -> Maybe Date -> DateInterval'),
-    }
-
-    for op in '+-*/%^':
-        gamma[op] = TypeScheme.from_str('Number -> Number -> Number')
-
-    for op in ('==', '!='):
-        gamma[op] = TypeScheme.from_str('a -> a -> Bool')
-
-    for op in ('<', '>', '<=', '>='):
-        gamma[op] = TypeScheme.from_str('a -> a -> Bool')
-
-    return dict(gamma)
+def _strip_comment(line):
+    if line.strip().startswith('--'):
+        return '\n'  # leave an emtpy line
+    else:
+        return line

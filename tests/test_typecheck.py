@@ -44,12 +44,12 @@ def test_from_literals():
     # true and false are not recognized as booleans by the parser, so let's
     # provide them as part the env.
     phi, t = typecheck(builtins_env, namesupply(),
-                       parse(r"let x = true in x"))
+                       parse(r"let x = True in x"))
     assert phi is sidentity
     assert t == BoolType
 
     phi, t = typecheck(builtins_env, namesupply(),
-                       parse(r"let x = false in x"))
+                       parse(r"let x = False in x"))
     assert phi is sidentity
     assert t == BoolType
 
@@ -107,9 +107,9 @@ def test_basic_builtin_types():
         # not :: Bool -> Bool, but passed a Number
         typecheck(builtins_env, namesupply(), parse('not 0'))
 
-    phi, t = typecheck(builtins_env, namesupply(), parse('not true'))
+    phi, t = typecheck(builtins_env, namesupply(), parse('not True'))
     assert t == BoolType
-    phi, t = typecheck(builtins_env, namesupply(), parse('not false'))
+    phi, t = typecheck(builtins_env, namesupply(), parse('not False'))
     assert t == BoolType
 
     userfuncs = {'toString': TypeScheme.from_str('a -> [Char]')}

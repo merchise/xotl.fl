@@ -67,25 +67,25 @@ data Either a b = Left a | Right b
 -- Right :: b -> Either a b
 
 either :: (a -> c) -> (b -> c) -> Either a b -> c
-either f _ (Left a) = f a
-either _ g (Right b) = g b
+-- either f _ (Left a) = f a
+-- either _ g (Right b) = g b
 
 data Maybe a = Nothing | Just a
 
 maybe :: b -> (a -> b) -> Maybe a -> b
-maybe b _ Nothing  = b
-maybe _ f (Just a) = f a
+-- maybe b _ Nothing  = b
+-- maybe _ f (Just a) = f a
 
 isJust :: Maybe a -> Bool
-isJust (Just _) = True
-isJust _        = False
+-- isJust (Just _) = True
+-- isJust _        = False
 
 isNothing :: Maybe a -> Bool
 isNothing = isJust . not
 
 fromMaybe :: a -> Maybe a -> a
-fromMaybe a Nothing  = a
-fromMaybe _ (Just a) = a
+-- fromMaybe a Nothing  = a
+-- fromMaybe _ (Just a) = a
 
 
 -- Lists; they require special pattern matching support in the parser.
@@ -116,6 +116,11 @@ snd :: Tuple a b -> b
 -- instances; otherwise, writing the simplest formulae may get really
 -- involved.
 
+-- NOTICE: The implementations below use pattern matching which is not
+-- supported by the parser yet, so we must comment them.  Also notice that the
+-- parser does not support comments either but in 'builtins.py' we strip them
+-- before parsing.
+
 data Date = Date Int Int Int
 data Time = Time Int Int Int
 data DateTime = DateTime Date Time
@@ -124,29 +129,29 @@ date_to_datetime :: Date -> DateTime
 date_to_datetime d = DateTime d (Time 0 0 0)
 
 is_date_before :: Date -> Date -> Bool
-is_date_before (Date y1 m1 d1) (Date y2 m2 d2) =
+-- is_date_before (Date y1 m1 d1) (Date y2 m2 d2) =
 
 
 is_date_after :: Date -> Date -> Bool
-is_date_after (Date y1 m1 d1) (Date y2 m2 d2) = y1 > y2 `or` m1 > m2 `or` d1 > d2
+-- is_date_after (Date y1 m1 d1) (Date y2 m2 d2) = y1 > y2 `or` m1 > m2 `or` d1 > d2
 
 is_time_before :: Time -> Time -> Bool
-is_time_before (Time h1 m1 s1) (Time h2 m2 s2) = h1 < h2 `or` m1 < m2 `or` s1 < s2
+-- is_time_before (Time h1 m1 s1) (Time h2 m2 s2) = h1 < h2 `or` m1 < m2 `or` s1 < s2
 
 is_time_after :: Time -> Time -> Bool
-is_time_after (Time h1 m1 s1) (Time h2 m2 s2) = h1 > h2 `or` m1 > m2 `or` s1 > s2
+-- is_time_after (Time h1 m1 s1) (Time h2 m2 s2) = h1 > h2 `or` m1 > m2 `or` s1 > s2
 
 
 get_date :: DateTime -> Date
-get_date (DateTime d _) = d
+-- get_date (DateTime d _) = d
 
 get_time :: DateTime -> Hour
-get_time (DateTime _ t) = t
+-- get_time (DateTime _ t) = t
 
 is_earlier :: DateTime -> DateTime -> Bool
-is_earlier (_ d1 t1) (_ d2 t2) = let date_before = is_date_before d1 d2
-                                     time_before = is_time_before t1 t2
-                                 in date_before `or` time_before
+-- is_earlier (_ d1 t1) (_ d2 t2) = let date_before = is_date_before d1 d2
+--                                      time_before = is_time_before t1 t2
+--                                  in date_before `or` time_before
 
 is_later :: DateTime -> DateTime -> Bool
 
