@@ -584,15 +584,16 @@ def p_application_after_paren(prod):
 
 
 def p_operators_as_expressios(prod):
-    '''enclosed_expr : LPAREN DOT_OPERATOR RPAREN
-                     | LPAREN operator RPAREN
+    '''enclosed_expr : LPAREN operator RPAREN
     '''
     operator = prod[2]
     prod[0] = Identifier(operator)
 
 
 # The user may use '->' for a custom operator; that's why need the ARROW in
-# the infix_operator_2 rule.
+# the infix_operator_2 rule.  The _st_operator is for *standard* operators,
+# i.e non-names converted to operators; we use this to allow providing the
+# builtin type for operators (builtins.py; and nametype_decl below).
 def p_operator(prod):
     '''
     infixr_operator_9 : DOT_OPERATOR
@@ -613,11 +614,14 @@ def p_operator(prod):
 
     infixl_operator_0 : TICK_OPERATOR
 
+    _st_operator : infixl_operator_2
+                 | infixr_operator_2
+                 | infixl_operator_6
+                 | infixl_operator_7
+                 | infixr_operator_9
+
     operator : infixl_operator_0
-             | infixl_operator_2
-             | infixr_operator_2
-             | infixl_operator_6
-             | infixl_operator_7
+             | _st_operator
 
     '''
     prod[0] = prod[1]
@@ -904,6 +908,15 @@ def p_nametype_decl(prod):
     '''
     name = prod[1]
     type_ = prod[4]
+    scheme = TypeScheme.from_typeexpr(type_)
+    prod[0] = {name: scheme}  # type: TypeEnvironment
+
+
+def p_nametype_decl_operators(prod):
+    '''nametype_decl : LPAREN _st_operator RPAREN COLON COLON st_type_expr
+    '''
+    name = prod[2]
+    type_ = prod[6]
     scheme = TypeScheme.from_typeexpr(type_)
     prod[0] = {name: scheme}  # type: TypeEnvironment
 
