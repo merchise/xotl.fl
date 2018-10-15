@@ -129,7 +129,7 @@ date_to_datetime :: Date -> DateTime
 date_to_datetime d = DateTime d (Time 0 0 0)
 
 is_date_before :: Date -> Date -> Bool
-is_date_before (Date y1 m1 d1) (Date y2 m2 d2) =
+-- is_date_before (Date y1 m1 d1) (Date y2 m2 d2) =
 
 
 is_date_after :: Date -> Date -> Bool
