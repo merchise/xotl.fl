@@ -14,6 +14,7 @@ Unreleased.  Release 0.2.0
 Unreleased.  Release 0.1.0
 --------------------------
 
-This was never formally released.
+0.1.0 was never formally released.  This is because this package was created
+as ``xotl.ql.fl`` and then simplified to ``xotl.fl``.
 
 .. include:: history/changes-0.1.0.rst
