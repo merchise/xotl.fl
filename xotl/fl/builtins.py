@@ -15,7 +15,6 @@ from .types import (
     TypeCons,
     ListTypeCons,
     TupleTypeCons,
-    TypeScheme,
     TypeEnvironment
 )
 

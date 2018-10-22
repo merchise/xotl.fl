@@ -392,6 +392,7 @@ class DataType:
 
         '''
         from xotl.fl.types import TypeScheme, FunctionTypeCons
+
         def _implied_type(dc: DataCons) -> Type:
             result = self.t
             for arg in reversed(dc.args):
