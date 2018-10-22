@@ -10,6 +10,7 @@
    narrative/*
    xotl.fl/*
    history
+   references
 
 .. toctree::
    :glob:

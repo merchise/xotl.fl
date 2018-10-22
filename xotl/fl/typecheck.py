@@ -6,9 +6,10 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''Implements the basic type checker described in Chapter 9 of 'The
-Implementation of Functional Programming Languages' by Simon L. Peyton Jones
-and others.
+'''Implements a basic type checker.
+
+The main algorithm is described in Chapter 9 of [PeytonJones1987]_.  However,
+some insights are described in [Damas1982]_ and [Damas1984]_.
 
 '''
 from typing import (
@@ -219,21 +220,27 @@ def unify_exprs(exprs: TypePairs, *, p: Substitution = sidentity) -> Substitutio
 
 
 def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
-    '''Apply a substitution to a type scheme.'''
-    # From the book:
+    '''Apply a substitution to a type scheme.
+
+    .. warning:: You must ensure that the type scheme's generic variables are
+       distinct from the variables occurring in the result of applying the
+       substitution `phi` to any of the non-generic variables of `ts`.
+
+       The way in which we ensure this (in the algorithm) is to guarantee that
+       the names of the generic variables in the type scheme are always
+       distinct from those which can occur in the range of the substitution
+       (which are always non-generic).
+
+    '''
+    # From Damas1982:
     #
-    # We must take care that the expression
+    # If S is a substitution of types for type variables, often written
+    # [τ1/α1, ..., τn/αn ] or [τi/αi], and σ is a type-scheme, then Sσ is the
+    # type-scheme obtained by replacing each free occurrence of αi in σ by τi,
+    # renaming the generic variables of σ if necessary.  Then Sσ is called an
+    # instance of σ; the notions of substitution and instance extend naturally
+    # to larger syntactic constructs containing type-schemes.
     #
-    #     sub_scheme phi (SCHEME scvs t)
-    #
-    # is only evaluated when the schematic variables scvs are distinct from
-    # any variables occurring in the result of applying the substitution phi
-    # to any of the unknowns of t.  Otherwise a type variable in the range of
-    # the substitution (which is always an unknown) might surreptitiously be
-    # changed into a schematic variable.  The way in which we ensure this is
-    # to guarantee that the names of the schematic type variables in the type
-    # scheme are always distinct from those which can occur in the range of
-    # the substitution (which are always unknowns).
     assert all(not bool(scvs & set(find_tvars(phi(unk))))
                for scvs in (set(ts.generics), )
                for unk in ts.nongenerics)
@@ -280,6 +287,11 @@ def get_typeenv_unknowns(te: TypeEnvironment) -> List[str]:
 
 
 def sub_typeenv(phi: Substitution, te: TypeEnvironment) -> TypeEnvironment:
+    '''Create a sub-type environment.
+
+    Read the warning in `subscheme`:func:.
+
+    '''
     return {x: subscheme(phi, st) for x, st in te.items()}
 
 
@@ -329,7 +341,11 @@ TCResult = Tuple[Substitution, Type]
 
 
 def typecheck(env: TypeEnvironment, ns: NameSupply, exp: AST) -> TCResult:
-    '''Check the type of `exp` in a given type environment.
+    '''Check the type of `exp` in a given type environment `env`.
+
+    The name supply `ns` is used to create new type variables whenever
+    required.  The name supply must ensure not to create the same variable
+    twice.
 
     '''
     if isinstance(exp, Identifier):
@@ -352,6 +368,12 @@ TCLResult = Tuple[Substitution, List[Type]]
 
 
 def tcl(env: TypeEnvironment, ns: NameSupply, exprs: Iterable[AST]) -> TCLResult:
+    '''Type check several expressions in the context of `env`.
+
+    The name supply `ns` is shared across all other functions to ensure no
+    names are repeated.
+
+    '''
     if not exprs:
         return sidentity, []
     else:
@@ -362,7 +384,11 @@ def tcl(env: TypeEnvironment, ns: NameSupply, exprs: Iterable[AST]) -> TCLResult
 
 
 def newinstance(ns: NameSupply, ts: TypeScheme) -> Type:
-    'Create an instance of `ts` drawing names from the supply `ns`.'
+    '''Create an instance of `ts` drawing names from the supply `ns`.
+
+    Each generic variable in `ts` gets a new name from the supply.
+
+    '''
     newvars: List[Tuple[str, TypeVariable]] = list(zip(ts.generics, ns))
     phi: Substitution = build_substitution(newvars)
     return subtype(phi, ts.t)
@@ -406,6 +432,15 @@ def typecheck_literal(env: TypeEnvironment, ns, exp: Literal) -> TCResult:
 
 
 def typecheck_var(env: TypeEnvironment, ns, exp: Identifier) -> TCResult:
+    '''Type check a single identifier.
+
+    The identifier's name must be in the type environment `env`.  If the
+    identifier is a generic of the associated type scheme, a new name is
+    created.
+
+    This is a combination of the TAUT and INST rules in [Damas1982]_.
+
+    '''
     name = exp.name
     return sidentity, newinstance(ns, env[name])
 
