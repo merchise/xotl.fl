@@ -56,3 +56,9 @@ pressure of having a single global namespace (maybe we're just reliving the
 JavaScript mistake); committing to the attribute access application pattern
 would mean that our namespaces would not be able to the standard dot ('.') to
 access names in namespaces.
+
+
+Decision
+========
+
+Made on 2018-10-22: To remove the access attribute access application pattern.
