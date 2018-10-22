@@ -22,7 +22,7 @@ from typing import (
 from typing import Any  # noqa
 from collections import ChainMap
 
-from .types import (
+from xotl.fl.types import (
     AST,
     Type,
     TypeVariable,
@@ -32,7 +32,7 @@ from .types import (
     find_tvars,
     TypeEnvironment,
 )
-from .expressions import (
+from xotl.fl.expressions import (
     Identifier,
     Literal,
     Lambda,

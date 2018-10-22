@@ -212,7 +212,7 @@ def parse(code: str, debug=False, tracking=False) -> Type:
        TypeCons('->', (TypeVariable('a'), TypeVariable('b')))
 
     '''
-    from .parsers import type_parser, lexer
+    from xotl.fl.parsers import type_parser, lexer
     return type_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
 
 

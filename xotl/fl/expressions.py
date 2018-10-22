@@ -10,7 +10,7 @@ from typing import Any, Mapping, Iterator, Sequence
 from xoutil.objects import validate_attrs
 from xoutil.fp.tools import fst
 
-from .types import AST, Type, TypeCons, TypeEnvironment
+from xotl.fl.types import AST, Type, TypeCons, TypeEnvironment
 
 
 class Identifier(AST):
@@ -391,7 +391,7 @@ class DataType:
         a b` (for any type `b`).
 
         '''
-        from .types import TypeScheme, FunctionTypeCons
+        from xotl.fl.types import TypeScheme, FunctionTypeCons
         def _implied_type(dc: DataCons) -> Type:
             result = self.t
             for arg in reversed(dc.args):
@@ -404,9 +404,8 @@ class DataType:
         }
 
 
-
 def parse(code: str, debug=False, tracking=False) -> AST:
     '''Parse a single expression `code`.
     '''
-    from .parsers import expr_parser, lexer
+    from xotl.fl.parsers import expr_parser, lexer
     return expr_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)

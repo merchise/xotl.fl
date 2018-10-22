@@ -14,14 +14,14 @@ from xoutil.future.datetime import TimeSpan
 
 from ply import lex, yacc
 
-from .types import (
+from xotl.fl.types import (
     TypeVariable,
     TypeCons,
     ListTypeCons,
     TypeScheme,
 )
-from .types import TypeEnvironment  # noqa
-from .expressions import (
+from xotl.fl.types import TypeEnvironment  # noqa
+from xotl.fl.expressions import (
     AST,
     Identifier,
     Literal,
@@ -35,7 +35,7 @@ from .expressions import (
     DataCons,
 )
 
-from .builtins import (
+from xotl.fl.builtins import (
     StringType,
     CharType,
     NumberType,
