@@ -391,6 +391,7 @@ def t_OPERATOR(t):
     t.type = _OPERATOR_MAP.get(t.value, 'OPERATOR')
     return t
 
+
 def t_IDENTIFIER(t):
     r'[A-Za-z_]\w*'
     value = t.value

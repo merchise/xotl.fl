@@ -10,6 +10,7 @@ stages:
 check code smells:
   script: merchise_lint3
   stage: pre-check
+  allow_failure: true
   tags:
     - merchise-lint
   only:
