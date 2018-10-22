@@ -362,31 +362,6 @@ The 'where' expressions produce the same AST.  The general schema is::
                         ...
 
 
-.. _attr-access:
-
-Application as "attribute access"
----------------------------------
-
-To accommodate a special use case we allow (syntactically) an application form
-that resembles attributes access in OO languages:
-
-   >>> parse('p.children.len') == parse('len (children p)')
-   True
-
-This is why for Composition_ we need to put at least a space before or after
-the dot operator.
-
-This form of application has more precedence than standard application:
-
-   >>> parse('p.children.len') == parse('len p.children')
-   True
-
-It only works for runs of *identifiers* separated by dots.  The expression
-``(f g).attr`` is the composition of the result of ``f g`` with ``attr``.  The
-expression ``f.(g.attr)`` is equivalent to ``f . (attr g)`` -- in this example
-``g.attr`` is an attribute access.
-
-
 The ``:`` operator
 ------------------
 

@@ -353,9 +353,8 @@ def test_infix_func_has_less_precedence():
     assert parse('a > b `f` c - d') == parse('(a > b) `f` (c - d)')
 
 
-def test_attr_access():
-    assert parse('p.children.len') == parse('len p.children')
-    assert parse('p.children.len') == parse('len (children p)')
+def test_no_attr_access():
+    assert parse('p.children.len') == parse('p . children . len')
 
 
 @pytest.mark.xfail(reason='We have no pattern matching')

@@ -2,9 +2,9 @@
  Pros and cons of the attribute access application pattern
 ===========================================================
 
-A few days ago I introduced the `attribute access application pattern
-<attr-access>`:ref: which allows to perform application on a single argument
-**as if** you were accessing an attribute.
+A few days ago I introduced the `attribute access application pattern` which
+allows to perform application on a single argument **as if** you were
+accessing an attribute.
 
 I've been worried about the effectiveness or inconveniences of such
 construction.  The following is a list of pros and cons I've collected to
