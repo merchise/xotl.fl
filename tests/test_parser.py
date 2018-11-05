@@ -113,7 +113,6 @@ def test_large_definitions():
     ''', debug=True) == parse('name = let id x = x in id')
 
 
-@pytest.mark.xfail(reason='Failing to define operators')
 def test_defs_operators():
     assert parse('''
        (.) :: (b -> c) -> (a -> b) -> a -> c

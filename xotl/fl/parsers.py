@@ -568,10 +568,14 @@ def p_application_after_paren(prod):
 
 
 def p_operators_as_expressios(prod):
-    '''enclosed_expr : LPAREN operator RPAREN
+    '''enclosed_expr : _enclosed_operator
     '''
-    operator = prod[2]
-    prod[0] = Identifier(operator)
+    prod[0] = Identifier(prod[1])
+
+
+def p_enclosed_operator(prod):
+    '''_enclosed_operator : LPAREN _st_operator RPAREN'''
+    prod[0] = prod[2]
 
 
 # The user may use '->' for a custom operator; that's why need the ARROW in
@@ -691,6 +695,11 @@ def p_empty__parameters(prod):
 def p_param_identitifier(prod):
     '''_param : _identifier'''
     prod[0] = prod[1]
+
+
+def p_param_operator(prod):
+    '''_param : _enclosed_operator'''
+    prod[0] = Identifier(prod[1])
 
 
 def p_param_pattern(prod):
