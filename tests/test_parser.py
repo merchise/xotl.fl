@@ -10,6 +10,7 @@ import pytest
 from xotl.fl import parse
 from xotl.fl.types import Type, TypeScheme
 from xotl.fl.expressions import Equation, Pattern, Identifier
+from xotl.fl.expressions import ListConsPattern
 from xotl.fl.expressions import DataType, DataCons
 
 
@@ -140,6 +141,6 @@ def test_matching_lists():
     ''')
 
     assert parse('second f:s:xs = s') == [Equation(
-        Pattern('second', [(':', 'f', (':', 's', 'xs'))]),
+        Pattern('second', [ListConsPattern('f', ListConsPattern('s', 'xs'))]),
         Identifier('s')
     )]

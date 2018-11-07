@@ -6,7 +6,9 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Any, Mapping, Iterator, Sequence
+from dataclasses import dataclass
+from typing import Any, Mapping, Iterator, Sequence, Union
+
 from xoutil.objects import validate_attrs
 from xoutil.fp.tools import fst
 
@@ -258,6 +260,18 @@ class Pattern:
 
     def __hash__(self):
         return hash((Pattern, self.cons, self.params))
+
+
+@dataclass
+class ListConsPattern:
+    head: Union[str, Pattern, 'ListConsPattern']
+    tail: Union[str, Pattern, 'ListConsPattern']
+
+    def __str__(self):
+        return f'{self.head!s}:{self.tail!s}'
+
+    def __repr__(self):
+        return f'<: {self.head!r}, {self.tail!r}>'
 
 
 class Equation:

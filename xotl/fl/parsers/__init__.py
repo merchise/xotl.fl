@@ -30,6 +30,7 @@ from xotl.fl.expressions import (
     Let,
     Letrec,
     Pattern,
+    ListConsPattern,
     Equation,
     DataType,
     DataCons,
@@ -708,7 +709,7 @@ def p_param_list_cons(prod):
 def p_list_cons_for_param(prod):
     '''_non_empty_list_cons : _param COLON _param
     '''
-    prod[0]= (':', prod[1], prod[3])
+    prod[0]= ListConsPattern(prod[1], prod[3])
 
 
 def p_param_identitifier(prod):
@@ -1069,7 +1070,12 @@ def build_lambda(params: Reversible[str], body: AST) -> Lambda:
     assert params
     result = body
     for param in reversed(params):
-        result = Lambda(param, result)
+        if isinstance(param, str):
+            result = Lambda(param, result)
+        elif isinstance(param, Pattern):
+            result = Lambda(param, result)
+        elif isinstance(param, ListConsPattern):
+            result = Lambda(param, result)
     return result  # type: ignore
 
 
