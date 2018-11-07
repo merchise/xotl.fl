@@ -59,6 +59,7 @@ def builtins_env(self) -> TypeEnvironment:
 def _load_builtins():
     import pkg_resources
     from xotl.fl import parse
+    from xotl.fl.types import TypeScheme
     from xotl.fl.expressions import DataType
     builtins = pkg_resources.resource_filename('xotl.fl', 'builtins.fl')
     with open(builtins, 'r') as f:
@@ -72,7 +73,12 @@ def _load_builtins():
         if line
     ]
     res = parse('\n'.join(source))
-    gamma = {}
+    gamma = {
+        # These can't be parsed (yet) and are really builtin -- their values
+        # cannot be directly expressed in the language, even though isomorphic
+        # types can be expressed, i.e 'data List a = Nil | Cons a (List a)'.
+        '[]': TypeScheme.from_str('[a]'),
+    }
     for definition in res:
         if isinstance(definition, dict):
             gamma.update(definition)
