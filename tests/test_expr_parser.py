@@ -20,8 +20,9 @@ from xotl.fl.expressions import (
     Lambda,
     Let,
     Letrec,
+    find_free_names,
 )
-from xotl.fl.parsers import string_repr, ParserError, find_free_names
+from xotl.fl.parsers import string_repr, ParserError
 from xotl.fl.builtins import (
     NumberType,
     CharType,

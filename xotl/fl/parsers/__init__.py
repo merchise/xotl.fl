@@ -6,9 +6,6 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from collections import deque
-from typing import Reversible, Optional, List, Deque
-
 from xoutil.objects import setdefaultattr
 from xoutil.future.datetime import TimeSpan
 
@@ -25,15 +22,14 @@ from xotl.fl.expressions import (
     AST,
     Identifier,
     Literal,
-    Lambda,
     Application,
-    Let,
-    Letrec,
+    ConcreteLet,
     Pattern,
     ListConsPattern,
     Equation,
     DataType,
     DataCons,
+    build_lambda,
 )
 
 from xotl.fl.builtins import (
@@ -709,7 +705,7 @@ def p_param_list_cons(prod):
 def p_list_cons_for_param(prod):
     '''_non_empty_list_cons : _param COLON _param
     '''
-    prod[0]= ListConsPattern(prod[1], prod[3])
+    prod[0] = ListConsPattern(prod[1], prod[3])
 
 
 def p_param_identitifier(prod):
@@ -737,6 +733,7 @@ def p_unit_value_as_param(prod):
     '''_param : unit_value'''
     # Instead of having the Literal((), ...) make the param a name.
     prod[0] = '()'
+
 
 def p_pattern(prod):
     '''pattern : parameters'''
@@ -786,7 +783,7 @@ def p_let_expr(prod):
     letexpr : KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
     '''
-    prod[0] = _build_let(prod[3], prod[6])
+    prod[0] = ConcreteLet(prod[3], prod[6]).ast
 
 
 def p_where_expr(prod):
@@ -794,7 +791,7 @@ def p_where_expr(prod):
     where_expr : expr KEYWORD_WHERE SPACE equations
     where_expr : expr KEYWORD_WHERE PADDING equations
     '''
-    prod[0] = _build_let(prod[4], prod[1])
+    prod[0] = ConcreteLet(prod[4], prod[1]).ast
 
 
 def p_error(prod):
@@ -1056,124 +1053,3 @@ expr_parser = yacc.yacc(debug=False, start='st_expr',
 
 program_parser = yacc.yacc(debug=True, start='program',
                            tabmodule='program_parsertab')
-
-
-def build_lambda(params: Reversible[str], body: AST) -> Lambda:
-    '''Create a Lambda from several parameters.
-
-    Example:
-
-       >>> build_lambda(['a', 'b'], Identifier('a'))
-       Lambda('a', Lambda('b', Identifier('a')))
-
-    '''
-    assert params
-    result = body
-    for param in reversed(params):
-        if isinstance(param, str):
-            result = Lambda(param, result)
-        elif isinstance(param, Pattern):
-            result = Lambda(param, result)
-        elif isinstance(param, ListConsPattern):
-            result = Lambda(param, result)
-    return result  # type: ignore
-
-
-def find_free_names(expr: AST) -> List[str]:
-    '''Find all names that appear free in `expr`.
-
-    Example:
-
-      >>> set(find_free_names(parse('let id x = x in map id xs')))  # doctest: +LITERAL_EVAL
-      {'map', 'xs'}
-
-    Names can be repeated:
-
-      >>> find_free_names(parse('twice x x')).count('x')
-      2
-
-    '''
-    POPFRAME = None  # remove a binding from the 'stack'
-    result: List[str] = []
-    bindings: Deque[str] = deque([])
-    nodes: Deque[Optional[AST]] = deque([expr])
-    while nodes:
-        node = nodes.pop()
-        if node is POPFRAME:
-            bindings.pop()
-        elif isinstance(node, Identifier):
-            if node.name not in bindings:
-                result.append(node.name)
-        elif isinstance(node, Literal):
-            if isinstance(node.annotation, AST):
-                nodes.append(node)
-        elif isinstance(node, Application):
-            nodes.extend([
-                node.e1,
-                node.e2,
-            ])
-        elif isinstance(node, Lambda):
-            bindings.append(node.varname)
-            nodes.append(POPFRAME)
-            nodes.append(node.body)
-        elif isinstance(node, (Let, Letrec)):
-            # This is tricky; the bindings can be used recursively in the
-            # bodies of a letrec:
-            #
-            #    letrec f1 = ....f1 ... f2 ....
-            #           f2 = ... f1 ... f2 ....
-            #           ....
-            #    in ... f1 ... f2 ...
-            #
-            # So we must make all the names in the bindings bound and then
-            # look at all the definitions.
-            #
-            # We push several POPFRAME at the to account for that.
-            bindings.extend(node.keys())
-            nodes.extend(POPFRAME for _ in node.keys())
-            nodes.extend(node.values())
-            nodes.append(node.body)
-        else:
-            assert False, f'Unknown AST node: {node!r}'
-    return result
-
-
-def _build_let(equations, body):
-    r'''Build a Let/Letrec from a set of equations and a body.
-
-    We need to decide if we issue a Let or a Letrec: if any of declared
-    names appear in the any of the bodies we must issue a Letrec, otherwise
-    issue a Let.
-
-    Also we need to convert function-patterns into Lambda abstractions::
-
-       let id x = ...
-
-    becomes::
-
-       led id = \x -> ...
-
-    For the time being (we don't have pattern matching yet), each symbol can
-    be defined just once.
-
-    '''
-    def to_lambda(equation: Equation):
-        'Convert (if needed) an equation to the equivalent one using lambdas.'
-        if equation.pattern.params:
-            return Equation(
-                Pattern(equation.pattern.cons),
-                build_lambda(equation.pattern.params, equation.body)
-            )
-        else:
-            return equation
-
-    equations = [to_lambda(eq) for eq in equations]
-    conses = [eq.pattern.cons for eq in equations]
-    names = set(conses)
-    if len(names) != len(conses):
-        raise ParserError('Several definitions for the same name')
-    if any(set(find_free_names(eq.body)) & names for eq in equations):
-        klass = Letrec
-    else:
-        klass = Let
-    return klass({eq.pattern.cons: eq.body for eq in equations}, body)
