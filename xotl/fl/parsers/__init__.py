@@ -475,6 +475,7 @@ def p_standalone_definitions(prod):
                 | identifier
                 | enclosed_expr
                 | unit_value
+                | empty_list_value
                 | letexpr
                 | where_expr
                 | lambda_expr
@@ -527,6 +528,12 @@ def p_unit_value(prod):
     '''unit_value : LPAREN RPAREN
     '''
     prod[0] = Literal((), UnitType)
+
+
+def p_empty_list_value(prod):
+    '''empty_list_value : LBRACKET RBRACKET
+    '''
+    prod[0] = Identifier('[]')
 
 
 def p_char(prod):

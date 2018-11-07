@@ -394,3 +394,9 @@ def test_comma_as_an_operator():
         Application(Identifier(','), Identifier('a')),
         Identifier('b')
     )
+
+
+def test_consed_lists():
+    assert parse('[]') == Identifier('[]')
+    assert parse('1:2:[]') == parse('1:(2:[])')
+
