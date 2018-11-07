@@ -118,3 +118,28 @@ def test_defs_operators():
        (.) :: (b -> c) -> (a -> b) -> a -> c
        (.) f g x = f (g x)
     ''')
+
+
+def test_matching_lists():
+    assert parse('''
+      head x : _ = x
+
+      tail _:xs = xs
+
+      second _ : x : _ = x
+      third  _:_:x:_ = x
+
+      insert x [] = x:[]
+      insert x y:xs = x:y:xs
+
+    ''')
+
+    assert parse('''
+       reverse [] = []
+       reverse x:xs = (reverse xs):x:[]
+    ''')
+
+    assert parse('second f:s:xs = s') == [Equation(
+        Pattern('second', [(':', 'f', (':', 's', 'xs'))]),
+        Identifier('s')
+    )]

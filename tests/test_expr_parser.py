@@ -400,3 +400,7 @@ def test_consed_lists():
     assert parse('[]') == Identifier('[]')
     assert parse('1:2:[]') == parse('1:(2:[])')
 
+
+@pytest.mark.xfail(reason='Unsupported syntax')
+def test_list_syntax():
+    assert parse('[1, 2]') == parse('1:2:[]')

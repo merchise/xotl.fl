@@ -699,6 +699,18 @@ def p_empty__parameters(prod):
     prod[0] = []
 
 
+def p_param_list_cons(prod):
+    '''_param : _non_empty_list_cons
+    '''
+    prod[0] = prod[1]
+
+
+def p_list_cons_for_param(prod):
+    '''_non_empty_list_cons : _param COLON _param
+    '''
+    prod[0]= (':', prod[1], prod[3])
+
+
 def p_param_identitifier(prod):
     '''_param : _identifier'''
     prod[0] = prod[1]
@@ -713,6 +725,17 @@ def p_param_pattern(prod):
     '''_param : LPAREN pattern RPAREN'''
     prod[0] = prod[2]
 
+
+def p_empty_list_as_param(prod):
+    '''_param : LBRACKET RBRACKET'''
+    # Instead of having the Literal([], ...) make the param a name.
+    prod[0] = '[]'
+
+
+def p_unit_value_as_param(prod):
+    '''_param : unit_value'''
+    # Instead of having the Literal((), ...) make the param a name.
+    prod[0] = '()'
 
 def p_pattern(prod):
     '''pattern : parameters'''

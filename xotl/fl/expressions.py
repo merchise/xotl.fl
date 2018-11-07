@@ -239,6 +239,8 @@ class Pattern:
                 return x
             elif isinstance(x, Pattern):
                 return f'({x})'
+            else:
+                return repr(x)
 
         return ' '.join(map(_str, self.params))
 

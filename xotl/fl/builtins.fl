@@ -44,7 +44,7 @@ not :: Bool -> Bool
 --
 -- and it would create the Left and Right functions.
 --
--- The case of tuples do require some parsing extensions if we're two allow
+-- The case of tuples do require some parsing extensions if we're to allow
 -- triplets, 4-tuples, etc..
 --
 -- Notice however, we don't have any execution model in the language and no
