@@ -391,7 +391,7 @@ def test_list_cons_precedence():
 
 
 def test_comma_as_an_operator():
-    assert parse('a, b') == parse('(,) a b') == Application(
+    assert parse('(,) a b') == Application(
         Application(Identifier(','), Identifier('a')),
         Identifier('b')
     )
@@ -402,6 +402,5 @@ def test_consed_lists():
     assert parse('1:2:[]') == parse('1:(2:[])')
 
 
-@pytest.mark.xfail(reason='Unsupported syntax')
 def test_list_syntax():
     assert parse('[1, 2]') == parse('1:2:[]')

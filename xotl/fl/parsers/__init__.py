@@ -472,10 +472,10 @@ def p_standalone_definitions(prod):
                 | identifier
                 | enclosed_expr
                 | unit_value
-                | empty_list_value
                 | letexpr
                 | where_expr
                 | lambda_expr
+                | simple_list_expr
 
     st_type_expr : type_expr
 
@@ -495,6 +495,33 @@ def p_literals(prod):
              | datetime_interval
     '''
     prod[0] = prod[1]
+
+
+def p_list_expr(prod):
+    '''simple_list_expr : LBRACKET _list_items RBRACKET
+    '''
+    lst = prod[2]
+    result = Identifier('[]')
+    for item in reversed(lst):
+        result = Application(Application(Identifier(':'), item), result)
+    prod[0] = result
+
+
+def p_list_items(prod):
+    '''_list_items : expr _list_items_cont
+       _list_items_cont : COMMA expr _list_items_cont
+    '''
+    last = len(prod) - 1
+    lst = prod[last]
+    lst.insert(0, prod[last - 1])
+    prod[0] = lst
+
+
+def p_list_items_empty(prod):
+    '''_list_items : empty
+       _list_items_cont : empty
+    '''
+    prod[0] = []
 
 
 def p_date(prod):
@@ -525,13 +552,6 @@ def p_unit_value(prod):
     '''unit_value : LPAREN RPAREN
     '''
     prod[0] = Literal((), UnitType)
-
-
-def p_empty_list_value(prod):
-    '''empty_list_value : LBRACKET RBRACKET
-    '''
-    prod[0] = Identifier('[]')
-
 
 def p_char(prod):
     'char : CHAR'
@@ -602,7 +622,6 @@ def p_operator(prod):
 
     infixl_operator_2 : OPERATOR
                       | ARROW
-                      | COMMA
 
     infixl_operator_0 : TICK_OPERATOR
 
@@ -611,9 +630,7 @@ def p_operator(prod):
                  | infixl_operator_6
                  | infixl_operator_7
                  | infixr_operator_9
-
-    operator : infixl_operator_0
-             | _st_operator
+                 | COMMA
 
     '''
     prod[0] = prod[1]
