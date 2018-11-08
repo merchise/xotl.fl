@@ -740,11 +740,6 @@ def p_param_identitifier(prod):
     prod[0] = prod[1]
 
 
-def p_param_operator(prod):
-    '''_param : _enclosed_operator'''
-    prod[0] = Identifier(prod[1])
-
-
 def p_param_pattern(prod):
     '''_param : LPAREN pattern RPAREN'''
     prod[0] = prod[2]
@@ -762,10 +757,16 @@ def p_unit_value_as_param(prod):
     prod[0] = '()'
 
 
+def p_pattern_cons(prod):
+    '''pattern_cons : _identifier
+                    | _enclosed_operator
+    '''
+    prod[0] = prod[1]
+
+
 def p_pattern(prod):
-    '''pattern : parameters'''
-    cons, *params = prod[1]
-    prod[0] = Pattern(cons, params)
+    '''pattern : pattern_cons _parameters'''
+    prod[0] = Pattern(prod[1], prod[2])
 
 
 def p_equation(prod):

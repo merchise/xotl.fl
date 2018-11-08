@@ -285,7 +285,7 @@ class Pattern:
     '''The syntactical notion of a pattern.
 
     '''
-    def __init__(self, cons, params=None):
+    def __init__(self, cons: str, params=None) -> None:
         self.cons: str = cons
         self.params = tuple(params or [])
 
