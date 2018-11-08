@@ -53,10 +53,19 @@ not :: Bool -> Bool
 -- to make non-strict Python referentially transparent.
 
 (,) :: a -> b -> Tuple a b
+(,) a b = (a, b)
+
 (,,) :: a -> b -> c Tuple a b c
+(,,) a b c = (a, b, c)
+
 (,,,) :: a -> b -> c -> d -> Tuple a b c d
+(,,,) a b c d = (a, b, c, d)
+
 (,,,,) :: a -> b -> c -> d -> e -> Tuple a b c d e
+(,,,,) a b c d e = (a, b, c, d, e)
+
 (,,,,,) :: a -> b -> c -> d -> e -> f -> Tuple a b c d e f
+(,,,,,) a b c d e f = (a, b, c, d, e, f)
 
 
 data Either a b = Left a | Right b
@@ -88,22 +97,56 @@ fromMaybe a Nothing  = a
 fromMaybe _ (Just a) = a
 
 
--- Lists; they require special pattern matching support in the parser.
-
 head :: [a] -> a
+head x:_ = x
+
 tail :: [a] -> [a]
+tail _:xs = xs
+
 single :: a -> [a]
+single x = [x]
 
 safe_head :: [a] -> Maybe a
+safe_head []  = Nothing
+safe_head x:_ = Just x
+
 safe_tail :: [a] -> Maybe [a]
+safe_tail []   = Nothing
+safe_tail _:xs = Just xs
 
+-- Implemented as a true builtin
 (:) :: a -> [a] -> [a]
-append :: a -> [a] -> [a]
-
-is_member :: a -> [a] -> Bool
-is_null :: [a] -> Bool
 
 (++) :: [a] -> [a] -> [a]
+(++) []   ys = ys
+(++) x:xs ys = x:(xs ++ ys)
+
+
+append :: a -> [a] -> [a]
+append x ls = [x] ++ ls
+
+
+data Then a = Then a
+data Else a = Else a
+
+if ::  Bool -> Then a -> Else a -> a
+if True (Then a) _  = a
+if False _ (Else a) = a
+
+then :: a -> Then a
+then = Then
+
+then :: a -> Else a
+else = Else
+
+
+is_member :: a -> [a] -> Bool
+is_member x []   = False
+is_member x y:xs = if x == y (then True) (else is_member x xs)
+
+is_null :: [a] -> Bool
+is_null []  = True
+is_null _   = False
 
 -- Pairs; they require special pattern matching support in the parser.
 
