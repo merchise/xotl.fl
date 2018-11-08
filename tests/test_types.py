@@ -37,7 +37,7 @@ assert S == F(
 
 
 def test_namesupply():
-    assert list(namesupply(limit=2, exclude='.a0')) == [
+    assert list(namesupply('.a', limit=2, exclude='.a0')) == [
         T('.a1', check=False),
         T('.a2', check=False)
     ]
