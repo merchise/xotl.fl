@@ -9,8 +9,7 @@
 import pytest
 from xotl.fl import parse
 from xotl.fl.types import Type, TypeScheme
-from xotl.fl.expressions import Equation, Pattern, Identifier
-from xotl.fl.expressions import ListConsPattern
+from xotl.fl.expressions import Equation, ConsPattern, Identifier
 from xotl.fl.expressions import DataType, DataCons
 
 
@@ -88,8 +87,14 @@ def test_simple_if_program():
         if False _ x = x
     ''', debug=True) == [
         {'id': TypeScheme.from_str('Bool -> a -> a -> a')},
-        Equation(Pattern('if', ('True', 'x', '_')), Identifier('x')),
-        Equation(Pattern('if', ('False', '_', 'x')), Identifier('x')),
+
+        Equation('if',
+                 [Identifier('True'), Identifier('x'), Identifier('_')],
+                 Identifier('x')),
+
+        Equation('if',
+                 [Identifier('False'), Identifier('_'), Identifier('x')],
+                 Identifier('x')),
     ]
 
 
@@ -141,6 +146,9 @@ def test_matching_lists():
     ''')
 
     assert parse('second f:s:xs = s') == [Equation(
-        Pattern('second', [ListConsPattern('f', ListConsPattern('s', 'xs'))]),
+        'second',
+        [ConsPattern(':', [Identifier('f'),
+                           ConsPattern(':',
+                                       [Identifier('s'), Identifier('xs')])])],
         Identifier('s')
     )]

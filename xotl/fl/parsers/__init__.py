@@ -24,8 +24,7 @@ from xotl.fl.expressions import (
     Literal,
     Application,
     ConcreteLet,
-    Pattern,
-    ListConsPattern,
+    ConsPattern,
     Equation,
     DataType,
     DataCons,
@@ -700,79 +699,76 @@ def p_empty(prod):
 
 
 def p_lambda_definition(prod):
-    '''lambda_expr : BACKSLASH parameters ARROW expr
+    '''lambda_expr : BACKSLASH patterns ARROW expr
     '''
     params = prod[2]
     assert params
     prod[0] = build_lambda(params, prod[4])
 
 
-def p_parameters(prod):
-    '''parameters : _param _parameters
-       _parameters : SPACE _param _parameters
+def p_pattern(prod):
     '''
-    count = len(prod)
-    names = prod[count - 1]
-    names.insert(0, prod[count - 2])
-    prod[0] = names
-
-
-def p_empty__parameters(prod):
-    '''_parameters : empty
-    '''
-    prod[0] = []
-
-
-def p_param_list_cons(prod):
-    '''_param : _non_empty_list_cons
+    pattern : identifier
+    pattern : literal
+    pattern : cons_pattern
+    pattern : list_cons_pattern
+    pattern : tuple_cons_pattern
+    pattern : empty_list_pattern
+    pattern : empty_tuple_pattern
     '''
     prod[0] = prod[1]
 
 
 def p_list_cons_for_param(prod):
-    '''_non_empty_list_cons : _param COLON _param
+    '''list_cons_pattern : pattern COLON pattern
     '''
-    prod[0] = ListConsPattern(prod[1], prod[3])
-
-
-def p_param_identitifier(prod):
-    '''_param : _identifier'''
-    prod[0] = prod[1]
+    prod[0] = ConsPattern(':', [prod[1], prod[3]])
 
 
 def p_param_pattern(prod):
-    '''_param : LPAREN pattern RPAREN'''
-    prod[0] = prod[2]
+    '''cons_pattern : LPAREN _identifier SPACE patterns RPAREN'''
+    prod[0] = ConsPattern(prod[2], prod[4])
 
 
-def p_empty_list_as_param(prod):
-    '''_param : LBRACKET RBRACKET'''
+def p_empty_list_as_pattern(prod):
+    '''empty_list_pattern : LBRACKET RBRACKET'''
     # Instead of having the Literal([], ...) make the param a name.
-    prod[0] = '[]'
+    prod[0] = Identifier('[]')
 
 
-def p_unit_value_as_param(prod):
-    '''_param : LPAREN RPAREN'''
+def p_unit_value_as_pattern(prod):
+    '''empty_tuple_pattern : LPAREN RPAREN'''
     # Instead of having the Literal((), ...) make the param a name.
-    prod[0] = '()'
+    prod[0] = Literal((), UnitType)
 
 
-def p_pattern_cons(prod):
-    '''pattern_cons : _identifier
-                    | _enclosed_operator
+def p_tuple_cons_pattern(prod):
+    '''tuple_cons_pattern : error
     '''
-    prod[0] = prod[1]
 
 
-def p_pattern(prod):
-    '''pattern : pattern_cons _parameters'''
-    prod[0] = Pattern(prod[1], prod[2])
+def p_patterns(prod):
+    '''patterns : pattern _patterns
+       _patterns : SPACE pattern _patterns
+    '''
+    last = len(prod) - 1
+    lst = prod[last]
+    pattern = prod[last - 1]
+    lst.insert(0, pattern)
+    prod[0] = lst
+
+
+def p_patterns_empty(prod):
+    '''_patterns : empty
+    '''
+    prod[0] = []
 
 
 def p_equation(prod):
-    '''equation : pattern EQ expr
+    '''equation : _identifier _patterns EQ expr
+       equation : _enclosed_operator _patterns EQ expr
     '''
-    prod[0] = Equation(prod[1], prod[3])
+    prod[0] = Equation(prod[1], prod[2], prod[4])
 
 
 class Equations(list):

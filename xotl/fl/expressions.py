@@ -211,10 +211,11 @@ class ConcreteLet:
         '''
         def to_lambda(equation: Equation):
             'Convert an equation to the equivalent one using lambdas.'
-            if equation.pattern.params:
+            if equation.patterns:
                 return Equation(
-                    Pattern(equation.pattern.cons),
-                    build_lambda(equation.pattern.params, equation.body)
+                    equation.name,
+                    [],
+                    build_lambda(equation.patterns, equation.body)
                 )
             else:
                 return equation
@@ -222,7 +223,7 @@ class ConcreteLet:
         from xotl.fl.parsers import ParserError
 
         equations = [to_lambda(eq) for eq in self.equations]
-        conses = [eq.pattern.cons for eq in equations]
+        conses = [eq.name for eq in equations]
         names = set(conses)
         if len(names) != len(conses):
             raise ParserError('Several definitions for the same name')
@@ -230,7 +231,7 @@ class ConcreteLet:
             klass: Class[_LetExpr] = Letrec
         else:
             klass = Let
-        return klass({eq.pattern.cons: eq.body for eq in equations}, self.body)
+        return klass({eq.name: eq.body for eq in equations}, self.body)
 
 
 class Let(_LetExpr):
@@ -281,7 +282,7 @@ class Letrec(_LetExpr):
 # For value (function) definitions the parser still returns *bare* Equation
 # object for each line of the definition.
 
-class Pattern:
+class ConsPattern:
     '''The syntactical notion of a pattern.
 
     '''
@@ -303,7 +304,7 @@ class Pattern:
         def _str(x):
             if isinstance(x, str):
                 return x
-            elif isinstance(x, Pattern):
+            elif isinstance(x, ConsPattern):
                 return f'({x})'
             else:
                 return repr(x)
@@ -311,31 +312,22 @@ class Pattern:
         return ' '.join(map(_str, self.params))
 
     def __eq__(self, other):
-        if isinstance(other, Pattern):
+        if isinstance(other, ConsPattern):
             return self.cons == other.cons and self.params == other.params
         else:
             return NotImplemented
 
     def __ne__(self, other):
-        if isinstance(other, Pattern):
+        if isinstance(other, ConsPattern):
             return not (self == other)
         else:
             return NotImplemented
 
     def __hash__(self):
-        return hash((Pattern, self.cons, self.params))
+        return hash((ConsPattern, self.cons, self.params))
 
 
-@dataclass
-class ListConsPattern:
-    head: Union[str, Pattern, 'ListConsPattern']
-    tail: Union[str, Pattern, 'ListConsPattern']
-
-    def __str__(self):
-        return f'{self.head!s}:{self.tail!s}'
-
-    def __repr__(self):
-        return f'<: {self.head!r}, {self.tail!r}>'
+Pattern = Union[str, Identifier, Literal, ConsPattern]
 
 
 class Equation:
@@ -346,16 +338,30 @@ class Equation:
     of the `AST <ast-objects>`:ref:.
 
     '''
-    def __init__(self, pattern: Pattern, body: AST) -> None:
-        self.pattern = pattern
+    def __init__(self, name: str, patterns: Sequence[Pattern], body: AST) -> None:
+        self.name = name
+        self.patterns = tuple(patterns or [])
         self.body = body
 
     def __repr__(self):
-        return f'<equation {self.pattern!s} = {self.body!r}>'
+        def _str(x):
+            result = str(x)
+            if ' ' in result:
+                return f'({result})'
+            else:
+                return result
+
+        if self.patterns:
+            args = ' '.join(map(_str, self.patterns))
+            return f'<equation {self.name!s} {args} = {self.body!r}>'
+        else:
+            return f'<equation {self.name!s} = {self.body!r}>'
 
     def __eq__(self, other):
         if isinstance(other, Equation):
-            return self.pattern == other.pattern and self.body == other.body
+            return (self.name == other.name and
+                    self.patterns == other.patterns and
+                    self.body == other.body)
         else:
             return NotImplemented
 
@@ -366,7 +372,7 @@ class Equation:
             return NotImplemented
 
     def __hash__(self):
-        return hash((Equation, self.pattern, self.body))
+        return hash((Equation, self.name, self.patterns, self.body))
 
 
 class DataCons:
@@ -492,7 +498,7 @@ def parse(code: str, debug=False, tracking=False) -> AST:
     return expr_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
 
 
-def build_lambda(params: Reversible[str], body: AST) -> Lambda:
+def build_lambda(params: Reversible[Pattern], body: AST) -> Lambda:
     '''Create a Lambda from several parameters.
 
     Example:
@@ -504,12 +510,11 @@ def build_lambda(params: Reversible[str], body: AST) -> Lambda:
     assert params
     result = body
     for param in reversed(params):
-        if isinstance(param, str):
-            result = Lambda(param, result)
-        elif isinstance(param, Pattern):
-            result = Lambda(param, result)
-        elif isinstance(param, ListConsPattern):
-            result = Lambda(param, result)
+        if isinstance(param, Identifier):
+            result = Lambda(param.name, result)
+        else:
+            # TODO: Transform to pattern matching operators
+            result = Lambda(param, result)  # type: ignore
     return result  # type: ignore
 
 
