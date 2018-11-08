@@ -391,7 +391,7 @@ def test_list_cons_precedence():
 
 
 def test_comma_as_an_operator():
-    assert parse('(,) a b') == Application(
+    assert parse('(a, b)') == parse('(,) a b') == Application(
         Application(Identifier(','), Identifier('a')),
         Identifier('b')
     )

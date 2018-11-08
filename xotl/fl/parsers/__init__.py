@@ -471,11 +471,11 @@ def p_standalone_definitions(prod):
     expr_factor : literal
                 | identifier
                 | enclosed_expr
-                | unit_value
                 | letexpr
                 | where_expr
                 | lambda_expr
                 | simple_list_expr
+                | simple_tuple_expr
 
     st_type_expr : type_expr
 
@@ -495,6 +495,21 @@ def p_literals(prod):
              | datetime_interval
     '''
     prod[0] = prod[1]
+
+
+def p_tuple_expr(prod):
+    '''simple_tuple_expr : LPAREN _list_items RPAREN
+    '''
+    lst = prod[2]
+    if lst:
+        assert len(lst) > 1, 'There is no way to build a 1-tuple'
+        *lst, x, y = lst
+        result = Application(Application(Identifier(','), x), y)
+        for item in reversed(lst):
+            result = Application(Application(Identifier(','), item), result)
+    else:
+        result = Literal((), UnitType)
+    prod[0] = result
 
 
 def p_list_expr(prod):
@@ -547,11 +562,6 @@ def p_datetime_interval(prod):
     '''
     prod[0] = prod[1]
 
-
-def p_unit_value(prod):
-    '''unit_value : LPAREN RPAREN
-    '''
-    prod[0] = Literal((), UnitType)
 
 def p_char(prod):
     'char : CHAR'
@@ -747,7 +757,7 @@ def p_empty_list_as_param(prod):
 
 
 def p_unit_value_as_param(prod):
-    '''_param : unit_value'''
+    '''_param : LPAREN RPAREN'''
     # Instead of having the Literal((), ...) make the param a name.
     prod[0] = '()'
 
