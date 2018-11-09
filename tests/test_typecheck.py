@@ -20,12 +20,8 @@ from xotl.fl.builtins import (
 )
 from xotl.fl.expressions import parse
 from xotl.fl.types import Type, TypeScheme, EMPTY_TYPE_ENV, find_tvars
-from xotl.fl.typecheck import (
-    typecheck,
-    namesupply,
-    sidentity,
-    unify,
-)
+from xotl.fl.typecheck import typecheck, sidentity, unify
+from xotl.fl.utils import namesupply
 
 
 def test_from_literals():

@@ -14,7 +14,7 @@ from xotl.fl.types import (
     ListTypeCons,
 )
 from xotl.fl.types import parse
-from xotl.fl.typecheck import namesupply
+from xotl.fl.utils import namesupply
 
 
 # The id function type

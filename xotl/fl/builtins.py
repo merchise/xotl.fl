@@ -64,7 +64,7 @@ TUPLE_CONS = re.compile(r',+')
 
 class BuiltinEnv(dict):
     def __missing__(self, key):
-        from xotl.fl.typecheck import namesupply
+        from xotl.fl.utils import namesupply
         # Constructors of tuples are not fixed, since now you can have (1, 2,
         # 3..., 10000); that's a long tuple with a single constructor
         # (,,...,,); i.e 9999 commas.
