@@ -19,21 +19,30 @@ from xotl.fl.utils import namesupply
 
 # The id function type
 I = parse('a -> a')
-assert I == F(T('a'), T('a'))
+
+
+def test_i_combinator():
+    assert I == F(T('a'), T('a'))
 
 
 # The K combinator: a -> b -> a
 K = parse('a -> b -> a')
-assert K == F(T('a'), F(T('b'), T('a')))
-assert K == parse('a -> (b -> a)')
+
+
+def test_k_combinator():
+    assert K == F(T('a'), F(T('b'), T('a')))
+    assert K == parse('a -> (b -> a)')
 
 
 # The S combinator: Lx Ly Lz. x z (y z)
 S = parse('(a -> b -> c) -> (a -> b) -> a -> c')
-assert S == F(
-    F(T('a'), parse('b -> c')),
-    F(F(T('a'), T('b')), parse('a -> c'))
-)
+
+
+def test_s_combinator():
+    assert S == F(
+        F(T('a'), parse('b -> c')),
+        F(F(T('a'), T('b')), parse('a -> c'))
+    )
 
 
 def test_namesupply():

@@ -16,6 +16,7 @@ from xotl.fl.types import (
     TypeCons,
     ListTypeCons,
     TypeScheme,
+    FunctionTypeCons,
 )
 from xotl.fl.types import TypeEnvironment  # noqa
 from xotl.fl.expressions import (
@@ -29,6 +30,9 @@ from xotl.fl.expressions import (
     DataType,
     DataCons,
     build_lambda,
+    build_tuple,
+    build_application,
+    build_list_expr,
 )
 
 from xotl.fl.builtins import (
@@ -459,7 +463,7 @@ def p_expressions_precedence_rules(prod):
     rhs = prod[1:]
     if len(rhs) > 1:
         e1, op, e2 = prod[1:]
-        prod[0] = Application(Application(Identifier(op), e1), e2)
+        prod[0] = build_application(op, e1, e2)
     else:
         prod[0] = prod[1]
 
@@ -502,36 +506,22 @@ def p_literals(prod):
 def p_tuple_expr(prod):
     '''simple_tuple_expr : LPAREN _list_items RPAREN
     '''
-    lst = prod[2]
-    if lst:
-        assert len(lst) > 1, 'There is no way to build a 1-tuple'
-        cons = ',' * (len(lst) - 1)
-        result = Identifier(cons)
-        for item in lst:
-            result = Application(result, item)
-    else:
-        result = Literal((), UnitType)
-    prod[0] = result
+    exprs = prod[2]
+    prod[0] = build_tuple(*exprs)
 
 
 def p_list_expr(prod):
     '''simple_list_expr : LBRACKET _list_items RBRACKET
     '''
     lst = prod[2]
-    result = Identifier('[]')
-    for item in reversed(lst):
-        result = Application(Application(Identifier(':'), item), result)
-    prod[0] = result
+    prod[0] = build_list_expr(*lst)
 
 
 def p_list_items(prod):
     '''_list_items : expr _list_items_cont
        _list_items_cont : COMMA expr _list_items_cont
     '''
-    last = len(prod) - 1
-    lst = prod[last]
-    lst.insert(0, prod[last - 1])
-    prod[0] = lst
+    _collect_item(prod)
 
 
 def p_list_items_empty(prod):
@@ -759,11 +749,7 @@ def p_patterns(prod):
        _patterns : SPACE pattern _patterns
        _patterns_comma : COMMA pattern _patterns_comma
     '''
-    last = len(prod) - 1
-    lst = prod[last]
-    pattern = prod[last - 1]
-    lst.insert(0, pattern)
-    prod[0] = lst
+    _collect_item(prod)
 
 
 def p_patterns_empty(prod):
@@ -854,9 +840,7 @@ def p_type_scheme(prod):
 
 def p_type_scheme_generics(prod):
     '_type_scheme_generics : _identifier SPACE _type_scheme_generics'
-    lst = prod[3]
-    lst.insert(0, prod[1])
-    prod[0] = lst
+    _collect_fst_item(prod)
 
 
 def p_last_type_scheme_generic(prod):
@@ -870,7 +854,7 @@ def p_type_function_expr(prod):
     '''
     count = len(prod)
     if count > 2:
-        prod[0] = TypeCons('->', [prod[1], prod[count - 1]], binary=True)
+        prod[0] = FunctionTypeCons(prod[1], prod[count - 1])
     else:
         prod[0] = prod[1]
 
@@ -897,9 +881,7 @@ def p_type_application_args(prod):
     '''_app_args : SPACE type_factor _app_args
        _app_args_non_empty : SPACE type_factor _app_args
     '''
-    args = prod[3]
-    args.insert(0, prod[2])
-    prod[0] = args
+    _collect_item(prod)
 
 
 def p_type_application_args_empty(prod):
@@ -961,17 +943,13 @@ class Definitions(list):
 def p_definitions(prod):
     '''definitions : definition _definition_set
     '''
-    lst: Definitions = prod[2]
-    lst.insert(0, prod[1])
-    prod[0] = lst
+    _collect_item(prod)
 
 
 def p_definition_set(prod):
     '''_definition_set : NEWLINE definition _definition_set
     '''
-    lst: Definitions = prod[3]
-    lst.insert(0, prod[2])
-    prod[0] = lst
+    _collect_item(prod)
 
 
 def p_definition_set2(prod):
@@ -1032,10 +1010,7 @@ def p_datatype_lhs(prod):
 def p_datatype_cons_params(prod):
     '''_cons_params : SPACE LOWER_IDENTIFIER _cons_params
     '''
-    arg = prod[2]
-    args = prod[3]
-    args.insert(0, arg)
-    prod[0] = args
+    _collect_item(prod)
 
 
 def p_datatype_cons_params_empty(prod):
@@ -1048,10 +1023,7 @@ def p_datatype_body(prod):
     '''_data_rhs : data_cons _data_conses
        _data_conses : _maybe_padding PIPE data_cons _data_conses
     '''
-    count = len(prod)
-    lst = prod[count - 1]
-    lst.insert(0, prod[count - 2])
-    prod[0] = lst
+    _collect_item(prod)
 
 
 def p_datatype_conses_empty(prod):
@@ -1073,10 +1045,7 @@ def p_bare_data_cons(prod):
 def p_data_cons_args(prod):
     '''_cons_args : SPACE cons_arg _cons_args
     '''
-    count = len(prod)
-    lst = prod[count - 1]
-    lst.insert(0, prod[count - 2])
-    prod[0] = lst
+    _collect_item(prod)
 
 
 def p_data_cons_args_empty(prod):
@@ -1113,3 +1082,39 @@ expr_parser = yacc.yacc(debug=False, start='st_expr',
 
 program_parser = yacc.yacc(debug=True, start='program',
                            tabmodule='program_parsertab')
+
+
+def _collect_item(prod, lst_index=None, item_index=None):
+    '''Collect and item into a list.
+
+    If `lst_index` is None, get the list being built from the last
+    production.  If `item_index` is None, get the item in the production
+    before the `lst_index`.
+
+    A "standard" production to parse lists of items is::
+
+         lst : ... item lst
+         lst : empty
+
+    The last symbol in the production will accumulate the list, and the
+    previous is the item being accumulated.  The default values provide for
+    this common pattern.
+
+    '''
+    if lst_index is None:
+        lst_index = len(prod) - 1
+    if item_index is None:
+        item_index = lst_index - 1
+    lst = prod[lst_index]
+    lst.insert(0, prod[item_index])
+    prod[0] = lst
+
+
+def _collect_fst_item(prod, lst_index=None):
+    'Collect the item in the first position.'
+    _collect_item(prod, lst_index, 1)
+
+
+def _collect_snd_item(prod, lst_index=None):
+    'Collect the item in the second position.'
+    _collect_item(prod, lst_index, 2)

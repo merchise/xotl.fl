@@ -25,6 +25,7 @@ from xoutil.objects import validate_attrs
 from xoutil.fp.tools import fst
 
 from xotl.fl.types import AST, Type, TypeCons, TypeEnvironment
+from xotl.fl.builtins import UnitType
 
 
 class Identifier(AST):
@@ -577,3 +578,54 @@ def find_free_names(expr: AST) -> List[str]:
         else:
             assert False, f'Unknown AST node: {node!r}'
     return result
+
+
+def build_tuple(*exprs):
+    '''Return the AST expression of a tuple of expressions.
+
+    If `exprs` is empty, return the unit value.  Otherwise it must contains at
+    least two expressions; in this case, return the Application the
+    appropriate tuple-builder function to the arguments.
+
+    Example:
+
+       >>> build_tuple(Identifier('a'), Identifier('b'), Identifier('c'))
+       Application(Identifier(',,'), ...)
+
+    '''
+    if not exprs:
+        return UnitValue
+    else:
+        cons = ',' * (len(exprs) - 1)
+        if not cons:
+            raise TypeError('Cannot build a 1-tuple')
+        return build_application(cons, *exprs)
+
+
+UnitValue = Literal((), UnitType)
+
+
+def build_application(f, arg, *args):
+    'Build the Application of `f` to many args.'
+    if isinstance(f, str):
+        f = Identifier(f)
+    result = Application(f, arg)
+    for arg in args:
+        result = Application(result, arg)
+    return result
+
+
+def build_list_expr(*items):
+    result = Nil
+    for item in reversed(items):
+        result = Cons(item, result)
+    return result
+
+
+#: The empty list AST expression
+Nil = Identifier('[]')
+
+
+def Cons(x, xs):
+    'Return x:xs'
+    return Application(Application(Identifier(':'), x), xs)
