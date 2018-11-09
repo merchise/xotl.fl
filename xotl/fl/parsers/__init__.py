@@ -502,10 +502,10 @@ def p_tuple_expr(prod):
     lst = prod[2]
     if lst:
         assert len(lst) > 1, 'There is no way to build a 1-tuple'
-        *lst, x, y = lst
-        result = Application(Application(Identifier(','), x), y)
-        for item in reversed(lst):
-            result = Application(Application(Identifier(','), item), result)
+        cons = ',' * (len(lst) - 1)
+        result = Identifier(cons)
+        for item in lst:
+            result = Application(result, item)
     else:
         result = Literal((), UnitType)
     prod[0] = result
@@ -743,13 +743,18 @@ def p_unit_value_as_pattern(prod):
 
 
 def p_tuple_cons_pattern(prod):
-    '''tuple_cons_pattern : error
+    '''tuple_cons_pattern : LPAREN patterns_comma_sep RPAREN
     '''
+    items = prod[2]
+    assert len(items) > 1
+    prod[0] = ConsPattern(',' * (len(items) - 1), items)
 
 
 def p_patterns(prod):
     '''patterns : pattern _patterns
+       patterns_comma_sep : pattern _patterns_comma
        _patterns : SPACE pattern _patterns
+       _patterns_comma : COMMA pattern _patterns_comma
     '''
     last = len(prod) - 1
     lst = prod[last]
@@ -760,6 +765,7 @@ def p_patterns(prod):
 
 def p_patterns_empty(prod):
     '''_patterns : empty
+       _patterns_comma : empty
     '''
     prod[0] = []
 
