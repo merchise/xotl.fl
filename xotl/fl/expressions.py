@@ -153,16 +153,20 @@ class Application(AST):
 # We assume (as the Book does) that there are no "translation" errors; i.e
 # that you haven't put a Let where you needed a Letrec.
 class _LetExpr(AST):
-    def __init__(self, bindings: Mapping[str, AST], body: AST) -> None:
+    def __init__(self, bindings: Mapping[str, AST], body: AST,
+                 localenv: TypeEnvironment = None) -> None:
         # Sort by names (in a _LetExpr names can't be repeated, repetition for
         # pattern-matching should be translated to a lambda using the MATCH
         # operator).
         self.bindings = tuple(sorted(bindings.items(), key=fst))
+        self.localenv = localenv or {}  # type: TypeEnvironment
         self.body = body
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
-            return self.bindings == other.bindings and self.body == self.body
+            return (self.bindings == other.bindings and
+                    self.localenv == other.localenv and
+                    self.body == self.body)
         else:
             return NotImplemented
 
@@ -173,7 +177,8 @@ class _LetExpr(AST):
             return NotImplemented
 
     def __hash__(self):
-        return hash((type(self), self.keys(), self.values(), self.body))
+        return hash((type(self), self.keys(), self.values(),
+                     self.localenv, self.body))
 
     def keys(self) -> Iterator[str]:
         return (k for k, _ in self.bindings)
@@ -187,7 +192,7 @@ class ConcreteLet:
     '''The concrete representation of a let/where expression.
 
     '''
-    equations: List['Equation']
+    definitions: List[Union['Equation', TypeEnvironment]]  # noqa
     body: AST
 
     @property
@@ -223,7 +228,11 @@ class ConcreteLet:
 
         from xotl.fl.parsers import ParserError
 
-        equations = [to_lambda(eq) for eq in self.equations]
+        equations = [
+            to_lambda(eq)
+            for eq in self.definitions
+            if isinstance(eq, Equation)
+        ]
         conses = [eq.name for eq in equations]
         names = set(conses)
         if len(names) != len(conses):
@@ -232,7 +241,17 @@ class ConcreteLet:
             klass: Class[_LetExpr] = Letrec
         else:
             klass = Let
-        return klass({eq.name: eq.body for eq in equations}, self.body)
+        localenv: TypeEnvironment = {
+            name: value
+            for env in self.definitions
+            if isinstance(env, dict)
+            for name, value in env.items()
+        }
+        return klass(
+            {eq.name: eq.body for eq in equations},
+            self.body,
+            localenv
+        )
 
 
 class Let(_LetExpr):

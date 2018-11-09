@@ -10,7 +10,8 @@ import pytest
 from xotl.fl import parse
 from xotl.fl.types import Type, TypeScheme
 from xotl.fl.expressions import Equation, ConsPattern, Identifier
-from xotl.fl.expressions import DataType, DataCons
+from xotl.fl.expressions import DataType, DataCons, Let
+from xotl.fl.expressions import build_application, build_lambda, parse as expr_parse
 
 
 def test_simple_one_definition():
@@ -152,3 +153,25 @@ def test_matching_lists():
                                        [Identifier('s'), Identifier('xs')])])],
         Identifier('s')
     )]
+
+
+def test_local_definitions():
+    # Taken from the paper 'Practical type inference for arbitrary-rank types'
+    # by Peyton Jones, Simon et al.
+    assert parse('''
+    foo :: ([Bool], [Char])
+    foo = let f :: (forall a. [a] -> [a]) -> ([Bool], [Char])
+              f x = (x [True, False], x ['a', 'b'])
+          in f reverse
+    ''') == [
+        {'foo': TypeScheme.from_str('([Bool], [Char])')},
+        Equation(
+            'foo',
+            [],
+            Let(
+                {'f': build_lambda(['x'], expr_parse("(x [True, False], x ['a', 'b'])"))},
+                build_application('f', Identifier('reverse')),
+                {'f': TypeScheme.from_str('(forall a. [a] -> [a]) -> ([Bool], [Char])')}
+            )
+        )
+    ]

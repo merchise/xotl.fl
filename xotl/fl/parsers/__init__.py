@@ -799,7 +799,7 @@ def p_equation_set3(prod):
 # ... in f) x'.  So st_expr can never be at the left of SPACE in any rule.
 def p_let_expr(prod):
     '''
-    letexpr : KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
+    letexpr : KEYWORD_LET SPACE local_definitions KEYWORD_IN SPACE st_expr
 
     '''
     prod[0] = ConcreteLet(prod[3], prod[6]).ast
@@ -973,11 +973,36 @@ def p_definition_set2(prod):
 
 
 def p_definition(prod):
-    '''definition : nametype_decl
-                  | valuedef
+    '''definition : local_definition
                   | datatype_definition
     '''
     prod[0] = prod[1]
+
+
+def p_local_definition(prod):
+    '''
+    local_definition : nametype_decl
+                     | valuedef
+    '''
+    prod[0] = prod[1]
+
+
+def p_local_definitions(prod):
+    '''local_definitions : local_definition _local_definition_set
+    '''
+    _collect_item(prod)
+
+
+def p_local_definition_set(prod):
+    '''_local_definition_set : PADDING definition _local_definition_set
+    '''
+    _collect_item(prod)
+
+
+def p_local_definition_set_empty(prod):
+    '''_local_definition_set : empty
+    '''
+    prod[0] = []
 
 
 def p_valuedef(prod):

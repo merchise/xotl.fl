@@ -55,19 +55,26 @@ Substitution = Callable[[str], Type]
 
 
 def subtype(phi: Substitution, t: Type) -> Type:
+    '''Get the sub-type of `t` by applying the substitution `phi`.
+
+    '''
     # 'subtype(sidentity, t) == t'; and since Type, TypeVariables and TypeCons
     # are treated immutably we should be safe to return the same type.
     if phi is sidentity:
         return t
     elif isinstance(t, TypeVariable):
         return phi(t.name)
-    else:
-        assert isinstance(t, TypeCons)
+    elif isinstance(t, TypeCons):
         return TypeCons(
             t.cons,
             [subtype(phi, subt) for subt in t.subtypes],
             binary=t.binary
         )
+    elif isinstance(t, TypeScheme):
+        psi = Exclude(phi, t)
+        return TypeScheme(t.generics, subtype(psi, t.t))
+    else:
+        assert False, f'Node of unknown type {t!r}'
 
 
 def scompose(f: Substitution, g: Substitution) -> Substitution:
