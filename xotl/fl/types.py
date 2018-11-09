@@ -204,7 +204,7 @@ FunctionTypeCons = lambda a, b: TypeCons('->', [a, b], binary=True)
 #: Shortcut to create a tuple type from types `ts`.  The Unit type can be
 #: regarded as the tuple type without arguments.
 TupleTypeCons = lambda *ts: TypeCons(
-    (',' * (len(ts) - 1)) or 'Tuple',
+    (',' * (len(ts) - 1)) or 'Unit',
     list(ts)
 )
 

@@ -207,7 +207,7 @@ The expression language allows literal values:
   `~xotl.fl.builtins.UnitType`:obj:\ :
 
     >>> parse('()')
-    Literal((), TypeCons('Tuple', ()))
+    Literal((), TypeCons('Unit', ()))
 
 
 Application
