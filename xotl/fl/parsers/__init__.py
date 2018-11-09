@@ -17,6 +17,7 @@ from xotl.fl.types import (
     ListTypeCons,
     TypeScheme,
     FunctionTypeCons,
+    TupleTypeCons,
 )
 from xotl.fl.types import TypeEnvironment  # noqa
 from xotl.fl.expressions import (
@@ -905,6 +906,30 @@ def p_type_factor_identifier(prod):
 
     '''
     prod[0] = prod[1]
+
+
+def p_type_factor_tuple(prod):
+    '''type_factor : LPAREN _maybe_padding _type_expr_list _maybe_padding RPAREN'''
+    items = prod[3]
+    prod[0] = TupleTypeCons(*items)
+
+
+def p_type_factor_unit_type(prod):
+    '''type_factor : LPAREN RPAREN'''
+    prod[0] = UnitType
+
+
+def p_type_expr_list(prod):
+    '''_type_expr_list : type_expr COMMA _type_expr_list_trail
+       _type_expr_list_trail : type_expr COMMA _type_expr_list_trail
+    '''
+    _collect_fst_item(prod)
+
+
+def p_type_expr_list_last_item(prod):
+    '''_type_expr_list_trail : type_expr
+    '''
+    prod[0] = [prod[1]]
 
 
 def p_type_factor_paren(p):

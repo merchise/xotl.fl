@@ -201,12 +201,18 @@ class TypeScheme(Type):
 #: Shortcut to create function types
 FunctionTypeCons = lambda a, b: TypeCons('->', [a, b], binary=True)
 
+
 #: Shortcut to create a tuple type from types `ts`.  The Unit type can be
 #: regarded as the tuple type without arguments.
-TupleTypeCons = lambda *ts: TypeCons(
-    (',' * (len(ts) - 1)) or 'Unit',
-    list(ts)
-)
+def TupleTypeCons(*ts):
+    if not ts:
+        return TypeCons('Unit', ())
+    else:
+        if len(ts) == 1:
+            return TypeCons('Singleton', ts)
+        else:
+            return TypeCons(',' * (len(ts) - 1), ts)
+
 
 #: Shortcut to create a list type from type `t`.
 ListTypeCons = lambda t: TypeCons('[]', [t])

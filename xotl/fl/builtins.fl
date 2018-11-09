@@ -139,13 +139,13 @@ is_null _   = False
 
 -- Pairs; they require special pattern matching support in the parser.
 
-pair :: a -> b -> Tuple a b
+pair :: a -> b -> (a, b)
 pair x y = (x, y)
 
-fst :: Tuple a b -> a
+fst :: (a, b) -> a
 fst (x, _) = x
 
-snd :: Tuple a b -> b
+snd :: (a, b) -> b
 snd (_, y) = y
 
 
