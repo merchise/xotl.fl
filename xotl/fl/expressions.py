@@ -215,21 +215,9 @@ class ConcreteLet:
         be defined just once.
 
         '''
-        def to_lambda(equation: Equation):
-            'Convert an equation to the equivalent one using lambdas.'
-            if equation.patterns:
-                return Equation(
-                    equation.name,
-                    [],
-                    build_lambda(equation.patterns, equation.body)
-                )
-            else:
-                return equation
-
         from xotl.fl.parsers import ParserError
-
         equations = [
-            to_lambda(eq)
+            eq.compiled
             for eq in self.definitions
             if isinstance(eq, Equation)
         ]
@@ -393,6 +381,23 @@ class Equation:
 
     def __hash__(self):
         return hash((Equation, self.name, self.patterns, self.body))
+
+    def compile_patterns(self) -> AST:
+        '''Compile the patterns of the equation in to the lambda calculus.
+
+        '''
+        if self.patterns:
+            return build_lambda(self.patterns, self.body)
+        else:
+            return self.body
+
+    @property
+    def compiled(self) -> 'Equation':
+        'An equivalent equation with all patterns compiled.'
+        if self.patterns:
+            return Equation(self.name, [], self.compile_patterns())
+        else:
+            return self
 
 
 class DataCons:
