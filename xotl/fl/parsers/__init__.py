@@ -21,7 +21,6 @@ from xotl.fl.types import (
 )
 from xotl.fl.types import TypeEnvironment  # noqa
 from xotl.fl.expressions import (
-    AST,
     Identifier,
     Literal,
     Application,
@@ -953,16 +952,6 @@ def p_program(prod):
     '''program : definitions
     '''
     prod[0] = prod[1]
-
-
-class Definition:
-    def __init__(self, name: str, body: AST) -> None:
-        self.name = name
-        self.body = body
-
-
-class Definitions(list):
-    pass
 
 
 def p_definitions(prod):
