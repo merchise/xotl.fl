@@ -89,13 +89,16 @@ tokens = [
 # Reserved keywords: pairs of (keyword, regexp).  If the regexp is None, it
 # defaults to '\b{keyword}\b' (case-sensitive).
 reserved = [
-    # These are just to avoid the expression to (re)define them.
     ('data', None),
+
+    # These are just to avoid the expression to (re)define them.
     ('class', None),
     ('instance', None),
 
     ('where', r'\s+where\b'),
     ('let', None),
+
+    ('forall', None),
 
     # We need the KEYWORD_IN to match the preceding spaces to avoid the lexer
     # to issue a 'SPACE'.  Otherwise, in an expression like 'let id x = x in
@@ -829,9 +832,36 @@ def p_error(prod):
 
 
 def p_type_expr(prod):
-    '''type_expr : type_function_expr
-                 | type_term'''
-    prod[0] = prod[1]
+    '''type_expr : type_scheme type_function_expr
+                 | type_scheme type_term'''
+    scheme, type_ = prod[1], prod[2]
+    if scheme:
+        prod[0] = TypeScheme(scheme, type_)
+    else:
+        prod[0] = type_
+
+
+def p_type_scheme_empty(prod):
+    'type_scheme : empty'
+
+
+def p_type_scheme(prod):
+    'type_scheme : KEYWORD_FORALL SPACE _type_scheme_generics'
+    generics = prod[3]
+    assert generics
+    prod[0] = generics
+
+
+def p_type_scheme_generics(prod):
+    '_type_scheme_generics : _identifier SPACE _type_scheme_generics'
+    lst = prod[3]
+    lst.insert(0, prod[1])
+    prod[0] = lst
+
+
+def p_last_type_scheme_generic(prod):
+    '_type_scheme_generics : _identifier DOT_OPERATOR'
+    prod[0] = [prod[1]]
 
 
 def p_type_function_expr(prod):

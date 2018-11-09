@@ -118,14 +118,14 @@ count x = x:count (x + 1)
 data Then a = Then a
 data Else a = Else a
 
-if ::  Bool -> Then a -> Else a -> a
+if ::  forall a. Bool -> Then a -> Else a -> a
 if True (Then a) _  = a
 if False _ (Else a) = a
 
-then :: a -> Then a
+then :: forall a. a -> Then a
 then = Then
 
-then :: a -> Else a
+then :: forall a. a -> Else a
 else = Else
 
 

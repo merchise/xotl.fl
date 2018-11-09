@@ -16,7 +16,7 @@ Implementation of Functional Programming Languages'.
 
 '''
 from collections import deque
-from typing import Iterable, Sequence, List, Mapping, Deque
+from typing import Iterable, Sequence, List, Mapping, Deque, Set
 from typing import Optional  # noqa
 from itertools import zip_longest
 
@@ -122,8 +122,7 @@ class TypeCons(Type):
         return 1 + sum(len(st) for st in self.subtypes)
 
 
-# Q: Should I make TypeScheme a sub-type?
-class TypeScheme:
+class TypeScheme(Type):
     '''A type scheme with generic (schematics) type variables.
 
     Example:
@@ -177,6 +176,8 @@ class TypeScheme:
                       generics: Sequence[str] = None) -> 'TypeScheme':
         '''Create a type scheme from a type expression assuming all type
         variables are generic.'''
+        if isinstance(type_, TypeScheme):
+            return type_
         if generics is None:
             generics = list(sorted(set(find_tvars(type_))))  # avoid repetitions.
         return cls(generics, type_)
@@ -232,16 +233,38 @@ def find_tvars(t: Type) -> List[str]:
 
     Example:
 
-       >>> find_tvars(Type.from_str('a -> b -> a'))
-       ['a', 'b', 'a']
+       >>> find_tvars(Type.from_str('a -> b -> c -> a'))
+       ['a', 'c', 'b', 'a']
+
+    If `t` is (or contains a TypeScheme) its generics variables will be
+    excluded (unless they're repeated):
+
+       >>> find_tvars(Type.from_str('a -> [forall b. b] -> a'))
+       ['a', 'a']
+
+       >>> find_tvars(Type.from_str('[forall a. a] -> b -> a'))
+       ['a', 'b']
 
     '''
     result: Deque[str] = deque([])
     queue: Deque[Type] = deque([t])
+    generics: Deque[Set[str]] = deque([])
+    POP_GENERICS: Type = None  # type: ignore
     while queue:
         t = queue.pop()
-        if isinstance(t, TypeVariable):
-            result.append(t.name)
+        if t is POP_GENERICS:
+            generics.pop()
+        elif isinstance(t, TypeVariable):
+            skip = generics[-1] if generics else set()
+            if t.name not in skip:
+                result.append(t.name)
+        elif isinstance(t, TypeScheme):
+            if generics:
+                current = generics[-1]
+            else:
+                current = set()
+            generics.append(current | set(t.generics))
+            queue.append(POP_GENERICS)
         else:
             assert isinstance(t, TypeCons)
             queue.extend(t.subtypes)
