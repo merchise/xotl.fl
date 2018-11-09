@@ -204,18 +204,36 @@ FunctionTypeCons = lambda a, b: TypeCons('->', [a, b], binary=True)
 
 #: Shortcut to create a tuple type from types `ts`.  The Unit type can be
 #: regarded as the tuple type without arguments.
-def TupleTypeCons(*ts):
-    if not ts:
-        return TypeCons('Unit', ())
-    else:
-        if len(ts) == 1:
-            return TypeCons('Singleton', ts)
+class TupleTypeCons(TypeCons):
+    def __init__(self, *ts: Type) -> None:
+        if not ts:
+            name = 'Unit'
         else:
-            return TypeCons(',' * (len(ts) - 1), ts)
+            if len(ts) == 1:
+                name = 'Singleton'
+            else:
+                name = ',' * (len(ts) - 1)
+        super().__init__(name, ts)
+
+    def __str__(self):
+        ts = self.subtypes
+        if not ts:
+            return '()'
+        else:
+            if len(ts) == 1:
+                return f'({ts[0]!s}, )'
+            else:
+                types = ', '.join(map(str, ts))
+                return f'({types})'
 
 
-#: Shortcut to create a list type from type `t`.
-ListTypeCons = lambda t: TypeCons('[]', [t])
+class ListTypeCons(TypeCons):
+    def __init__(self, t: Type) -> None:
+        super().__init__('[]', [t])
+
+    def __str__(self):
+        t = self.subtypes[0]
+        return f'[{t!s}]'
 
 
 TypeEnvironment = Mapping[str, TypeScheme]
