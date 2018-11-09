@@ -106,9 +106,13 @@ safe_tail _:xs = Just xs
 (++) []   ys = ys
 (++) x:xs ys = x:(xs ++ ys)
 
-
 append :: a -> [a] -> [a]
 append x ls = [x] ++ ls
+
+
+-- The count produces an infinite stream of numbers starting at `x`.
+count :: Number -> [Number]
+count x = x:count (x + 1)
 
 
 data Then a = Then a
