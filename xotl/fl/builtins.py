@@ -56,13 +56,13 @@ def builtins_env(self) -> TypeEnvironment:
     global _gamma
     if _gamma is None:
         _gamma = _load_builtins()
-    return BuiltinEnv(_gamma)
+    return BuiltinEnvDict(_gamma)
 
 
 TUPLE_CONS = re.compile(r',+')
 
 
-class BuiltinEnv(dict):
+class BuiltinEnvDict(dict):
     def __missing__(self, key):
         from xotl.fl.utils import namesupply
         # Constructors of tuples are not fixed, since now you can have (1, 2,
@@ -76,6 +76,8 @@ class BuiltinEnv(dict):
                 type = name >> type
             self[key] = result = TypeScheme.from_typeexpr(type)
             return result
+        else:
+            raise KeyError(key)
 
 
 def _load_builtins():
