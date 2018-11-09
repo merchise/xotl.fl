@@ -1,0 +1,32 @@
+====================================
+ The empty list '[]' **identifier**
+====================================
+
+Our parser recognizes the empty list '[]' as an identifier::
+
+  >>> from xotl.fl import expr_parse
+  >>> expr_parse('[]')
+  Identifier('[]')
+
+Having '[]' as an Identifier could to be confusing.  It's a constant.  It
+should be a Literal.
+
+However, there's no way we can construct a Literal for it (unless we construct
+many types).  The type of '[]' is actually polymorphic (``forall a. [a]``).
+Both expressions:
+
+- ``1:[]``
+
+- ``'a':[]``
+
+Furthermore, if we were to create a program:
+
+   data List a = Nil | Cons a (List a)
+
+   reverse Nil = Nil
+   reverse (Cons x xs) = append (reverse xs) (Cons x Nil)
+
+Our Nil is a data constructor with no argument (i.e an identifier) and it's
+type scheme is ``forall a. List a``.
+
+So why, ``[]`` should be different than ``Nil``?

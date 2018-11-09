@@ -7,7 +7,19 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 from dataclasses import dataclass
-from typing import Any, Mapping, Iterator, Sequence, Union
+from typing import (
+    Any,
+    Mapping,
+    Iterator,
+    Sequence,
+    Union,
+    List,
+    Type as Class,
+    Reversible,
+    Deque,
+    Optional,
+)
+from collections import deque
 
 from xoutil.objects import validate_attrs
 from xoutil.fp.tools import fst
@@ -169,6 +181,59 @@ class _LetExpr(AST):
         return (v for _, v in self.bindings)
 
 
+@dataclass
+class ConcreteLet:
+    '''The concrete representation of a let/where expression.
+
+    '''
+    equations: List['Equation']
+    body: AST
+
+    @property
+    def ast(self) -> _LetExpr:
+        r'''Build a Let/Letrec from a set of equations and a body.
+
+        We need to decide if we issue a Let or a Letrec: if any of declared
+        names appear in the any of the bodies we must issue a Letrec, otherwise
+        issue a Let.
+
+        Also we need to convert function-patterns into Lambda abstractions::
+
+           let id x = ...
+
+        becomes::
+
+           led id = \x -> ...
+
+        For the time being (we don't have pattern matching yet), each symbol can
+        be defined just once.
+
+        '''
+        def to_lambda(equation: Equation):
+            'Convert an equation to the equivalent one using lambdas.'
+            if equation.patterns:
+                return Equation(
+                    equation.name,
+                    [],
+                    build_lambda(equation.patterns, equation.body)
+                )
+            else:
+                return equation
+
+        from xotl.fl.parsers import ParserError
+
+        equations = [to_lambda(eq) for eq in self.equations]
+        conses = [eq.name for eq in equations]
+        names = set(conses)
+        if len(names) != len(conses):
+            raise ParserError('Several definitions for the same name')
+        if any(set(find_free_names(eq.body)) & names for eq in equations):
+            klass: Class[_LetExpr] = Letrec
+        else:
+            klass = Let
+        return klass({eq.name: eq.body for eq in equations}, self.body)
+
+
 class Let(_LetExpr):
     '''A non-recursive Let expression.
 
@@ -217,11 +282,11 @@ class Letrec(_LetExpr):
 # For value (function) definitions the parser still returns *bare* Equation
 # object for each line of the definition.
 
-class Pattern:
+class ConsPattern:
     '''The syntactical notion of a pattern.
 
     '''
-    def __init__(self, cons, params=None):
+    def __init__(self, cons: str, params=None) -> None:
         self.cons: str = cons
         self.params = tuple(params or [])
 
@@ -239,7 +304,7 @@ class Pattern:
         def _str(x):
             if isinstance(x, str):
                 return x
-            elif isinstance(x, Pattern):
+            elif isinstance(x, ConsPattern):
                 return f'({x})'
             else:
                 return repr(x)
@@ -247,31 +312,22 @@ class Pattern:
         return ' '.join(map(_str, self.params))
 
     def __eq__(self, other):
-        if isinstance(other, Pattern):
+        if isinstance(other, ConsPattern):
             return self.cons == other.cons and self.params == other.params
         else:
             return NotImplemented
 
     def __ne__(self, other):
-        if isinstance(other, Pattern):
+        if isinstance(other, ConsPattern):
             return not (self == other)
         else:
             return NotImplemented
 
     def __hash__(self):
-        return hash((Pattern, self.cons, self.params))
+        return hash((ConsPattern, self.cons, self.params))
 
 
-@dataclass
-class ListConsPattern:
-    head: Union[str, Pattern, 'ListConsPattern']
-    tail: Union[str, Pattern, 'ListConsPattern']
-
-    def __str__(self):
-        return f'{self.head!s}:{self.tail!s}'
-
-    def __repr__(self):
-        return f'<: {self.head!r}, {self.tail!r}>'
+Pattern = Union[str, Identifier, Literal, ConsPattern]
 
 
 class Equation:
@@ -282,16 +338,30 @@ class Equation:
     of the `AST <ast-objects>`:ref:.
 
     '''
-    def __init__(self, pattern: Pattern, body: AST) -> None:
-        self.pattern = pattern
+    def __init__(self, name: str, patterns: Sequence[Pattern], body: AST) -> None:
+        self.name = name
+        self.patterns = tuple(patterns or [])
         self.body = body
 
     def __repr__(self):
-        return f'<equation {self.pattern!s} = {self.body!r}>'
+        def _str(x):
+            result = str(x)
+            if ' ' in result:
+                return f'({result})'
+            else:
+                return result
+
+        if self.patterns:
+            args = ' '.join(map(_str, self.patterns))
+            return f'<equation {self.name!s} {args} = {self.body!r}>'
+        else:
+            return f'<equation {self.name!s} = {self.body!r}>'
 
     def __eq__(self, other):
         if isinstance(other, Equation):
-            return self.pattern == other.pattern and self.body == other.body
+            return (self.name == other.name and
+                    self.patterns == other.patterns and
+                    self.body == other.body)
         else:
             return NotImplemented
 
@@ -302,7 +372,7 @@ class Equation:
             return NotImplemented
 
     def __hash__(self):
-        return hash((Equation, self.pattern, self.body))
+        return hash((Equation, self.name, self.patterns, self.body))
 
 
 class DataCons:
@@ -426,3 +496,84 @@ def parse(code: str, debug=False, tracking=False) -> AST:
     '''
     from xotl.fl.parsers import expr_parser, lexer
     return expr_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
+
+
+def build_lambda(params: Reversible[Pattern], body: AST) -> Lambda:
+    '''Create a Lambda from several parameters.
+
+    Example:
+
+       >>> build_lambda(['a', 'b'], Identifier('a'))
+       Lambda('a', Lambda('b', Identifier('a')))
+
+    '''
+    assert params
+    result = body
+    for param in reversed(params):
+        if isinstance(param, Identifier):
+            result = Lambda(param.name, result)
+        else:
+            # TODO: Transform to pattern matching operators
+            result = Lambda(param, result)  # type: ignore
+    return result  # type: ignore
+
+
+def find_free_names(expr: AST) -> List[str]:
+    '''Find all names that appear free in `expr`.
+
+    Example:
+
+      >>> set(find_free_names(parse('let id x = x in map id xs')))  # doctest: +LITERAL_EVAL
+      {'map', 'xs'}
+
+    Names can be repeated:
+
+      >>> find_free_names(parse('twice x x')).count('x')
+      2
+
+    '''
+    POPFRAME = None  # remove a binding from the 'stack'
+    result: List[str] = []
+    bindings: Deque[str] = deque([])
+    nodes: Deque[Optional[AST]] = deque([expr])
+    while nodes:
+        node = nodes.pop()
+        if node is POPFRAME:
+            bindings.pop()
+        elif isinstance(node, Identifier):
+            if node.name not in bindings:
+                result.append(node.name)
+        elif isinstance(node, Literal):
+            if isinstance(node.annotation, AST):
+                nodes.append(node)
+        elif isinstance(node, Application):
+            nodes.extend([
+                node.e1,
+                node.e2,
+            ])
+        elif isinstance(node, Lambda):
+            bindings.append(node.varname)
+            nodes.append(POPFRAME)
+            nodes.append(node.body)
+        elif isinstance(node, (ConcreteLet, Let, Letrec)):
+            if isinstance(node, ConcreteLet):
+                node = node.ast
+            # This is tricky; the bindings can be used recursively in the
+            # bodies of a letrec:
+            #
+            #    letrec f1 = ....f1 ... f2 ....
+            #           f2 = ... f1 ... f2 ....
+            #           ....
+            #    in ... f1 ... f2 ...
+            #
+            # So we must make all the names in the bindings bound and then
+            # look at all the definitions.
+            #
+            # We push several POPFRAME at the to account for that.
+            bindings.extend(node.keys())
+            nodes.extend(POPFRAME for _ in node.keys())
+            nodes.extend(node.values())
+            nodes.append(node.body)
+        else:
+            assert False, f'Unknown AST node: {node!r}'
+    return result

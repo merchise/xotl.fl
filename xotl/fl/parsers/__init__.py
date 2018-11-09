@@ -6,9 +6,6 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from collections import deque
-from typing import Reversible, Optional, List, Deque
-
 from xoutil.objects import setdefaultattr
 from xoutil.future.datetime import TimeSpan
 
@@ -25,15 +22,13 @@ from xotl.fl.expressions import (
     AST,
     Identifier,
     Literal,
-    Lambda,
     Application,
-    Let,
-    Letrec,
-    Pattern,
-    ListConsPattern,
+    ConcreteLet,
+    ConsPattern,
     Equation,
     DataType,
     DataCons,
+    build_lambda,
 )
 
 from xotl.fl.builtins import (
@@ -475,11 +470,11 @@ def p_standalone_definitions(prod):
     expr_factor : literal
                 | identifier
                 | enclosed_expr
-                | unit_value
-                | empty_list_value
                 | letexpr
                 | where_expr
                 | lambda_expr
+                | simple_list_expr
+                | simple_tuple_expr
 
     st_type_expr : type_expr
 
@@ -499,6 +494,48 @@ def p_literals(prod):
              | datetime_interval
     '''
     prod[0] = prod[1]
+
+
+def p_tuple_expr(prod):
+    '''simple_tuple_expr : LPAREN _list_items RPAREN
+    '''
+    lst = prod[2]
+    if lst:
+        assert len(lst) > 1, 'There is no way to build a 1-tuple'
+        cons = ',' * (len(lst) - 1)
+        result = Identifier(cons)
+        for item in lst:
+            result = Application(result, item)
+    else:
+        result = Literal((), UnitType)
+    prod[0] = result
+
+
+def p_list_expr(prod):
+    '''simple_list_expr : LBRACKET _list_items RBRACKET
+    '''
+    lst = prod[2]
+    result = Identifier('[]')
+    for item in reversed(lst):
+        result = Application(Application(Identifier(':'), item), result)
+    prod[0] = result
+
+
+def p_list_items(prod):
+    '''_list_items : expr _list_items_cont
+       _list_items_cont : COMMA expr _list_items_cont
+    '''
+    last = len(prod) - 1
+    lst = prod[last]
+    lst.insert(0, prod[last - 1])
+    prod[0] = lst
+
+
+def p_list_items_empty(prod):
+    '''_list_items : empty
+       _list_items_cont : empty
+    '''
+    prod[0] = []
 
 
 def p_date(prod):
@@ -523,18 +560,6 @@ def p_datetime_interval(prod):
     '''datetime_interval : DATETIME_INTERVAL
     '''
     prod[0] = prod[1]
-
-
-def p_unit_value(prod):
-    '''unit_value : LPAREN RPAREN
-    '''
-    prod[0] = Literal((), UnitType)
-
-
-def p_empty_list_value(prod):
-    '''empty_list_value : LBRACKET RBRACKET
-    '''
-    prod[0] = Identifier('[]')
 
 
 def p_char(prod):
@@ -606,7 +631,6 @@ def p_operator(prod):
 
     infixl_operator_2 : OPERATOR
                       | ARROW
-                      | COMMA
 
     infixl_operator_0 : TICK_OPERATOR
 
@@ -615,9 +639,7 @@ def p_operator(prod):
                  | infixl_operator_6
                  | infixl_operator_7
                  | infixr_operator_9
-
-    operator : infixl_operator_0
-             | _st_operator
+                 | COMMA
 
     '''
     prod[0] = prod[1]
@@ -677,77 +699,82 @@ def p_empty(prod):
 
 
 def p_lambda_definition(prod):
-    '''lambda_expr : BACKSLASH parameters ARROW expr
+    '''lambda_expr : BACKSLASH patterns ARROW expr
     '''
     params = prod[2]
     assert params
     prod[0] = build_lambda(params, prod[4])
 
 
-def p_parameters(prod):
-    '''parameters : _param _parameters
-       _parameters : SPACE _param _parameters
+def p_pattern(prod):
     '''
-    count = len(prod)
-    names = prod[count - 1]
-    names.insert(0, prod[count - 2])
-    prod[0] = names
-
-
-def p_empty__parameters(prod):
-    '''_parameters : empty
-    '''
-    prod[0] = []
-
-
-def p_param_list_cons(prod):
-    '''_param : _non_empty_list_cons
+    pattern : identifier
+    pattern : literal
+    pattern : cons_pattern
+    pattern : list_cons_pattern
+    pattern : tuple_cons_pattern
+    pattern : empty_list_pattern
+    pattern : empty_tuple_pattern
     '''
     prod[0] = prod[1]
 
 
 def p_list_cons_for_param(prod):
-    '''_non_empty_list_cons : _param COLON _param
+    '''list_cons_pattern : pattern COLON pattern
     '''
-    prod[0]= ListConsPattern(prod[1], prod[3])
-
-
-def p_param_identitifier(prod):
-    '''_param : _identifier'''
-    prod[0] = prod[1]
-
-
-def p_param_operator(prod):
-    '''_param : _enclosed_operator'''
-    prod[0] = Identifier(prod[1])
+    prod[0] = ConsPattern(':', [prod[1], prod[3]])
 
 
 def p_param_pattern(prod):
-    '''_param : LPAREN pattern RPAREN'''
-    prod[0] = prod[2]
+    '''cons_pattern : LPAREN _identifier SPACE patterns RPAREN'''
+    prod[0] = ConsPattern(prod[2], prod[4])
 
 
-def p_empty_list_as_param(prod):
-    '''_param : LBRACKET RBRACKET'''
+def p_empty_list_as_pattern(prod):
+    '''empty_list_pattern : LBRACKET RBRACKET'''
     # Instead of having the Literal([], ...) make the param a name.
-    prod[0] = '[]'
+    prod[0] = Identifier('[]')
 
 
-def p_unit_value_as_param(prod):
-    '''_param : unit_value'''
+def p_unit_value_as_pattern(prod):
+    '''empty_tuple_pattern : LPAREN RPAREN'''
     # Instead of having the Literal((), ...) make the param a name.
-    prod[0] = '()'
+    prod[0] = Literal((), UnitType)
 
-def p_pattern(prod):
-    '''pattern : parameters'''
-    cons, *params = prod[1]
-    prod[0] = Pattern(cons, params)
+
+def p_tuple_cons_pattern(prod):
+    '''tuple_cons_pattern : LPAREN patterns_comma_sep RPAREN
+    '''
+    items = prod[2]
+    assert len(items) > 1
+    prod[0] = ConsPattern(',' * (len(items) - 1), items)
+
+
+def p_patterns(prod):
+    '''patterns : pattern _patterns
+       patterns_comma_sep : pattern _patterns_comma
+       _patterns : SPACE pattern _patterns
+       _patterns_comma : COMMA pattern _patterns_comma
+    '''
+    last = len(prod) - 1
+    lst = prod[last]
+    pattern = prod[last - 1]
+    lst.insert(0, pattern)
+    prod[0] = lst
+
+
+def p_patterns_empty(prod):
+    '''_patterns : empty
+       _patterns_comma : empty
+    '''
+    prod[0] = []
 
 
 def p_equation(prod):
-    '''equation : pattern EQ expr
+    '''equation : _identifier _patterns EQ expr
+       equation : _enclosed_operator _patterns EQ expr
     '''
-    prod[0] = Equation(prod[1], prod[3])
+    prod[0] = Equation(prod[1], prod[2], prod[4])
 
 
 class Equations(list):
@@ -786,7 +813,7 @@ def p_let_expr(prod):
     letexpr : KEYWORD_LET SPACE equations KEYWORD_IN SPACE st_expr
 
     '''
-    prod[0] = _build_let(prod[3], prod[6])
+    prod[0] = ConcreteLet(prod[3], prod[6]).ast
 
 
 def p_where_expr(prod):
@@ -794,7 +821,7 @@ def p_where_expr(prod):
     where_expr : expr KEYWORD_WHERE SPACE equations
     where_expr : expr KEYWORD_WHERE PADDING equations
     '''
-    prod[0] = _build_let(prod[4], prod[1])
+    prod[0] = ConcreteLet(prod[4], prod[1]).ast
 
 
 def p_error(prod):
@@ -1056,124 +1083,3 @@ expr_parser = yacc.yacc(debug=False, start='st_expr',
 
 program_parser = yacc.yacc(debug=True, start='program',
                            tabmodule='program_parsertab')
-
-
-def build_lambda(params: Reversible[str], body: AST) -> Lambda:
-    '''Create a Lambda from several parameters.
-
-    Example:
-
-       >>> build_lambda(['a', 'b'], Identifier('a'))
-       Lambda('a', Lambda('b', Identifier('a')))
-
-    '''
-    assert params
-    result = body
-    for param in reversed(params):
-        if isinstance(param, str):
-            result = Lambda(param, result)
-        elif isinstance(param, Pattern):
-            result = Lambda(param, result)
-        elif isinstance(param, ListConsPattern):
-            result = Lambda(param, result)
-    return result  # type: ignore
-
-
-def find_free_names(expr: AST) -> List[str]:
-    '''Find all names that appear free in `expr`.
-
-    Example:
-
-      >>> set(find_free_names(parse('let id x = x in map id xs')))  # doctest: +LITERAL_EVAL
-      {'map', 'xs'}
-
-    Names can be repeated:
-
-      >>> find_free_names(parse('twice x x')).count('x')
-      2
-
-    '''
-    POPFRAME = None  # remove a binding from the 'stack'
-    result: List[str] = []
-    bindings: Deque[str] = deque([])
-    nodes: Deque[Optional[AST]] = deque([expr])
-    while nodes:
-        node = nodes.pop()
-        if node is POPFRAME:
-            bindings.pop()
-        elif isinstance(node, Identifier):
-            if node.name not in bindings:
-                result.append(node.name)
-        elif isinstance(node, Literal):
-            if isinstance(node.annotation, AST):
-                nodes.append(node)
-        elif isinstance(node, Application):
-            nodes.extend([
-                node.e1,
-                node.e2,
-            ])
-        elif isinstance(node, Lambda):
-            bindings.append(node.varname)
-            nodes.append(POPFRAME)
-            nodes.append(node.body)
-        elif isinstance(node, (Let, Letrec)):
-            # This is tricky; the bindings can be used recursively in the
-            # bodies of a letrec:
-            #
-            #    letrec f1 = ....f1 ... f2 ....
-            #           f2 = ... f1 ... f2 ....
-            #           ....
-            #    in ... f1 ... f2 ...
-            #
-            # So we must make all the names in the bindings bound and then
-            # look at all the definitions.
-            #
-            # We push several POPFRAME at the to account for that.
-            bindings.extend(node.keys())
-            nodes.extend(POPFRAME for _ in node.keys())
-            nodes.extend(node.values())
-            nodes.append(node.body)
-        else:
-            assert False, f'Unknown AST node: {node!r}'
-    return result
-
-
-def _build_let(equations, body):
-    r'''Build a Let/Letrec from a set of equations and a body.
-
-    We need to decide if we issue a Let or a Letrec: if any of declared
-    names appear in the any of the bodies we must issue a Letrec, otherwise
-    issue a Let.
-
-    Also we need to convert function-patterns into Lambda abstractions::
-
-       let id x = ...
-
-    becomes::
-
-       led id = \x -> ...
-
-    For the time being (we don't have pattern matching yet), each symbol can
-    be defined just once.
-
-    '''
-    def to_lambda(equation: Equation):
-        'Convert (if needed) an equation to the equivalent one using lambdas.'
-        if equation.pattern.params:
-            return Equation(
-                Pattern(equation.pattern.cons),
-                build_lambda(equation.pattern.params, equation.body)
-            )
-        else:
-            return equation
-
-    equations = [to_lambda(eq) for eq in equations]
-    conses = [eq.pattern.cons for eq in equations]
-    names = set(conses)
-    if len(names) != len(conses):
-        raise ParserError('Several definitions for the same name')
-    if any(set(find_free_names(eq.body)) & names for eq in equations):
-        klass = Letrec
-    else:
-        klass = Let
-    return klass({eq.pattern.cons: eq.body for eq in equations}, body)

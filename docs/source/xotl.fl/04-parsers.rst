@@ -4,8 +4,7 @@
 
 .. testsetup::
 
-   from xotl.fl.expressions import parse
-   from xotl.fl.parsers import find_free_names
+   from xotl.fl.expressions import parse, find_free_names
 
 .. automodule:: xotl.fl.parsers
-   :members: find_free_names
+   :members:

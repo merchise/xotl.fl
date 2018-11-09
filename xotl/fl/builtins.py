@@ -9,9 +9,11 @@
 '''The *type* objects of builtins types.
 
 '''
+import re
 from xoutil.modules import moduleproperty
 
 from .types import (
+    TypeScheme,
     TypeCons,
     ListTypeCons,
     TupleTypeCons,
@@ -53,7 +55,24 @@ def builtins_env(self) -> TypeEnvironment:
     global _gamma
     if _gamma is None:
         _gamma = _load_builtins()
-    return dict(_gamma)
+    return BuiltinEnv(_gamma)
+
+
+TUPLE_CONS = re.compile(r',+')
+
+
+class BuiltinEnv(dict):
+    def __missing__(self, key):
+        from xotl.fl.typecheck import namesupply
+        # Constructors of tuples are not fixed, since now you can have (1, 2,
+        # 3..., 10000); that's a long tuple with a single constructor
+        # (,,...,,); i.e 9999 commas.
+        if TUPLE_CONS.match(key):
+            items = len(key) + 1
+            ns = namesupply(limit=items)
+            cons = TypeCons(key, list(ns))
+            self[key] = result = TypeScheme.from_typeexpr(cons)
+            return result
 
 
 def _load_builtins():
@@ -92,3 +111,6 @@ def _strip_comment(line):
         return '\n'  # leave an emtpy line
     else:
         return line
+
+
+del re
