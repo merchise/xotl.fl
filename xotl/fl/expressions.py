@@ -91,7 +91,7 @@ class Literal(AST):
             return NotImplemented
 
     def __hash__(self):
-        return hash((Literal, self.value, self.type_, self.annotation))
+        return hash((Literal, self.value, self.type, self.annotation))
 
 
 class Lambda(AST):
