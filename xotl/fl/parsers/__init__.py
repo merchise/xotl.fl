@@ -1124,7 +1124,7 @@ program_parser = yacc.yacc(debug=True, start='program',
 
 
 def _collect_item(prod, lst_index=None, item_index=None):
-    '''Collect and item into a list.
+    '''Collect an item into a list.
 
     If `lst_index` is None, get the list being built from the last
     production.  If `item_index` is None, get the item in the production

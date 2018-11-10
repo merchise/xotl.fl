@@ -12,7 +12,7 @@
 import re
 from xoutil.modules import moduleproperty
 
-from .types import (
+from xotl.fl.types import (
     Type,
     TypeScheme,
     TypeCons,

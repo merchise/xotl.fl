@@ -290,6 +290,7 @@ class Exclude:
 
 
 def get_typeenv_unknowns(te: TypeEnvironment) -> List[str]:
+    '''Return all the non-generic variables in the environment.'''
     return sum((t.nongenerics for _, t in te.items()), [])
 
 
@@ -443,20 +444,42 @@ def typecheck_let(env: TypeEnvironment, ns, exp: Let) -> TCResult:
     exprs: Sequence[AST] = tuple(exp.values())
     phi, types = tcl(env, ns, exprs)
     names: Sequence[str] = tuple(exp.keys())
+    # At this point all we have inferred (from their bodies) the types of the
+    # let definitions; but we must ensure they match their local-annotations
+    # (if provided).
+    local = exp.localenv or {}
+    if local:
+        typepairs = [
+            (local[name].t, types[i])
+            for i, name in enumerate(names)
+            if name in local
+        ]
+        phi = unify_exprs(typepairs, p=phi)
+        types = [subtype(phi, t) for t in types]
+        decls = add_decls(
+            sub_typeenv(phi, ChainMap(local, env)),
+            ns,
+            names,
+            types
+        )
+    else:
+        decls = add_decls(sub_typeenv(phi, env), ns, names, types)
     psi, t = typecheck(
-        add_decls(sub_typeenv(phi, env), ns, names, types),
+        decls,
         ns,
         exp.body,
     )
     return scompose(psi, phi), t
 
 
-def add_decls(env: TypeEnvironment,
-              ns, names: Iterable[str], types: Iterable[Type]) -> TypeEnvironment:
-
+def add_decls(env: TypeEnvironment, ns, names: Iterable[str],
+              types: Iterable[Type]) -> TypeEnvironment:
+    '''Create an extended type environment with ...'''
     def genbar(unknowns, names, type_):
         schvars = list({
-            var for var in find_tvars(type_) if var not in unknowns
+            var
+            for var in find_tvars(type_)
+            if var not in unknowns
         })
         alist: List[Tuple[str, TypeVariable]] = list(zip(schvars, ns))
         restype = subtype(build_substitution(alist), type_)
@@ -480,21 +503,39 @@ def typecheck_letrec(env: TypeEnvironment,
     #        ...
     #     in body
     #
-    # We make a new type scheme for each 'x'; x1 :: Tx1, x2 :: Tx2, etc...
+    # We make a new type scheme for each 'x' ; x1 :: Tx1, x2 :: Tx2, etc...
     # and type-check of the 'exprs' in this extended environment.
+    #
     exprs: Sequence[AST] = tuple(exp.values())
     names: Sequence[str] = tuple(exp.keys())
-    nbvs = {name: TypeScheme.from_typeexpr(var, generics=[])
-            for name, var in zip(names, ns)}
+    nbvs = {
+        name: TypeScheme.from_typeexpr(var, generics=[])
+        for name, var in zip(names, ns)
+    }
     phi, ts = tcl(ChainMap(nbvs, env), ns, exprs)
 
     # At this point `phi` is the substitution that makes all the bindings in
     # the letrec type-check; and `ts` is the list of the types inferred for
     # each expr.
     #
-    # Now we must unify the types inferred with the types of the names in the
-    # non-extended environment, but taking the `phi` into account.  Also
-    gamma = sub_typeenv(phi, env)
+    # We must now see if the inferred types match the annotations
+    # (if any).
+    #
+    # Then, we must unify the types inferred with the types of the names in
+    # the non-extended environment, but taking the `phi` into account.
+    #
+    local = exp.localenv or {}
+    if local:
+        typepairs = [
+            (local[name].t, ts[i])
+            for i, name in enumerate(names)
+            if name in local
+        ]
+        phi = unify_exprs(typepairs, p=phi)
+        ts = [subtype(phi, t) for t in ts]
+        gamma = sub_typeenv(phi, ChainMap(local, env))
+    else:
+        gamma = sub_typeenv(phi, env)
     nbvs1 = sub_typeenv(phi, nbvs)
     ts1 = [sch.t for _, sch in nbvs1.items()]
     psi = unify_exprs(zip(ts, ts1), p=phi)
@@ -504,7 +545,7 @@ def typecheck_letrec(env: TypeEnvironment,
     nbvs1 = sub_typeenv(psi, nbvs)
     ts = [sch.t for _, sch in nbvs1.items()]
     psi1, t = typecheck(
-        add_decls(sub_typeenv(psi, gamma), ns, nbvs.keys(), ts),
+        add_decls(sub_typeenv(psi, gamma), ns, names, ts),
         ns,
         exp.body
     )

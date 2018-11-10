@@ -14,9 +14,8 @@ from xotl.fl.builtins import (
     CharType,
     StringType,
     BoolType,
-    UnitType,
-
     builtins_env,
+    BuiltinEnvDict,
 )
 from xotl.fl.expressions import parse
 from xotl.fl.types import Type, TypeScheme, EMPTY_TYPE_ENV, find_tvars
@@ -194,3 +193,91 @@ def test_typecheck_recursion():
 
 def test_type_checking_tuples():
     typecheck(builtins_env, namesupply('.a'), parse('(1, 2, 3)'))
+
+
+def test_local_type_annotation_let():
+    phi, t = typecheck(
+        BuiltinEnvDict({
+            '[]': TypeScheme.from_str('[a]'),
+            'reverse': TypeScheme.from_str('[a] -> [a]'),
+            ':': TypeScheme.from_str('a -> [a] -> [a]')
+        }),
+        namesupply('.a'),
+        parse('''let g = [1, 2, 3]
+                 in reverse g''')
+    )
+    assert t == Type.from_str('[Number]')
+
+    phi, t = typecheck(
+        BuiltinEnvDict({
+            '[]': TypeScheme.from_str('[a]'),
+            'reverse': TypeScheme.from_str('[a] -> [a]'),
+            ':': TypeScheme.from_str('a -> [a] -> [a]')
+        }),
+        namesupply('.a'),
+        parse('''let g :: [Number]
+                     g = []
+                 in reverse g''')
+    )
+    assert t == Type.from_str('[Number]')
+
+    phi, t = typecheck(
+        BuiltinEnvDict({
+            '[]': TypeScheme.from_str('[a]'),
+            'reverse': TypeScheme.from_str('[a] -> [a]'),
+            ':': TypeScheme.from_str('a -> [a] -> [a]')
+        }),
+        namesupply('.a'),
+        parse('''let g :: [a]
+                     g = [1, 2, 3]
+                 in reverse g''')
+    )
+    assert t == Type.from_str('[Number]')
+
+    with pytest.raises(TypeError):
+        typecheck(
+            BuiltinEnvDict({
+                '[]': TypeScheme.from_str('[a]'),
+                'reverse': TypeScheme.from_str('[a] -> [a]'),
+                ':': TypeScheme.from_str('a -> [a] -> [a]')
+            }),
+            namesupply('.a'),
+            parse('''let g :: [Char]
+                         g = [1, 2, 3]
+                     in reverse g''')
+        )
+
+
+def test_local_type_annotation_letrec():
+    phi, t = typecheck(
+        BuiltinEnvDict({
+            '[]': TypeScheme.from_str('[a]'),
+            'reverse': TypeScheme.from_str('[a] -> [a]'),
+            ':': TypeScheme.from_str('a -> [a] -> [a]'),
+            '+': TypeScheme.from_str('a -> a -> a'),
+        }),
+        namesupply('.a'),
+        parse('''let count :: Number -> [Number]
+                     count x = x:count (x + 1)
+                     g :: [Number]
+                     g = count 1
+                     g2 = reverse g
+                 in reverse g''')
+    )
+    assert t == Type.from_str('[Number]')
+
+    with pytest.raises(TypeError):
+        typecheck(
+            BuiltinEnvDict({
+                '[]': TypeScheme.from_str('[a]'),
+                'reverse': TypeScheme.from_str('[a] -> [a]'),
+                ':': TypeScheme.from_str('a -> [a] -> [a]'),
+                '+': TypeScheme.from_str('a -> a -> a'),
+            }),
+            namesupply('.a'),
+            parse('''let count :: Number -> [Number]
+                         count x = x:count (x + 1)
+                         g :: [Char]
+                         g = count 1
+                     in reverse g''')
+        )
