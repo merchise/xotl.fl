@@ -404,3 +404,14 @@ def test_consed_lists():
 
 def test_list_syntax():
     assert parse('[1, 2]') == parse('1:2:[]')
+
+
+@pytest.mark.xfail(reaseon='Look-ahead by 1 token, I need to work it out')
+def test_regression_ambigous_tuple_pattern():
+    assert parse('''let count [] = 0
+                 count (x:xs) = 1 + (count xs)
+             in count
+    ''') == parse('''let count [] = 0
+                 count x:xs = 1 + (count xs)
+             in count
+    ''')
