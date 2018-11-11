@@ -129,7 +129,7 @@ def _load_builtins():
         if isinstance(definition, dict):
             gamma.update(definition)
         elif isinstance(definition, DataType):
-            gamma.update(definition.implied_env)
+            gamma.update(definition.full_typeenv)
     return gamma
 
 

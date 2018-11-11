@@ -19,13 +19,20 @@ from typing import (
     Reversible,
     Deque,
     Optional,
+    Tuple,
 )
-from collections import deque
+from collections import deque, ChainMap
 
 from xoutil.objects import validate_attrs
 from xoutil.fp.tools import fst
 
-from xotl.fl.types import AST, Type, TypeCons, TypeEnvironment
+from xotl.fl.types import (
+    AST,
+    Type,
+    TypeCons,
+    TypeEnvironment,
+    TypeScheme,
+)
 from xotl.fl.builtins import UnitType
 
 
@@ -198,6 +205,9 @@ class ConcreteLet:
 
     @property
     def ast(self) -> _LetExpr:
+        return self.compile()
+
+    def compile(self) -> _LetExpr:
         r'''Build a Let/Letrec from a set of equations and a body.
 
         We need to decide if we issue a Let or a Letrec: if any of declared
@@ -403,7 +413,7 @@ class DataCons:
     '''
     def __init__(self, cons: str, args: Sequence[Type]) -> None:
         self.name = cons
-        self.args = tuple(args)
+        self.args: Sequence[Type] = tuple(args)
 
     def __repr__(self):
         def _str(x):
@@ -490,6 +500,9 @@ class DataType:
 
         The Either data type shows data constructors with parameters:
 
+        .. doctest::
+           :options: +NORMALIZE_WHITESPACE
+
             >>> datatype = parse('data Either a b = Left a | Right b')[0]
             >>> datatype.implied_env
             {'Left': <TypeScheme: forall a b. a -> (Either a b)>,
@@ -499,7 +512,7 @@ class DataType:
         a b` (for any type `b`).
 
         '''
-        from xotl.fl.types import TypeScheme, FunctionTypeCons
+        from xotl.fl.types import FunctionTypeCons
 
         def _implied_type(dc: DataCons) -> Type:
             result = self.t
@@ -511,6 +524,69 @@ class DataType:
             dc.name: TypeScheme.from_typeexpr(_implied_type(dc))
             for dc in self.dataconses
         }
+
+    @property
+    def pattern_matching_env(self) -> TypeEnvironment:
+        r'''The type environment needed to pattern-match the data constructors.
+
+        A program like::
+
+            data List a = Nil | Cons a (List a)
+
+            count Nil = 0
+            count (Cons x xs) = 1 + (count xs)
+
+        Is transformed to the equivalent (I take some liberties to ease
+        reading, this program cannot be parsed)::
+
+            data List a = Nil | Cons a (List a)
+
+            count arg1 = let eq1 eqarg1 = (\x1 -> 0) (:extract:Nil: eqarg1)
+                             eq2 eqarg1 = (\x -> \xs -> 1 + (count xs))
+                                          (:extract:Cons:1: eqarg1)
+                                          (:extract:Cons:2: eqarg1)
+                    in (eq1 arg1) `:OR:` (eq2 arg1) `:OR:` NO_MATCH
+
+        The operator ``:OR`` returns the first argument if it is not a
+        pattern-match error; otherwise it returns the second argument.  This
+        is a special operator.  The ``:extract:Nil:``, ``:extract:Cons:1:``,
+        and ``:extract:Cons:2:`` match is argument with the expected data
+        constructor and, possibly, extract one of the components.
+
+        The ``pattern_matching_evn`` returns the type environment of those
+        functions:
+
+        .. doctest::
+           :options: +NORMALIZE_WHITESPACE
+
+            >>> datatype = parse('data List a = Nil | Cons a (List a)')[0]
+
+            >>> datatype.pattern_matching_env
+            {':extract:Nil:': <TypeScheme forall a. List a>,
+             ':extract:Cons:1:': <TypeScheme forall a. (List a) -> a>,
+             ':extract:Cons:2:': <TypeScheme forall a. (List a) -> (List a)>}
+
+        '''
+        from xotl.fl.types import FunctionTypeCons as F
+
+        def _implied_funs(dc: DataCons) -> Iterator[Tuple[str, TypeScheme]]:
+            scheme = TypeScheme.from_typeexpr
+            if not dc.args:
+                yield f':extract:{dc.name}:', scheme(self.t)
+            else:
+                for i, type_ in enumerate(dc.args):
+                    yield f':extract:{dc.name}:{i+1}', scheme(F(self.t, type_))
+
+        return {
+            name: ts
+            for dc in self.dataconses
+            for name, ts in _implied_funs(dc)
+        }
+
+    @property
+    def full_typeenv(self) -> TypeEnvironment:
+        'Both `pattern_matching_env`:attr: and `implied_env`:attr: together.'
+        return ChainMap(self.pattern_matching_env, self.implied_env)
 
 
 def parse(code: str, debug=False, tracking=False) -> AST:

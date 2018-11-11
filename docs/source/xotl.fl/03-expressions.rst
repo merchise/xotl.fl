@@ -34,6 +34,7 @@ Additional objects
 The following objects are used in the parser while recognizing the program.
 
 .. autoclass:: DataType
+   :members: implied_env, pattern_matching_env, full_typeenv
 
 .. autoclass:: DataCons
 
