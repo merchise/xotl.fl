@@ -6,8 +6,11 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Sequence
+from typing import Sequence, Iterator
 from xotl.fl.types import TypeVariable
+
+
+NameSupply = Iterator[TypeVariable]
 
 
 class namesupply:

@@ -16,7 +16,6 @@ from typing import (
     Sequence,
     List,
     Tuple,
-    Iterator,
     Iterable,
     Callable,
 )
@@ -41,6 +40,7 @@ from xotl.fl.expressions import (
     Let,
     Letrec,
 )
+from xotl.fl.utils import NameSupply
 
 
 _STR_PADDING = ' ' * 4
@@ -303,7 +303,6 @@ def sub_typeenv(phi: Substitution, te: TypeEnvironment) -> TypeEnvironment:
     return {x: subscheme(phi, st) for x, st in te.items()}
 
 
-NameSupply = Iterator[TypeVariable]
 TCResult = Tuple[Substitution, Type]
 
 
