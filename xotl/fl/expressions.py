@@ -32,8 +32,10 @@ from xotl.fl.types import (
     TypeCons,
     TypeEnvironment,
     TypeScheme,
+    Symbol,
 )
 from xotl.fl.builtins import UnitType
+from xotl.fl.utils import namesupply
 
 
 class Identifier(AST):
@@ -297,6 +299,30 @@ class Letrec(_LetExpr):
 # For value (function) definitions the parser still returns *bare* Equation
 # object for each line of the definition.
 
+@dataclass(frozen=True)
+class Match(Symbol):
+    'A symbol for the pattern matching "match" function.'
+    name: str
+
+    def __str__(self):
+        return f':match:{self.name}:'
+
+    def __repr__(self):
+        return f'<Match: {self.name}>'
+
+
+@dataclass(frozen=True)
+class Extract(Symbol):
+    name: str
+    arg: int
+
+    def __str__(self):
+        return f':extract:{self.name}:{self.arg}:'
+
+    def __repr__(self):
+        return f'<Extract: {self.arg} from {self.name}>'
+
+
 class ConsPattern:
     '''The syntactical notion of a pattern.
 
@@ -341,8 +367,20 @@ class ConsPattern:
     def __hash__(self):
         return hash((ConsPattern, self.cons, self.params))
 
+    @property
+    def pattern_matching_funs(self) -> List[Symbol]:
+        '''The list of names to extract/match the arguments.
 
-Pattern = Union[str, Identifier, Literal, ConsPattern]
+        See `DataType.pattern_matching_env`:attr: for more details.
+
+        '''
+        if self.params:
+            return [Extract(self.cons, i + 1) for i in range(len(self.params))]
+        else:
+            return [Match(self.cons)]
+
+
+Pattern = Union[str, Literal, ConsPattern]
 
 
 class Equation:
@@ -393,8 +431,20 @@ class Equation:
         '''Compile the patterns of the equation in to the lambda calculus.
 
         '''
+        args = namesupply(f'.{self.name}_arg')
         if self.patterns:
-            return build_lambda(self.patterns, self.body)
+            body = self.body
+            patterns: List[str] = []
+            for pattern in reversed(self.patterns):
+                if isinstance(pattern, str):
+                    arg = pattern
+                elif isinstance(pattern, ConsPattern):
+                    var = next(args)
+                    arg = var.name
+                else:
+                    arg = pattern  # type: ignore
+                patterns.insert(0, arg)
+            return build_lambda(patterns, body)
         else:
             return self.body
 
@@ -541,7 +591,7 @@ class DataType:
 
             data List a = Nil | Cons a (List a)
 
-            count arg1 = let eq1 eqarg1 = (\x1 -> 0) (:extract:Nil: eqarg1)
+            count arg1 = let eq1 eqarg1 = (\x1 -> 0) (:match:Nil: eqarg1)
                              eq2 eqarg1 = (\x -> \xs -> 1 + (count xs))
                                           (:extract:Cons:1: eqarg1)
                                           (:extract:Cons:2: eqarg1)
@@ -549,8 +599,8 @@ class DataType:
 
         The operator ``:OR`` returns the first argument if it is not a
         pattern-match error; otherwise it returns the second argument.  This
-        is a special operator.  The ``:extract:Nil:``, ``:extract:Cons:1:``,
-        and ``:extract:Cons:2:`` match is argument with the expected data
+        is a special operator.  The ``:match:Nil:``, ``:extract:Cons:1:``, and
+        ``:extract:Cons:2:`` match its argument with the expected data
         constructor and, possibly, extract one of the components.
 
         The ``pattern_matching_evn`` returns the type environment of those
@@ -562,20 +612,22 @@ class DataType:
             >>> datatype = parse('data List a = Nil | Cons a (List a)')[0]
 
             >>> datatype.pattern_matching_env
-            {':extract:Nil:': <TypeScheme forall a. List a>,
-             ':extract:Cons:1:': <TypeScheme forall a. (List a) -> a>,
-             ':extract:Cons:2:': <TypeScheme forall a. (List a) -> (List a)>}
+            {<Match: Nil>: <TypeScheme: forall a. List a>,
+             <Extract: 1 from Cons>: <TypeScheme: forall a. (List a) -> a>,
+             <Extract: 2 from Cons>: <TypeScheme: forall a. (List a) -> (List a)>}
+
+        .. note:: The names of those special functions are not strings.
 
         '''
         from xotl.fl.types import FunctionTypeCons as F
 
-        def _implied_funs(dc: DataCons) -> Iterator[Tuple[str, TypeScheme]]:
+        def _implied_funs(dc: DataCons) -> Iterator[Tuple[Symbol, TypeScheme]]:
             scheme = TypeScheme.from_typeexpr
             if not dc.args:
-                yield f':extract:{dc.name}:', scheme(self.t)
+                yield Match(dc.name), scheme(self.t)
             else:
                 for i, type_ in enumerate(dc.args):
-                    yield f':extract:{dc.name}:{i+1}', scheme(F(self.t, type_))
+                    yield Extract(dc.name, i + 1), scheme(F(self.t, type_))
 
         return {
             name: ts

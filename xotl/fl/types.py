@@ -16,7 +16,7 @@ Implementation of Functional Programming Languages'.
 
 '''
 from collections import deque
-from typing import Iterable, Sequence, List, Mapping, Deque, Set
+from typing import Iterable, Sequence, List, Mapping, Deque, Set, Union
 from typing import Optional  # noqa
 from itertools import zip_longest
 
@@ -236,7 +236,11 @@ class ListTypeCons(TypeCons):
         return f'[{t!s}]'
 
 
-TypeEnvironment = Mapping[str, TypeScheme]
+class Symbol:
+    pass
+
+
+TypeEnvironment = Mapping[Union[str, Symbol], TypeScheme]
 EMPTY_TYPE_ENV: TypeEnvironment = {}
 
 

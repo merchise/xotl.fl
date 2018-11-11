@@ -69,9 +69,10 @@ class BuiltinEnvDict(dict):
     def __init__(self, d=None, **kw):
         from xotl.fl.types import TypeScheme
         from xotl.fl.expressions import NO_MATCH_ERROR, MATCH_OPERATOR
+        from xotl.fl.expressions import Match, Extract
         if not d:
             d = {}
-        init = dict(d, **{
+        init = {
             # These can't be parsed (yet) and are really builtin -- their
             # values cannot be directly expressed in the language, even
             # though isomorphic types can be expressed, i.e 'data List a =
@@ -85,10 +86,16 @@ class BuiltinEnvDict(dict):
             MATCH_OPERATOR.name: TypeScheme.from_str('a -> a -> a'),
             NO_MATCH_ERROR.name: TypeScheme.from_str('a'),
 
+            # These are 'match' and 'extract' for lists pattern matching.
+            Match('[]'): TypeScheme.from_str('[a]'),
+            Extract(':', 1): TypeScheme.from_str('[a] -> a'),
+            Extract(':', 2): TypeScheme.from_str('[a] -> [a]'),
+
             # Pattern matching requires 'extracting' the type from the Pattern
             # Cons.  These are dynamic are require knowledge from the locally
             # (program) defined types; we cannot provide the types here.
-        })
+        }
+        init.update(d)
         super().__init__(init, **kw)
 
     def __missing__(self, key):

@@ -18,6 +18,7 @@ from typing import (
     Tuple,
     Iterable,
     Callable,
+    Union,
 )
 from typing import Any  # noqa
 from collections import ChainMap
@@ -31,6 +32,7 @@ from xotl.fl.types import (
     TypeScheme,
     find_tvars,
     TypeEnvironment,
+    Symbol,
 )
 from xotl.fl.expressions import (
     Identifier,
@@ -471,7 +473,9 @@ def typecheck_let(env: TypeEnvironment, ns, exp: Let) -> TCResult:
     return scompose(psi, phi), t
 
 
-def add_decls(env: TypeEnvironment, ns, names: Iterable[str],
+def add_decls(env: TypeEnvironment,
+              ns: NameSupply,
+              names: Iterable[Union[str, Symbol]],
               types: Iterable[Type]) -> TypeEnvironment:
     '''Create an extended type environment with ...'''
     def genbar(unknowns, names, type_):
@@ -506,7 +510,7 @@ def typecheck_letrec(env: TypeEnvironment,
     # and type-check of the 'exprs' in this extended environment.
     #
     exprs: Sequence[AST] = tuple(exp.values())
-    names: Sequence[str] = tuple(exp.keys())
+    names: Sequence[Union[str, Symbol]] = tuple(exp.keys())
     nbvs = {
         name: TypeScheme.from_typeexpr(var, generics=[])
         for name, var in zip(names, ns)
