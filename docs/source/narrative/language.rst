@@ -340,16 +340,15 @@ body as parameters of a lambda:
 When doing several definitions you must split each definition with a newline
 [#newline]_.
 
-You can't have several definitions for the same name [#pattern]_:
+When having several definitions for the same name, the code is transformed to
+do pattern matching.  This is represented by transforming your code:
 
    >>> code = '''let if True t f = t
    ...               if False t f = f
    ...           in g . if'''
 
-   >>> parse(code)   # doctest: +ELLIPSIS
-   Traceback (most recent call last):
-      ...
-   ParserError: More than one definition ...
+   >>> parse(code)   # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+   Let((('if', Application(Application(Identifier(':OR:'), ...Identifier('if')))
 
 The parser will produce a `~xotl.fl.expressions.Let`:class: node if there are
 no recursive definitions, otherwise it will create a
@@ -495,7 +494,3 @@ Notes
 
 .. [#newline] See the `account of new lines and indentation
               <indentation>`:ref:.
-
-.. [#pattern] This is because at the time of writing, pattern matching is not
-   implemented.  In order for this language to be of any use, this restriction
-   will be removed before reaching the release 1.0.

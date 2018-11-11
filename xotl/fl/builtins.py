@@ -21,6 +21,7 @@ from xotl.fl.types import (
     TypeEnvironment,
 )
 
+
 # This is the type of all numbers in our language.  The expression language
 # will assign this type to every literal that matches a number; we don't
 # really distinguish between floats and ints.  Even xoutil's concrete numbers
@@ -60,9 +61,36 @@ def builtins_env(self) -> TypeEnvironment:
 
 
 TUPLE_CONS = re.compile(r',+')
+EXTRACT_FROM_PRODUCT = re.compile(r':extract:(?P<type>.*):::')
+EXTRACT_FROM_CONS = re.compile(r':extract:(?P<cons>[,\w]+)(:(?P<idx>\d+))?')
 
 
 class BuiltinEnvDict(dict):
+    def __init__(self, d=None, **kw):
+        from xotl.fl.types import TypeScheme
+        from xotl.fl.expressions import NO_MATCH_ERROR, MATCH_OPERATOR
+        if not d:
+            d = {}
+        init = dict(d, **{
+            # These can't be parsed (yet) and are really builtin -- their
+            # values cannot be directly expressed in the language, even
+            # though isomorphic types can be expressed, i.e 'data List a =
+            # Nil | Cons a (List a)'.
+            '[]': TypeScheme.from_str('[a]'),
+
+            # There are special identifiers provided for translation of pattern
+            # matching:  The FATBAR (MATCH) operator; notice that type-wise this
+            # is operator takes two arguments or equal type and returns the first
+            # if it matches or the second.
+            MATCH_OPERATOR.name: TypeScheme.from_str('a -> a -> a'),
+            NO_MATCH_ERROR.name: TypeScheme.from_str('a'),
+
+            # Pattern matching requires 'extracting' the type from the Pattern
+            # Cons.  These are dynamic are require knowledge from the locally
+            # (program) defined types; we cannot provide the types here.
+        })
+        super().__init__(init, **kw)
+
     def __missing__(self, key):
         from xotl.fl.utils import namesupply
         # Constructors of tuples are not fixed, since now you can have (1, 2,
@@ -83,7 +111,6 @@ class BuiltinEnvDict(dict):
 def _load_builtins():
     import pkg_resources
     from xotl.fl import parse
-    from xotl.fl.types import TypeScheme
     from xotl.fl.expressions import DataType
     builtins = pkg_resources.resource_filename('xotl.fl', 'builtins.fl')
     with open(builtins, 'r') as f:
@@ -97,12 +124,7 @@ def _load_builtins():
         if line
     ]
     res = parse('\n'.join(source))
-    gamma = {
-        # These can't be parsed (yet) and are really builtin -- their values
-        # cannot be directly expressed in the language, even though isomorphic
-        # types can be expressed, i.e 'data List a = Nil | Cons a (List a)'.
-        '[]': TypeScheme.from_str('[a]'),
-    }
+    gamma = {}
     for definition in res:
         if isinstance(definition, dict):
             gamma.update(definition)

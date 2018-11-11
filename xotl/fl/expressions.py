@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import (
     Any,
     Mapping,
+    MutableMapping,
     Iterator,
     Sequence,
     Union,
@@ -215,31 +216,27 @@ class ConcreteLet:
         be defined just once.
 
         '''
-        from xotl.fl.parsers import ParserError
-        equations = [
-            eq.compiled
-            for eq in self.definitions
-            if isinstance(eq, Equation)
-        ]
-        conses = [eq.name for eq in equations]
-        names = set(conses)
-        if len(names) != len(conses):
-            raise ParserError('Several definitions for the same name')
-        if any(set(find_free_names(eq.body)) & names for eq in equations):
+        localenv: TypeEnvironment = {}
+        defs: MutableMapping[str, AST] = {}   # noqa
+        for dfn in self.definitions:
+            if isinstance(dfn, Equation):
+                eq = defs.get(dfn.name)
+                if not eq:
+                    defs[dfn.name] = dfn.compile_patterns()
+                else:
+                    defs[dfn.name] = build_application(MATCH_OPERATOR,
+                                                       eq,
+                                                       dfn.compile_patterns())
+            elif isinstance(dfn, dict):
+                localenv.update(dfn)  # type: ignore
+            else:
+                assert False, f'Unknown definition type {dfn!r}'
+        names = set(defs)
+        if any(set(find_free_names(eq)) & names for eq in defs.values()):
             klass: Class[_LetExpr] = Letrec
         else:
             klass = Let
-        localenv: TypeEnvironment = {
-            name: value
-            for env in self.definitions
-            if isinstance(env, dict)
-            for name, value in env.items()
-        }
-        return klass(
-            {eq.name: eq.body for eq in equations},
-            self.body,
-            localenv
-        )
+        return klass(defs, self.body, localenv)
 
 
 class Let(_LetExpr):
@@ -629,7 +626,7 @@ def build_tuple(*exprs):
 UnitValue = Literal((), UnitType)
 
 
-def build_application(f, arg, *args):
+def build_application(f, arg, *args) -> Application:
     'Build the Application of `f` to many args.'
     if isinstance(f, str):
         f = Identifier(f)
@@ -639,8 +636,8 @@ def build_application(f, arg, *args):
     return result
 
 
-def build_list_expr(*items):
-    result = Nil
+def build_list_expr(*items) -> AST:
+    result: AST = Nil
     for item in reversed(items):
         result = Cons(item, result)
     return result
@@ -650,6 +647,10 @@ def build_list_expr(*items):
 Nil = Identifier('[]')
 
 
-def Cons(x, xs):
+def Cons(x, xs) -> Application:
     'Return x:xs'
     return Application(Application(Identifier(':'), x), xs)
+
+
+MATCH_OPERATOR = Identifier(':OR:')
+NO_MATCH_ERROR = Identifier(':NO_MATCH_ERROR:')
