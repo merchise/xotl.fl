@@ -1,7 +1,10 @@
 -- Just the types of the builtins values.
 
 ($) :: (a -> b) -> a -> b
+($) f a = f a
+
 (.) :: (b -> c) -> (a -> b) -> a -> c
+(.) f g x = f (g x)
 
 id :: a -> a
 map :: (a -> b) -> [a] -> [b]
