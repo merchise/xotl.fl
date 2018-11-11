@@ -701,7 +701,6 @@ def p_lambda_definition(prod):
 
 def p_pattern(prod):
     '''
-    pattern : identifier
     pattern : literal
     pattern : cons_pattern
     pattern : list_cons_pattern
@@ -710,6 +709,19 @@ def p_pattern(prod):
     pattern : empty_tuple_pattern
     '''
     prod[0] = prod[1]
+
+
+def p_var_pattern(prod):
+    '''pattern : LOWER_IDENTIFIER
+       pattern : UNDER_IDENTIFIER
+    '''
+    prod[0] = prod[1]
+
+
+def p_simplecons_pattern(prod):
+    '''pattern : UPPER_IDENTIFIER
+    '''
+    prod[0] = ConsPattern(prod[1])
 
 
 def p_list_cons_for_param(prod):
@@ -725,8 +737,9 @@ def p_param_pattern(prod):
 
 def p_empty_list_as_pattern(prod):
     '''empty_list_pattern : LBRACKET RBRACKET'''
-    # Instead of having the Literal([], ...) make the param a name.
-    prod[0] = Identifier('[]')
+    # We cannot have a Literal, because we don't know a monotype for it.  It
+    # has two be an Identifier
+    prod[0] = ConsPattern('[]')
 
 
 def p_unit_value_as_pattern(prod):

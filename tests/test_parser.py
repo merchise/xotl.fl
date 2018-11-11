@@ -148,9 +148,7 @@ def test_matching_lists():
 
     assert parse('second f:s:xs = s') == [Equation(
         'second',
-        [ConsPattern(':', [Identifier('f'),
-                           ConsPattern(':',
-                                       [Identifier('s'), Identifier('xs')])])],
+        [ConsPattern(':', ['f', ConsPattern(':', ['s', 'xs'])])],
         Identifier('s')
     )]
 

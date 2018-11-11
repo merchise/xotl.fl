@@ -38,7 +38,7 @@ def parse(program_source: str, *, debug: bool = False):
        ... """)
        [<Data List a = <DataCons Nil> | <DataCons Cons a (List a)>>,
         {'lhead': <TypeScheme: forall a. (List a) -> a>},
-        <equation lhead (Cons Identifier('a') Identifier('_')) = Identifier('a')>]
+        <equation lhead (Cons a _) = Identifier('a')>]
 
     '''
     from .parsers import program_parser, lexer
