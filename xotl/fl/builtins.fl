@@ -12,10 +12,31 @@ foldr :: (a -> b -> b) -> b -> [a] -> b
 
 data Bool = True | False
 
+
+-- The implementations of `and`, and `or` might skip the computation of the
+-- second argument; this means that the second argument (if evalutated) may
+-- fail to terminate, but the function may succeed.  The implementation of
+-- `xor` must evaluate both arguments.
+
 and :: Bool -> Bool -> Bool
+and False _   = False
+and True True = True
+and _ _       = False
+
 or :: Bool -> Bool -> Bool
+or True _      = True
+or False True  = True
+or False False = False
+
 xor :: Bool -> Bool -> Bool
+xor True False = True
+xor False True = True
+xor _ _        = False
+
 not :: Bool -> Bool
+not True  = False
+not False = True
+
 
 (+) :: Number -> Number -> Number
 (-) :: Number -> Number -> Number
