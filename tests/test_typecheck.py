@@ -95,8 +95,8 @@ def test_hidden_paradox_omega():
         p2 x y  = y
     in prxI p2 (prxI p2)
     '''
-    typecheck({'x': TypeScheme.from_str('a', generics=[])},
-              namesupply('.a'), expr_parse(code))
+    env = BuiltinEnvDict({'x': TypeScheme.from_str('a', generics=[])})
+    typecheck(env, namesupply('.a'), expr_parse(code))
 
     code = '''
     let id x    = x
@@ -106,8 +106,7 @@ def test_hidden_paradox_omega():
     in prxI p1 (prxI p1)
     '''
     with pytest.raises(TypeError):
-        typecheck({'x': TypeScheme.from_str('a', generics=[])},
-                  namesupply('.a'), expr_parse(code))
+        typecheck(env, namesupply('.a'), expr_parse(code))
 
 
 def test_basic_builtin_types():
@@ -177,13 +176,15 @@ def test_typecheck_recursion():
     tail = TypeScheme.from_str('[a] -> [a]')
     matches = TypeScheme.from_str('a -> b -> Bool')
     add = TypeScheme.from_str('a -> a -> a')
-    env = {'if': if_then_else,
-           'then': then,
-           'else': else_,
-           'matches': matches,
-           'Nil': Nil,
-           '+': add,
-           'tail': tail}
+    env = BuiltinEnvDict({
+        'if': if_then_else,
+        'then': then,
+        'else': else_,
+        'matches': matches,
+        'Nil': Nil,
+        '+': add,
+        'tail': tail
+    })
     phi, t = typecheck(
         env,
         namesupply('.a'),

@@ -1,4 +1,9 @@
--- Just the types of the builtins values.
+--
+-- Copyright (c) Merchise Autrement [~º/~] and Contributors
+-- All rights reserved.
+--
+-- This is free software; you can do what the LICENCE file allows you to.
+--
 
 ($) :: (a -> b) -> a -> b
 ($) f a = f a

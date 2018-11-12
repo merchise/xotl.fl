@@ -87,9 +87,9 @@ class BuiltinEnvDict(dict):
             NO_MATCH_ERROR.name: TypeScheme.from_str('a'),
 
             # These are 'match' and 'extract' for lists pattern matching.
-            Match('[]'): TypeScheme.from_str('[a]'),
-            Extract(':', 1): TypeScheme.from_str('[a] -> a'),
-            Extract(':', 2): TypeScheme.from_str('[a] -> [a]'),
+            Match('[]'): TypeScheme.from_str('[a] -> b -> b'),
+            Extract(':', 1): TypeScheme.from_str('[a] -> ([a] -> b) -> b'),
+            Extract(':', 2): TypeScheme.from_str('[a] -> ([a] -> b) -> b'),
 
             # Pattern matching requires 'extracting' the type from the Pattern
             # Cons.  These are dynamic are require knowledge from the locally
@@ -98,12 +98,14 @@ class BuiltinEnvDict(dict):
         init.update(d)
         super().__init__(init, **kw)
 
-    def __missing__(self, key):
+    def __missing__(self, key) -> TypeScheme:
         from xotl.fl.utils import namesupply
+        from xotl.fl.expressions import MatchLiteral, Extract
+        from xotl.fl.types import TypeVariable
         # Constructors of tuples are not fixed, since now you can have (1, 2,
         # 3..., 10000); that's a long tuple with a single constructor
         # (,,...,,); i.e 9999 commas.
-        if TUPLE_CONS.match(key):
+        if isinstance(key, str) and TUPLE_CONS.match(key):
             items = len(key) + 1
             names = list(namesupply(limit=items))
             type: Type = TypeCons(key, names)
@@ -111,6 +113,25 @@ class BuiltinEnvDict(dict):
                 type = name >> type
             self[key] = result = TypeScheme.from_typeexpr(type)
             return result
+        elif isinstance(key, Extract) and TUPLE_CONS.match(key.name):
+            # The type of 'extract' for tuple varies with the number of
+            # components of the tuple.  Example, for a triple, Extract(',,',
+            # 2) -- i.e. extracting the second element; has the type scheme
+            # 'forall a b c r. (a, b, c) -> (b -> r) -> r'.
+            type_ = self[key.name].t
+            assert isinstance(type_, TypeCons)
+            res = TypeVariable('r')  # this won't clash with vars in type_.
+            return TypeScheme.from_typeexpr(
+                type_ >> ((type_.subtypes[key.arg - 1] >> res) >> res)
+            )
+        elif isinstance(key, MatchLiteral):
+            # The match has type 'a -> (a -> r) -> r'; where a is the type of
+            # the literal.  We must ensure to generate a new variable not free
+            # in type a.  Everywhere else we generate types '.a0', '.a1'.
+            # Let's use '.r' as the result type.
+            a = key.value.type
+            res = TypeVariable('.r', check=False)
+            return TypeScheme.from_typeexpr(a >> ((a >> res) >> res))
         else:
             raise KeyError(key)
 
@@ -120,7 +141,7 @@ def _load_builtins():
     from xotl.fl import parse
     from xotl.fl.expressions import DataType
     builtins = pkg_resources.resource_filename('xotl.fl', 'builtins.fl')
-    with open(builtins, 'r') as f:
+    with open(builtins, 'r', encoding='utf-8') as f:
         code = f.read()
     # I have to remove comments my self because the parser doesn't have
     # comments.  But I do it line by line.

@@ -20,6 +20,7 @@ from typing import (
     Deque,
     Optional,
     Tuple,
+    Iterable,
 )
 from collections import deque, ChainMap
 
@@ -229,26 +230,26 @@ class ConcreteLet:
 
         '''
         localenv: TypeEnvironment = {}
-        defs: MutableMapping[str, AST] = {}   # noqa
+        defs: MutableMapping[str, FunctionDefinition] = {}   # noqa
         for dfn in self.definitions:
             if isinstance(dfn, Equation):
                 eq = defs.get(dfn.name)
                 if not eq:
-                    defs[dfn.name] = dfn.compile_patterns()
+                    defs[dfn.name] = FunctionDefinition([dfn])
                 else:
-                    defs[dfn.name] = build_application(MATCH_OPERATOR,
-                                                       eq,
-                                                       dfn.compile_patterns())
+                    assert isinstance(eq, FunctionDefinition)
+                    defs[dfn.name] = eq.append(dfn)
             elif isinstance(dfn, dict):
                 localenv.update(dfn)  # type: ignore
             else:
                 assert False, f'Unknown definition type {dfn!r}'
         names = set(defs)
-        if any(set(find_free_names(eq)) & names for eq in defs.values()):
+        compiled = {name: dfn.compile() for name, dfn in defs.items()}
+        if any(set(find_free_names(fn)) & names for fn in compiled.values()):
             klass: Class[_LetExpr] = Letrec
         else:
             klass = Let
-        return klass(defs, self.body, localenv)
+        return klass(compiled, self.body, localenv)
 
 
 class Let(_LetExpr):
@@ -313,6 +314,7 @@ class Match(Symbol):
 
 @dataclass(frozen=True)
 class Extract(Symbol):
+    'A symbol for the pattern matching "extract" function.'
     name: str
     arg: int
 
@@ -321,6 +323,17 @@ class Extract(Symbol):
 
     def __repr__(self):
         return f'<Extract: {self.arg} from {self.name}>'
+
+
+@dataclass(frozen=True)
+class MatchLiteral(Symbol):
+    value: Literal
+
+    def __str__(self):
+        return f':value:{self.value}:'
+
+    def __repr__(self):
+        return f'<Match value: {self.value}>'
 
 
 class ConsPattern:
@@ -426,35 +439,6 @@ class Equation:
 
     def __hash__(self):
         return hash((Equation, self.name, self.patterns, self.body))
-
-    def compile_patterns(self) -> AST:
-        '''Compile the patterns of the equation in to the lambda calculus.
-
-        '''
-        args = namesupply(f'.{self.name}_arg')
-        if self.patterns:
-            body = self.body
-            patterns: List[str] = []
-            for pattern in reversed(self.patterns):
-                if isinstance(pattern, str):
-                    arg = pattern
-                elif isinstance(pattern, ConsPattern):
-                    var = next(args)
-                    arg = var.name
-                else:
-                    arg = pattern  # type: ignore
-                patterns.insert(0, arg)
-            return build_lambda(patterns, body)
-        else:
-            return self.body
-
-    @property
-    def compiled(self) -> 'Equation':
-        'An equivalent equation with all patterns compiled.'
-        if self.patterns:
-            return Equation(self.name, [], self.compile_patterns())
-        else:
-            return self
 
 
 class DataCons:
@@ -641,6 +625,97 @@ class DataType:
         return ChainMap(self.pattern_matching_env, self.implied_env)
 
 
+class FunctionDefinition:
+    '''A single function definition.
+
+    '''
+    def __init__(self, equations: Iterable[Equation]) -> None:
+        equations: Tuple[Equation, ...] = tuple(equations)
+        names = {eq.name for eq in equations}
+        name = names.pop()
+        assert not names
+        first, *rest = equations
+        arity = len(first.patterns)
+        if any(len(eq.patterns) != arity for eq in rest):
+            raise ArityError(
+                "Function definition with different parameters count",
+                equations
+            )
+        self.name = name
+        self.equations = equations
+        self.arity = arity
+
+    def append(self, item) -> 'FunctionDefinition':
+        return FunctionDefinition(self.equations + (item, ))
+
+    def extend(self, items: Iterable[Equation]) -> 'FunctionDefinition':
+        return FunctionDefinition(self.equations + tuple(items))
+
+    def compile(self) -> AST:
+        '''Return the compiled form of the function definition.
+
+        '''
+        if self.arity:
+            ns = namesupply(f'.{self.name}_arg', limit=self.arity)
+            vars = [Identifier(v.name) for v in ns]
+            body = NO_MATCH_ERROR
+            for eq in self.equations:
+                dfn = eq.body
+                patterns: Iterable[Tuple[str, Pattern]] = zip(vars, eq.patterns)
+                for var, pattern in patterns:
+                    if isinstance(pattern, str):
+                        # Our algorithm is trivial but comes with a cost:
+                        # ``id x = x`` is must be translated to
+                        # ``id = \.id_arg0 -> (\x -> x) .id_arg0``.
+                        dfn = Application(
+                            Lambda(pattern, dfn),
+                            var
+                        )
+                    elif isinstance(pattern, Literal):
+                        # ``fib 0 = 1``; is transformed to
+                        # ``fib = \.fib_arg0 -> <MatchLiteral 0> .fib_arg0 1``
+                        dfn = build_application(
+                            Identifier(MatchLiteral(pattern)),
+                            var,
+                            dfn
+                        )
+                    elif isinstance(pattern, ConsPattern):
+                        if not pattern.params:
+                            # This is just a Match; similar to MatchLiteral
+                            dfn = build_application(
+                                Identifier(Match(pattern.cons)),
+                                var,
+                                dfn
+                            )
+                        else:
+                            for i, param in reversed(list(enumerate(pattern.params, 1))):
+                                if isinstance(param, str):
+                                    dfn = build_application(
+                                        Identifier(Extract(pattern.cons, i)),
+                                        var,
+                                        Lambda(param, dfn)
+                                    )
+                                else:
+                                    raise NotImplementedError(
+                                        f"Nested patterns {param}"
+                                    )
+                    else:
+                        assert False
+                body = build_lambda(
+                    [var.name for var in vars],
+                    build_application(
+                        MATCH_OPERATOR,
+                        dfn,
+                        body
+                    )
+                )
+            return body
+        else:
+            # This should be a simple value, so we return the body of the
+            # first equation.
+            return self.equations[0].body
+
+
 def parse(code: str, debug=False, tracking=False) -> AST:
     '''Parse a single expression `code`.
     '''
@@ -648,7 +723,7 @@ def parse(code: str, debug=False, tracking=False) -> AST:
     return expr_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
 
 
-def build_lambda(params: Reversible[Pattern], body: AST) -> Lambda:
+def build_lambda(params: Reversible[str], body: AST) -> Lambda:
     '''Create a Lambda from several parameters.
 
     Example:
@@ -719,7 +794,7 @@ def find_free_names(expr: AST) -> List[str]:
             # So we must make all the names in the bindings bound and then
             # look at all the definitions.
             #
-            # We push several POPFRAME at the to account for that.
+            # We push several POPFRAME to account for that.
             bindings.extend(node.keys())
             nodes.extend(POPFRAME for _ in node.keys())
             nodes.extend(node.values())
@@ -782,3 +857,7 @@ def Cons(x, xs) -> Application:
 
 MATCH_OPERATOR = Identifier(':OR:')
 NO_MATCH_ERROR = Identifier(':NO_MATCH_ERROR:')
+
+
+class ArityError(TypeError):
+    pass

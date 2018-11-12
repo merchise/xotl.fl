@@ -358,7 +358,6 @@ def test_no_attr_access():
     assert parse('p.children.len') == parse('p . children . len')
 
 
-@pytest.mark.xfail(reason='We have no pattern matching')
 def test_pattern_matching_let():
     code = '''let if True t f = t
                   if False t f = f
@@ -404,6 +403,10 @@ def test_consed_lists():
 
 def test_list_syntax():
     assert parse('[1, 2]') == parse('1:2:[]')
+
+
+def test_pattern_matching_nested():
+    parse('let second _:x:xs = x in second')
 
 
 @pytest.mark.xfail(reaseon='Look-ahead by 1 token, I need to work it out')
