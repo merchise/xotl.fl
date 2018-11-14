@@ -7,8 +7,15 @@
 (.) f g x = f (g x)
 
 id :: a -> a
+id x = x
+
 map :: (a -> b) -> [a] -> [b]
+map f []   = []
+map f x:xs = f x : map f xs
+
 foldr :: (a -> b -> b) -> b -> [a] -> b
+foldr f z []   = z
+foldr f z x:xs = f z x : foldr f z xs
 
 data Bool = True | False
 
@@ -132,6 +139,13 @@ safe_tail _:xs = Just xs
 
 append :: a -> [a] -> [a]
 append x ls = [x] ++ ls
+length :: [a] -> Number
+length = _length 0
+
+-- Tail recursive implementation of length
+_length :: Number -> [a] -> Number
+_length r []   = r
+_length r x:xs = _length (r + 1) xs
 
 
 -- The count produces an infinite stream of numbers starting at `x`.
