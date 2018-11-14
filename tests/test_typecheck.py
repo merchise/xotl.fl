@@ -212,7 +212,6 @@ def test_type_checking_tuples():
 def test_local_type_annotation_let():
     phi, t = typecheck(
         BuiltinEnvDict({
-            '[]': TypeScheme.from_str('[a]'),
             'reverse': TypeScheme.from_str('[a] -> [a]'),
             ':': TypeScheme.from_str('a -> [a] -> [a]')
         }),
@@ -224,7 +223,6 @@ def test_local_type_annotation_let():
 
     phi, t = typecheck(
         BuiltinEnvDict({
-            '[]': TypeScheme.from_str('[a]'),
             'reverse': TypeScheme.from_str('[a] -> [a]'),
             ':': TypeScheme.from_str('a -> [a] -> [a]')
         }),
@@ -237,7 +235,6 @@ def test_local_type_annotation_let():
 
     phi, t = typecheck(
         BuiltinEnvDict({
-            '[]': TypeScheme.from_str('[a]'),
             'reverse': TypeScheme.from_str('[a] -> [a]'),
             ':': TypeScheme.from_str('a -> [a] -> [a]')
         }),
@@ -251,7 +248,6 @@ def test_local_type_annotation_let():
     with pytest.raises(TypeError):
         typecheck(
             BuiltinEnvDict({
-                '[]': TypeScheme.from_str('[a]'),
                 'reverse': TypeScheme.from_str('[a] -> [a]'),
                 ':': TypeScheme.from_str('a -> [a] -> [a]')
             }),
@@ -265,7 +261,6 @@ def test_local_type_annotation_let():
 def test_local_type_annotation_letrec():
     phi, t = typecheck(
         BuiltinEnvDict({
-            '[]': TypeScheme.from_str('[a]'),
             'reverse': TypeScheme.from_str('[a] -> [a]'),
             ':': TypeScheme.from_str('a -> [a] -> [a]'),
             '+': TypeScheme.from_str('a -> a -> a'),
@@ -283,7 +278,6 @@ def test_local_type_annotation_letrec():
     with pytest.raises(TypeError):
         typecheck(
             BuiltinEnvDict({
-                '[]': TypeScheme.from_str('[a]'),
                 'reverse': TypeScheme.from_str('[a] -> [a]'),
                 ':': TypeScheme.from_str('a -> [a] -> [a]'),
                 '+': TypeScheme.from_str('a -> a -> a'),
