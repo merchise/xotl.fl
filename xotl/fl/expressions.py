@@ -326,6 +326,18 @@ class Extract(Symbol):
 
 
 @dataclass(frozen=True)
+class Select(Symbol):
+    'A symbol for the pattern matching "select" function.'
+    arg: int
+
+    def __str__(self):
+        return f':select:{self.arg}:'
+
+    def __repr__(self):
+        return f'<Select: {self.arg}>'
+
+
+@dataclass(frozen=True)
 class MatchLiteral(Symbol):
     value: Literal
 
@@ -379,18 +391,6 @@ class ConsPattern:
 
     def __hash__(self):
         return hash((ConsPattern, self.cons, self.params))
-
-    @property
-    def pattern_matching_funs(self) -> List[Symbol]:
-        '''The list of names to extract/match the arguments.
-
-        See `DataType.pattern_matching_env`:attr: for more details.
-
-        '''
-        if self.params:
-            return [Extract(self.cons, i + 1) for i in range(len(self.params))]
-        else:
-            return [Match(self.cons)]
 
 
 Pattern = Union[str, Literal, ConsPattern]
@@ -490,6 +490,9 @@ class DataType:
         self.name = name
         self.t = type_
         self.dataconses = tuple(defs)
+
+    def is_product_type(self):
+        return len(self.dataconses) == 1
 
     def __repr__(self):
         defs = ' | '.join(map(str, self.dataconses))
@@ -596,6 +599,28 @@ class DataType:
              <Extract: 1 from Cons>: <TypeScheme: forall a. (List a) -> a>,
              <Extract: 2 from Cons>: <TypeScheme: forall a. (List a) -> (List a)>}
 
+        For product types, Extract becomes select and there's no Match::
+
+        .. doctest::
+           :options: +NORMALIZE_WHITESPACE
+
+            >>> datatype = parse('data Pair a b = Pair a b')[0]
+
+            >>> datatype.pattern_matching_env
+            {<Select 1>: <TypeScheme: forall a b. (Pair a b) -> a>,
+             <Select 2>: <TypeScheme: forall a b. (Pair a b) -> b>}
+
+        The unit type (any type with a single value) has none::
+
+        .. doctest::
+           :options: +NORMALIZE_WHITESPACE
+
+            >>> datatype = parse('data Unit = Unit')[0]
+
+            >>> datatype.pattern_matching_env
+            {}
+
+
         .. note:: The names of those special functions are not strings.
 
         '''
@@ -603,11 +628,15 @@ class DataType:
 
         def _implied_funs(dc: DataCons) -> Iterator[Tuple[Symbol, TypeScheme]]:
             scheme = TypeScheme.from_typeexpr
-            if not dc.args:
-                yield Match(dc.name), scheme(self.t)
+            if not self.is_product_type():
+                if not dc.args:
+                    yield Match(dc.name), scheme(self.t)
+                else:
+                    for i, type_ in enumerate(dc.args):
+                        yield Extract(dc.name, i + 1), scheme(F(self.t, type_))
             else:
                 for i, type_ in enumerate(dc.args):
-                    yield Extract(dc.name, i + 1), scheme(F(self.t, type_))
+                    yield Select(i + 1), scheme(F(self.t, type_))
 
         return {
             name: ts
