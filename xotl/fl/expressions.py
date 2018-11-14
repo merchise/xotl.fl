@@ -399,10 +399,6 @@ Pattern = Union[str, Literal, ConsPattern]
 class Equation:
     '''The syntactical notion of an equation.
 
-    This is just the syntax of a left-hand side being equated to a right-hand
-    side.  The LHS is a `Pattern`:class:, while the RHS is any of the objects
-    of the `AST <ast-objects>`:ref:.
-
     '''
     def __init__(self, name: str, patterns: Sequence[Pattern], body: AST) -> None:
         self.name = name
@@ -626,7 +622,7 @@ class DataType:
 
 
 class FunctionDefinition:
-    '''A single function definition.
+    '''A single function definition (as a sequence of equations).
 
     '''
     def __init__(self, eqs: Iterable[Equation]) -> None:
