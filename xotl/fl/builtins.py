@@ -111,8 +111,7 @@ class BuiltinEnvDict(dict):
             type: Type = TypeCons(key, names)
             for name in reversed(names):
                 type = name >> type
-            self[key] = result = TypeScheme.from_typeexpr(type)
-            return result
+            return TypeScheme.from_typeexpr(type)
         elif isinstance(key, Extract) and TUPLE_CONS.match(key.name):
             # The type of 'extract' for tuple varies with the number of
             # components of the tuple.  Example, for a triple, Extract(',,',

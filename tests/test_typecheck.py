@@ -312,3 +312,12 @@ def test_ill_count1():
                               count 2  = 1
                           in count''')
         )
+
+
+def test_regression_missing_dynamic_builtins():
+    phi, t = typecheck(
+        BuiltinEnvDict({}),
+        namesupply('.a'),
+        expr_parse('let pair x y = (x, y) in pair 1 2')
+    )
+    assert unify(t, Type.from_str('(Number, Number)'))

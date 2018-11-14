@@ -296,13 +296,24 @@ def get_typeenv_unknowns(te: TypeEnvironment) -> List[str]:
     return sum((t.nongenerics for _, t in te.items()), [])
 
 
-def sub_typeenv(phi: Substitution, te: TypeEnvironment) -> TypeEnvironment:
+class sub_typeenv(TypeEnvironment):
     '''Create a sub-type environment.
 
     Read the warning in `subscheme`:func:.
 
     '''
-    return {x: subscheme(phi, st) for x, st in te.items()}
+    def __init__(self, phi: Substitution, env: TypeEnvironment) -> None:
+        self.phi = phi
+        self.env = env
+
+    def __getitem__(self, key):
+        return subscheme(self.phi, self.env[key])
+
+    def __iter__(self):
+        return iter(self.env)
+
+    def __len__(self):
+        return len(self.env)
 
 
 TCResult = Tuple[Substitution, Type]
