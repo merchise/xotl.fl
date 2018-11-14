@@ -406,7 +406,7 @@ class Equation:
     '''
     def __init__(self, name: str, patterns: Sequence[Pattern], body: AST) -> None:
         self.name = name
-        self.patterns = tuple(patterns or [])
+        self.patterns: Tuple[Pattern, ...] = tuple(patterns or [])
         self.body = body
 
     def __repr__(self):
@@ -629,8 +629,8 @@ class FunctionDefinition:
     '''A single function definition.
 
     '''
-    def __init__(self, equations: Iterable[Equation]) -> None:
-        equations: Tuple[Equation, ...] = tuple(equations)
+    def __init__(self, eqs: Iterable[Equation]) -> None:
+        equations: Tuple[Equation, ...] = tuple(eqs)
         names = {eq.name for eq in equations}
         name = names.pop()
         assert not names
@@ -658,10 +658,10 @@ class FunctionDefinition:
         if self.arity:
             ns = namesupply(f'.{self.name}_arg', limit=self.arity)
             vars = [Identifier(v.name) for v in ns]
-            body = NO_MATCH_ERROR
+            body: AST = NO_MATCH_ERROR
             for eq in self.equations:
                 dfn = eq.body
-                patterns: Iterable[Tuple[str, Pattern]] = zip(vars, eq.patterns)
+                patterns: Iterable[Tuple[Identifier, Pattern]] = zip(vars, eq.patterns)
                 for var, pattern in patterns:
                     if isinstance(pattern, str):
                         # Our algorithm is trivial but comes with a cost:
@@ -675,7 +675,7 @@ class FunctionDefinition:
                         # ``fib 0 = 1``; is transformed to
                         # ``fib = \.fib_arg0 -> <MatchLiteral 0> .fib_arg0 1``
                         dfn = build_application(
-                            Identifier(MatchLiteral(pattern)),
+                            Identifier(MatchLiteral(pattern)),  # type: ignore
                             var,
                             dfn
                         )
@@ -683,7 +683,7 @@ class FunctionDefinition:
                         if not pattern.params:
                             # This is just a Match; similar to MatchLiteral
                             dfn = build_application(
-                                Identifier(Match(pattern.cons)),
+                                Identifier(Match(pattern.cons)),  # type: ignore
                                 var,
                                 dfn
                             )
@@ -691,7 +691,7 @@ class FunctionDefinition:
                             for i, param in reversed(list(enumerate(pattern.params, 1))):
                                 if isinstance(param, str):
                                     dfn = build_application(
-                                        Identifier(Extract(pattern.cons, i)),
+                                        Identifier(Extract(pattern.cons, i)),  # type: ignore
                                         var,
                                         Lambda(param, dfn)
                                     )
