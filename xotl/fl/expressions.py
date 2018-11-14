@@ -743,7 +743,7 @@ def build_lambda(params: Reversible[str], body: AST) -> Lambda:
     return result  # type: ignore
 
 
-def find_free_names(expr: AST) -> List[str]:
+def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[str]:
     '''Find all names that appear free in `expr`.
 
     Example:
@@ -756,10 +756,24 @@ def find_free_names(expr: AST) -> List[str]:
       >>> find_free_names(parse('twice x x')).count('x')
       2
 
+    If `exclude` is None, we exclude any special identifiers used internally.  If you want
+    to expose them, pass the empty tuple:
+
+       >>> program = """
+       ...     let length [] = 0
+       ...         length x:xs = 1 + length xs
+       ...     in length
+       ... """
+       >>> set(find_free_names(parse(program), exclude=()))  # doctest: +LITERAL_EVAL
+       {'+', ':NO_MATCH_ERROR:', ':OR:'}
+
     '''
     POPFRAME = None  # remove a binding from the 'stack'
     result: List[str] = []
-    bindings: Deque[str] = deque([])
+    if exclude is None:
+        bindings: Deque[str] = deque([MATCH_OPERATOR.name, NO_MATCH_ERROR.name])
+    else:
+        bindings = deque([])
     nodes: Deque[Optional[AST]] = deque([expr])
     while nodes:
         node = nodes.pop()
@@ -767,7 +781,10 @@ def find_free_names(expr: AST) -> List[str]:
             bindings.pop()
         elif isinstance(node, Identifier):
             if node.name not in bindings:
-                result.append(node.name)
+                if isinstance(node.name, str):
+                    result.append(node.name)
+                else:
+                    assert isinstance(node.name, (Match, Extract, MatchLiteral))
         elif isinstance(node, Literal):
             if isinstance(node.annotation, AST):
                 nodes.append(node)
