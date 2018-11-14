@@ -13,11 +13,12 @@ import re
 from xoutil.modules import moduleproperty
 
 from .types import (
+    Type,
     TypeScheme,
     TypeCons,
     ListTypeCons,
     TupleTypeCons,
-    TypeEnvironment
+    TypeEnvironment,
 )
 
 # This is the type of all numbers in our language.  The expression language
@@ -69,9 +70,11 @@ class BuiltinEnv(dict):
         # (,,...,,); i.e 9999 commas.
         if TUPLE_CONS.match(key):
             items = len(key) + 1
-            ns = namesupply(limit=items)
-            cons = TypeCons(key, list(ns))
-            self[key] = result = TypeScheme.from_typeexpr(cons)
+            names = list(namesupply(limit=items))
+            type: Type = TypeCons(key, names)
+            for name in reversed(names):
+                type = name >> type
+            self[key] = result = TypeScheme.from_typeexpr(type)
             return result
 
 

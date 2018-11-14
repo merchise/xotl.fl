@@ -194,3 +194,7 @@ def test_typecheck_recursion():
     )
     # The count functions counts the number of elements.
     unify(Type.from_str('[a] -> Number'), t)
+
+
+def test_type_checking_tuples():
+    typecheck(builtins_env, namesupply('.a'), parse('(1, 2, 3)'))

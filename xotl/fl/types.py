@@ -38,6 +38,17 @@ class Type(AST):
         '''
         return parse(source)
 
+    def __rshift__(self, other):
+        '''Return the function type 'self -> other'.'''
+        if isinstance(other, Type):
+            return FunctionTypeCons(self, other)
+        else:
+            t1 = type(self).__name__
+            t2 = type(other).__name__
+            raise TypeError(
+                f"unsupported operand type(s) for >>: '{t1}' and '{t2}'"
+            )
+
 
 class TypeVariable(Type):
     '''A type variable, which may stand for any type.
