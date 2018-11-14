@@ -343,12 +343,12 @@ When doing several definitions you must split each definition with a newline
 When having several definitions for the same name, the code is transformed to
 do pattern matching.  This is represented by transforming your code:
 
-   >>> code = '''let if True t f = t
-   ...               if False t f = f
-   ...           in g . if'''
-
+   >>> code = '''let is_null [] = True
+   ...               is_null _  = False
+   ...           in is_null'''
    >>> parse(code)   # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-   Let((('if', Application(Application(Identifier(':OR:'), ...Identifier('if')))
+   Let((('is_null', Lambda('.is_null_arg0', Application(Application(Identifier(':OR:'), ..., Identifier('is_null'))
+
 
 The parser will produce a `~xotl.fl.expressions.Let`:class: node if there are
 no recursive definitions, otherwise it will create a
