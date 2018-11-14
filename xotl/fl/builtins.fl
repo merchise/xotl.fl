@@ -138,7 +138,8 @@ safe_tail _:xs = Just xs
 (++) x:xs ys = x:(xs ++ ys)
 
 append :: a -> [a] -> [a]
-append x ls = [x] ++ ls
+append x ls = ls ++ [x]
+
 length :: [a] -> Number
 length = _length 0
 
