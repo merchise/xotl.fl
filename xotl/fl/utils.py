@@ -10,13 +10,14 @@ from typing import Sequence, Iterator
 from xotl.fl.types import TypeVariable
 
 
-NameSupply = Iterator[TypeVariable]
+NameSupply = Iterator[str]
+TVarSupply = Iterator[TypeVariable]
 
 
 class namesupply:
     '''A names supply.
 
-    Each variable will be name '{prefix}{index}'; where the index starts at 0
+    Each name has the format '{prefix}{index}'; where the index starts at 0
     and increases by one at each new name.  You can put some invalid char in
     the prefix to ensure no programmer-provided name be produced.
 
@@ -24,7 +25,7 @@ class namesupply:
     many items as `limit`:
 
        >>> list(namesupply(limit=2))
-       [TypeVariable('a0'), TypeVariable('a1')]
+       ['a0', 'a1']
 
     '''
     def __init__(self, prefix='a', exclude: Sequence[str] = None,
@@ -38,7 +39,7 @@ class namesupply:
     def __iter__(self):
         return self
 
-    def __next__(self) -> TypeVariable:
+    def __next__(self) -> str:
         assert self.count < 20000, \
             'No expression should be so complex to require 20 000 new type variables'
 
@@ -50,6 +51,25 @@ class namesupply:
                     result = name
                 self.current_index += 1
             self.count += 1
-            return TypeVariable(result, check=False)
+            return result
         else:
             raise StopIteration
+
+
+class tvarsupply:
+    '''A supply of TypeVariables.
+
+    Works the same as `namesupply`:class: but instead of producing strings,
+    produces TypeVariables.
+
+    '''
+    def __init__(self, prefix='a', exclude: Sequence[str] = None,
+                 *, limit: int = None) -> None:
+        self.ns = iter(namesupply(prefix, exclude, limit=limit))
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> TypeVariable:
+        name = next(self.ns)
+        return TypeVariable(name, check=False)

@@ -42,7 +42,7 @@ from xotl.fl.expressions import (
     Let,
     Letrec,
 )
-from xotl.fl.utils import NameSupply
+from xotl.fl.utils import TVarSupply
 
 
 _STR_PADDING = ' ' * 4
@@ -319,7 +319,7 @@ class sub_typeenv(TypeEnvironment):
 TCResult = Tuple[Substitution, Type]
 
 
-def typecheck(env: TypeEnvironment, ns: NameSupply, exp: AST) -> TCResult:
+def typecheck(env: TypeEnvironment, ns: TVarSupply, exp: AST) -> TCResult:
     '''Check the type of `exp` in a given type environment `env`.
 
     The name supply `ns` is used to create new type variables whenever
@@ -346,7 +346,7 @@ def typecheck(env: TypeEnvironment, ns: NameSupply, exp: AST) -> TCResult:
 TCLResult = Tuple[Substitution, List[Type]]
 
 
-def tcl(env: TypeEnvironment, ns: NameSupply, exprs: Iterable[AST]) -> TCLResult:
+def tcl(env: TypeEnvironment, ns: TVarSupply, exprs: Iterable[AST]) -> TCLResult:
     '''Type check several expressions in the context of `env`.
 
     The name supply `ns` is shared across all other functions to ensure no
@@ -362,7 +362,7 @@ def tcl(env: TypeEnvironment, ns: NameSupply, exprs: Iterable[AST]) -> TCLResult
         return scompose(psi, phi), [subtype(psi, t)] + ts
 
 
-def newinstance(ns: NameSupply, ts: TypeScheme) -> Type:
+def newinstance(ns: TVarSupply, ts: TypeScheme) -> Type:
     '''Create an instance of `ts` drawing names from the supply `ns`.
 
     Each generic variable in `ts` gets a new name from the supply.
@@ -485,7 +485,7 @@ def typecheck_let(env: TypeEnvironment, ns, exp: Let) -> TCResult:
 
 
 def add_decls(env: TypeEnvironment,
-              ns: NameSupply,
+              ns: TVarSupply,
               names: Iterable[Union[str, Symbol]],
               types: Iterable[Type]) -> TypeEnvironment:
     '''Create an extended type environment with ...'''

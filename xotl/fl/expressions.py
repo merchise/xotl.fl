@@ -681,12 +681,11 @@ class FunctionDefinition:
 
         '''
         if self.arity:
-            ns = namesupply(f'.{self.name}_arg', limit=self.arity)
-            vars = [Identifier(v.name) for v in ns]
+            vars = list(namesupply(f'.{self.name}_arg', limit=self.arity))
             body: AST = NO_MATCH_ERROR
             for eq in self.equations:
                 dfn = eq.body
-                patterns: Iterable[Tuple[Identifier, Pattern]] = zip(vars, eq.patterns)
+                patterns: Iterable[Tuple[str, Pattern]] = zip(vars, eq.patterns)
                 for var, pattern in patterns:
                     if isinstance(pattern, str):
                         # Our algorithm is trivial but comes with a cost:
@@ -694,14 +693,14 @@ class FunctionDefinition:
                         # ``id = \.id_arg0 -> (\x -> x) .id_arg0``.
                         dfn = Application(
                             Lambda(pattern, dfn),
-                            var
+                            Identifier(var)
                         )
                     elif isinstance(pattern, Literal):
                         # ``fib 0 = 1``; is transformed to
                         # ``fib = \.fib_arg0 -> <MatchLiteral 0> .fib_arg0 1``
                         dfn = build_application(
                             Identifier(MatchLiteral(pattern)),  # type: ignore
-                            var,
+                            Identifier(var),
                             dfn
                         )
                     elif isinstance(pattern, ConsPattern):
@@ -709,7 +708,7 @@ class FunctionDefinition:
                             # This is just a Match; similar to MatchLiteral
                             dfn = build_application(
                                 Identifier(Match(pattern.cons)),  # type: ignore
-                                var,
+                                Identifier(var),
                                 dfn
                             )
                         else:
@@ -717,7 +716,7 @@ class FunctionDefinition:
                                 if isinstance(param, str):
                                     dfn = build_application(
                                         Identifier(Extract(pattern.cons, i)),  # type: ignore
-                                        var,
+                                        Identifier(var),
                                         Lambda(param, dfn)
                                     )
                                 else:
@@ -727,7 +726,7 @@ class FunctionDefinition:
                     else:
                         assert False
                 body = build_lambda(
-                    [var.name for var in vars],
+                    vars,
                     build_application(
                         MATCH_OPERATOR,
                         dfn,

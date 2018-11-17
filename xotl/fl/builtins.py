@@ -99,7 +99,7 @@ class BuiltinEnvDict(dict):
         super().__init__(init, **kw)
 
     def __missing__(self, key) -> TypeScheme:
-        from xotl.fl.utils import namesupply
+        from xotl.fl.utils import tvarsupply
         from xotl.fl.expressions import MatchLiteral, Extract
         from xotl.fl.types import TypeVariable
         # Constructors of tuples are not fixed, since now you can have (1, 2,
@@ -107,7 +107,7 @@ class BuiltinEnvDict(dict):
         # (,,...,,); i.e 9999 commas.
         if isinstance(key, str) and TUPLE_CONS.match(key):
             items = len(key) + 1
-            names = list(namesupply(limit=items))
+            names = list(tvarsupply(limit=items))
             type: Type = TypeCons(key, names)
             for name in reversed(names):
                 type = name >> type

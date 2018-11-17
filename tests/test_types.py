@@ -14,7 +14,7 @@ from xotl.fl.types import (
     ListTypeCons,
 )
 from xotl.fl.types import parse
-from xotl.fl.utils import namesupply
+from xotl.fl.utils import tvarsupply
 
 
 # The id function type
@@ -45,8 +45,8 @@ def test_s_combinator():
     )
 
 
-def test_namesupply():
-    assert list(namesupply('.a', limit=2, exclude='.a0')) == [
+def test_tvarsupply():
+    assert list(tvarsupply('.a', limit=2, exclude='.a0')) == [
         T('.a1', check=False),
         T('.a2', check=False)
     ]
