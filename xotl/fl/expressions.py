@@ -608,8 +608,8 @@ class DataType:
             >>> datatype = parse('data Pair a b = Pair a b')[0]
 
             >>> datatype.pattern_matching_env
-            {<Select 1>: <TypeScheme: forall a b. (Pair a b) -> a>,
-             <Select 2>: <TypeScheme: forall a b. (Pair a b) -> b>}
+            {<Select: 1>: <TypeScheme: forall a b. (Pair a b) -> a>,
+             <Select: 2>: <TypeScheme: forall a b. (Pair a b) -> b>}
 
         The unit type (any type with a single value) has none::
 
