@@ -9,18 +9,19 @@
 from dataclasses import dataclass
 from typing import (
     Any,
+    Deque,
+    FrozenSet,
+    Iterable,
+    Iterator,
+    List,
     Mapping,
     MutableMapping,
-    Iterator,
-    Sequence,
-    Union,
-    List,
-    Type as Class,
-    Reversible,
-    Deque,
     Optional,
+    Reversible,
+    Sequence,
     Tuple,
-    Iterable,
+    Type as Class,
+    Union,
 )
 from collections import deque, ChainMap
 
@@ -843,6 +844,58 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[str]:
         else:
             assert False, f'Unknown AST node: {node!r}'
     return result
+
+
+def replace_free_occurrences(self: AST,
+                             substitutions: Mapping[str, str]) -> AST:
+    '''Create a new expression replacing free occurrences of variables.
+
+    You are responsible to avoid the name capture problem::
+
+      >>> replace_free_occurrences(expr_parse('\id -> id x'), {'x': 'id'})
+      Lambda('id', Application(Identifier('id'), Identifier('id')))
+
+    '''
+
+    def replace(expr: AST, bindings: FrozenSet[str]):
+        if isinstance(expr, Identifier):
+            if expr.name not in bindings:
+                replacement = substitutions.get(expr.name, None)
+                if replacement is not None:
+                    return Identifier(replacement)
+            return expr
+        elif isinstance(expr, Literal):
+            if isinstance(expr.annotation, AST):
+                return Literal(
+                    expr.value,
+                    expr.type,
+                    replace(expr.annotation, bindings)
+                )
+            else:
+                return expr
+        elif isinstance(expr, Application):
+            return Application(
+                replace(expr.e1, bindings),
+                replace(expr.e2, bindings),
+            )
+        elif isinstance(expr, Lambda):
+            return Lambda(
+                expr.varname,
+                replace(expr.body, bindings | {expr.varname})
+            )
+        elif isinstance(expr, _LetExpr):
+            newvars = {name for name, _ in expr.bindings}
+            newbindings = bindings | newvars
+            return type(expr)(
+                {name: replace(dfn, newbindings)
+                 for name, dfn in expr.bindings},
+                replace(expr.body, newbindings),
+                expr.localenv
+            )
+        else:
+            assert False
+
+    return replace(self, frozenset({NO_MATCH_ERROR.name, MATCH_OPERATOR.name}))
 
 
 def build_tuple(*exprs):

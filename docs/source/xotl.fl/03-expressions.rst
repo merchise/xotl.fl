@@ -3,7 +3,7 @@
 ===================================================================
 
 .. automodule:: xotl.fl.expressions
-   :members: parse, find_free_names, build_lambda
+   :members: parse, find_free_names, replace_free_occurrences, build_lambda
 
 .. testsetup::
 
