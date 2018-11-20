@@ -8,12 +8,12 @@ Our parser recognizes the empty list '[]' as an identifier::
   >>> expr_parse('[]')
   Identifier('[]')
 
-Having '[]' as an Identifier could to be confusing.  It's a constant.  It
-should be a Literal.
+Having '[]' as an Identifier could be confusing.  It's a constant.  It should
+be a Literal.
 
 However, there's no way we can construct a Literal for it (unless we construct
 many types).  The type of '[]' is actually polymorphic (``forall a. [a]``).
-Both expressions:
+The following expressions are both valid:
 
 - ``1:[]``
 

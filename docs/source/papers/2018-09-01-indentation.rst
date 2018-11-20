@@ -30,7 +30,7 @@ Trying to parse indentation
 
 The solution seems to be to issue a PADDING at the same level of indentation
 of the line before, an INDENT if the level of indentation increases, a DEDENT
-if the indentation level decreases, and a NEWLINE if more than one '\\n' are
+if the indentation level decreases, and a NEWLINE if more than one '\n' are
 found.
 
 Look at this program::
@@ -97,9 +97,9 @@ Decision
 
 2) Introduce 'NEWLINE' to divide definitions:
 
-   a) any chunk of more than one '\\n'
+   a) any chunk of more than one '\n'
 
-   b) any chunk with single '\\n' but ending with a (possibly empty) run of
+   b) any chunk with single '\n' but ending with a (possibly empty) run of
       spaces that set the indentation level back to the minimal indentation
       level (set by the first line(s) of the programs).
 
