@@ -79,9 +79,38 @@ Which becomes::
 The semantics of ``<Extract 2 from,>`` might force the evaluation of the
 second component of ``.p``, even it isn't used.
 
+Sum products are also affected in the same-constructor equations::
+
+   data Funny = First (Funny a) (Funny b)
+              | Second (Funny a) (Funny a)
+              | Empty
+
+   height :: Funny a -> Number
+   height Empty        = 0
+   height (First x y)  = max (height x)
+   height (Second x y) = max (height y)
+
+Each of the recursive lines require to extract both components although they
+aren't both used.
+
 
 Possible solutions
 ------------------
+
+Disregard lazy semantics; aka. remain strict for pattern matching
+-----------------------------------------------------------------
+
+This translation might be, however, sufficient for type-checking.  The
+functions ``Extract`` for ``(,)`` have the following type schemes::
+
+  <Extract 1 for ,> :: forall a b r. (a, b) -> (a -> r) -> r
+  <Extract 2 for ,> :: forall a b r. (a, b) -> (b -> r) -> r
+
+The translation above for ``fst`` is type-correct; furthermore, any
+semantically correct translation must remain type-correct.  This suggest we
+can use this *strict* translation to perform type-checking, but another *lazy*
+translation when compiling.
+
 
 Change the semantics of ``Extract`` for product types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -103,33 +132,17 @@ Alternatively, we might simply translate differently::
 
   fst = \.p -> (\x y -> x) (<Select 1st> .p) (<Select 2nd> .p)
 
-To this we have to know whether the type is a product or sum type.
 
-
-The Haskell approach
---------------------
-
-Testing in ``ghci``::
-
-  Prelude> bottom = bottom
-  Prelude> fst (1, bottom)
-  1
-
-Which means that Haskell does not evaluates the second component (``bottom``);
-otherwise it would fail to terminate.
-
-Another try::
-
-  Prelude> let x = snd (1, bottom) in 1
-  1
-
-Since ``x`` is not used ``bottom`` is not evaluated.
+To do this we have to know whether the type is a product or sum type.
 
 
 Decision
 --------
 
-I will attempt the `second <better-translation-product-type_>`__ choice.
+I will attempt the `better translation <better-translation-product-type_>`__
+choice.  We need to have an evaluation machinery for this project to be of any
+use; so, pursing the first choice only works for strict pattern matching.
+
 Since I don't have yet the evaluation machinery I cannot really project how
 the first choice would impact the future.
 
