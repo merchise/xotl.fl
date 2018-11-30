@@ -16,9 +16,19 @@ Implementation of Functional Programming Languages'.
 
 '''
 from collections import deque
-from typing import Iterable, Sequence, List, Mapping, Deque, Set, Union
+from typing import (
+    Iterable,
+    Sequence,
+    List,
+    Mapping,
+    Deque,
+    Set,
+    Union,
+    Tuple,
+)
 from typing import Optional  # noqa
 from itertools import zip_longest
+from dataclasses import dataclass
 
 
 class AST:
@@ -77,6 +87,18 @@ class TypeVariable(Type):
 
     def __len__(self):
         return 0   # So that 'Int' has a bigger size than 'a'.
+
+    def __bool__(self):
+        return True   # needed because __len__ is 0.
+
+
+@dataclass
+class TypeConstraint:
+    name: str   # This is the name of the constraint, e.g 'Eq'
+    variable: TypeVariable
+
+    def __str__(self):
+        return f'{self.name} {self.variable.name}'
 
 
 class TypeCons(Type):
@@ -198,6 +220,27 @@ class TypeScheme(Type):
         return cls.from_typeexpr(type_, generics=generics)
 
 
+@dataclass
+class ConstrainedType(Type):
+    constraints: Tuple[TypeConstraint, ...]
+    type: Type
+
+    def __init__(self, constraints: Sequence[TypeConstraint], t: Type) -> None:
+        constraints = tuple(constraints)
+        constrained = {c.variable.name for c in constraints}
+        names = set(find_tvars(t))
+        if constrained - names:
+            raise TypeError(
+                'Constraint not applied:', constrained - names
+            )
+        self.constraints = constraints
+        self.type = t
+
+    def __str__(self):
+        constraints = ', '.join(map(str, self.constraints))
+        return f'{constraints} => {self.type!s}'
+
+
 #: Shortcut to create function types
 FunctionTypeCons = lambda a, b: TypeCons('->', [a, b], binary=True)
 
@@ -296,6 +339,8 @@ def find_tvars(t: Type) -> List[str]:
                 current = set()
             generics.append(current | set(t.generics))
             queue.append(POP_GENERICS)
+        elif isinstance(t, ConstrainedType):
+            queue.append(t.type)
         else:
             assert isinstance(t, TypeCons)
             queue.extend(t.subtypes)

@@ -6,6 +6,8 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
+from typing import List
+
 from xoutil.objects import setdefaultattr
 from xoutil.future.datetime import TimeSpan
 
@@ -18,6 +20,8 @@ from xotl.fl.types import (
     TypeScheme,
     FunctionTypeCons,
     TupleTypeCons,
+    TypeConstraint,
+    ConstrainedType,
 )
 from xotl.fl.types import TypeEnvironment  # noqa
 from xotl.fl.expressions import (
@@ -76,6 +80,7 @@ tokens = [
     'SLASH',
     'BACKSLASH',
     'ARROW',
+    'FATARROW',
     'DOUBLESLASH',
     'PERCENT',
     'OPERATOR',
@@ -381,6 +386,7 @@ _OPERATOR_MAP = {
     '/': 'SLASH',
     '//': 'DOUBLESLASH',
     '->': 'ARROW',
+    '=>': 'FATARROW',
     '\\': 'BACKSLASH',
     '%': 'PERCENT',
     '=': 'EQ',
@@ -484,6 +490,7 @@ def p_standalone_definitions(prod):
                 | simple_tuple_expr
 
     st_type_expr : type_expr
+                 | constrained_type_expr
 
     '''
     count = len(prod)
@@ -952,6 +959,47 @@ def p_type_factor_paren(p):
 def p_type_factor_bracket(prod):
     'type_factor : LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET'
     prod[0] = ListTypeCons(prod[3])
+
+
+# The following grammar rule are constructed so that the parser is not
+# ambiguous.  For instance the type expressions:
+#
+#    Eq a => ...
+#    Maybe a -> ...
+#
+# The first is a constraint, while the second is a "normal" type constructor.
+# But at the point where parser has seen either 'Eq' or 'Maybe' it doesn't
+# look beyond to see the ARROW or FATARROW.
+#
+# The trick is to allow the parser to advance until it has no choice but to
+# reduce via 'constrained_type_expr' and then check that you only place valid
+# type constrains.  The type_constrains is then a list of type_expr that are
+# later required to match the 'Cons var' format.
+#
+def p_constrained_type_expr(prod):
+    '''constrained_type_expr : type_constraints FATARROW type_expr
+
+    '''
+    def isvalid(constraint):
+        return (isinstance(constraint, TypeCons) and
+                len(constraint.subtypes) == 1 and
+                isinstance(constraint.subtypes[0], TypeVariable))
+
+    lst: List[TypeCons] = prod[1]
+    invalid = next((c for c in lst if not isvalid(c)), None)
+    if invalid:
+        raise ParserError(f"Invalid constraint '{invalid!s}'")
+    constraints: List[TypeConstraint] = [
+        TypeConstraint(c.cons, c.subtypes[0])
+        for c in lst
+    ]
+    prod[0] = ConstrainedType(constraints, prod[3])
+
+
+def p_type_constraint(prod):
+    '''type_constraints : _type_expr_list_trail
+    '''
+    prod[0] = prod[1]
 
 
 def p_maybe_padding(prod):

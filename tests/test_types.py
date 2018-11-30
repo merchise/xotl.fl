@@ -12,8 +12,12 @@ from xotl.fl.types import (
     FunctionTypeCons as F,
     TypeCons as C,
     ListTypeCons,
+    ConstrainedType,
+    TypeConstraint,
 )
 from xotl.fl.types import parse
+from xotl.fl.parsers import ParserError
+
 from xotl.fl.utils import tvarsupply
 
 
@@ -83,3 +87,22 @@ def test_parse_application():
 
     # Is this ok?
     assert parse('(f b) a') == parse('f b a')
+
+
+def test_valid_constraints():
+    assert parse('Eq a => a -> a -> Bool') == ConstrainedType(
+        [TypeConstraint('Eq', T('a')), ],
+        parse('a -> a -> Bool')
+    )
+    assert parse('Eq a, Ord a => a -> a -> Bool') == ConstrainedType(
+        [TypeConstraint('Eq', T('a')), TypeConstraint('Ord', T('a')), ],
+        parse('a -> a -> Bool')
+    )
+
+
+def test_invalid_constraints():
+    with pytest.raises(TypeError):
+        parse('Eq c => a')
+
+    with pytest.raises(ParserError):
+        parse('Eq a, Ord a -> a => Bool')
