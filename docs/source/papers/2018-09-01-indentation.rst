@@ -78,6 +78,9 @@ with ``let`` alone, the ``in`` keyword is enough to disambiguate.
 Decision
 ========
 
+.. role:: deleted
+
+
 1) Keep the ``where`` as it is.   To disambiguate you'll need parenthesis::
 
      fn = let a1 = aa1
@@ -97,11 +100,33 @@ Decision
 
 2) Introduce 'NEWLINE' to divide definitions:
 
-   a) any chunk of more than one '\n'
+   a) `any chunk of more than one '\n'`:deleted:.
 
    b) any chunk with single '\n' but ending with a (possibly empty) run of
       spaces that set the indentation level back to the minimal indentation
       level (set by the first line(s) of the programs).
+
+   A 'NEWLINE' is now emitted in the case explained in `b)`.  Doing otherwise
+   would make the following program invalid because it uses new-lines to
+   separate local definitions:
+
+   .. code-block:: haskell
+
+      class Eq a => Ord a where
+           (<) :: a -> a -> Bool
+           (<) a b = not (a >= b)
+
+           (>) :: a -> a -> Bool
+           (>) a b = not (a <= b)
+
+           (<=) :: a -> a -> Bool
+           (<=) a b = a < b `or` a == b
+
+           (>=) :: a -> a -> Bool
+           (>=) a b = a > b `or` a == b
+
+   This change does not introduce any (new) ambiguity.
+
 
 3) A single definition (expressions, type expressions, and data types) cannot
    contain NEWLINE tokens.  The places where a line break is allowed must be

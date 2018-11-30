@@ -280,7 +280,7 @@ def t_SPACE(t):
         last = value.split('\n')[-1]
         level = len(last)
         _set_indentation_level(t, level)
-        if lines > 1 or level == _get_min_indentation_level(t):
+        if level == _get_min_indentation_level(t):
             t.type = 'NEWLINE'
         else:
             t.type = 'PADDING'

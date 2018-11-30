@@ -1,0 +1,7 @@
+@import url(css/theme.css);
+
+.deleted {
+  font-style: oblique;
+  text-decoration-style: double;
+  text-decoration-line: line-through;
+}

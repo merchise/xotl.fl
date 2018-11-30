@@ -1,0 +1,5 @@
+.deleted {
+  text-decoration-style: solid;
+  text-decoration-line: line-through;
+  font-style: oblique;
+}
