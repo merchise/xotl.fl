@@ -143,7 +143,7 @@ t_COLON = r':'
 # before t_SPACE to ensure the tokenizer captures all spaces in a string as
 # part of the string.
 def t_NL(t):
-    r'^\s+'
+    r'^\s+(--[-]*[^\n]*\n\s*)*'
     value = t.value
     lines = value.count('\n')
     t.lexer.lineno += lines
@@ -164,6 +164,31 @@ def t_NL(t):
     # beginning of the program.
     last = value.split('\n')[-1]
     _set_min_indentation_level(t, len(last))
+    _set_indentation_level(t, len(last))
+
+
+def t_NL_COMMENT(t):
+    r'^(--[-]*[^\n]*\n\s*)+'
+    value = t.value
+    lines = value.count('\n')
+    t.lexer.lineno += lines
+    # A program that starts:
+    #
+    #         +----  column 0
+    #         |
+    #         v
+    # line 0: -- ...\n
+    # line 1:       \n
+    # line 2:     id ....
+    #
+    # t_NL will match up to the space before 'id'.  So we start at that level
+    # of indentation.  If 'id' would start the line, then the last char of
+    # 'value' would a '\n' and last would be the empty string.
+    #
+    # Beware that _indent_level is only set here if there are spaces at the
+    # beginning of the program.
+    last = value.split('\n')[-1]
+    _set_min_indentation_level(t, 0)
     _set_indentation_level(t, len(last))
 
 
@@ -225,6 +250,22 @@ def t_CHAR(t):
     return t
 
 
+def t_COMMENT(t):
+    r'(\s*--[-]*[^\n]*(\n\s*|$))+'
+    if '\n' in t.value:
+        value = t.value
+        lines = value.count('\n')
+        last = value.split('\n')[-1]
+        level = len(last)
+        _set_indentation_level(t, level)
+        if level == _get_min_indentation_level(t):
+            t.type = 'NEWLINE'
+        else:
+            t.type = 'PADDING'
+        t.lexer.lineno += lines
+        return t
+
+
 def t_BASE2_INTEGER(t):
     '-?0[bB][01][01_]*'
     return t
@@ -258,7 +299,6 @@ def t_FLOAT(t):
 def t_BASE10_INTEGER(t):
     r'-?[0-9][0-9_]*'
     return t
-
 
 # We need to treat space specially in this grammar because it can have a
 # semantical value: the application of expressions 'e1 e2'.
@@ -1009,10 +1049,18 @@ def p_maybe_padding(prod):
     pass
 
 
+# The lexer does a lot to prevent NEWLINE at the beginning of the code, but it
+# can't help us at the end.
 def p_program(prod):
-    '''program : definitions
+    '''program : definitions _trailing_new_lines
     '''
     prod[0] = prod[1]
+
+
+def p_trailing_new_lines(prod):
+    '''_trailing_new_lines : empty
+       _trailing_new_lines : NEWLINE _trailing_new_lines
+    '''
 
 
 def p_definitions(prod):
@@ -1022,13 +1070,18 @@ def p_definitions(prod):
 
 
 def p_definition_set(prod):
-    '''_definition_set : NEWLINE definition _definition_set
+    '''_definition_set : newlines definition _definition_set
     '''
     _collect_item(prod)
 
 
+def p_newlines(prod):
+    '''newlines : NEWLINE _trailing_new_lines'''
+
+
 def p_definition_set2(prod):
     '''_definition_set : empty
+       _definition_set : newlines
     '''
     prod[0] = []
 

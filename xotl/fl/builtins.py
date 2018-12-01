@@ -141,16 +141,8 @@ def _load_builtins():
     from xotl.fl.expressions import DataType
     builtins = pkg_resources.resource_filename('xotl.fl', 'builtins.fl')
     with open(builtins, 'r', encoding='utf-8') as f:
-        code = f.read()
-    # I have to remove comments my self because the parser doesn't have
-    # comments.  But I do it line by line.
-    source = [
-        line
-        for source_line in code.split('\n')
-        for line in (_strip_comment(source_line), )
-        if line
-    ]
-    res = parse('\n'.join(source))
+        source = f.read()
+    res = parse(source)
     gamma = {}
     for definition in res:
         if isinstance(definition, dict):
@@ -158,13 +150,5 @@ def _load_builtins():
         elif isinstance(definition, DataType):
             gamma.update(definition.full_typeenv)
     return gamma
-
-
-def _strip_comment(line):
-    if line.strip().startswith('--'):
-        return '\n'  # leave an emtpy line
-    else:
-        return line
-
 
 del re
