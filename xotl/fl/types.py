@@ -231,7 +231,7 @@ class ConstrainedType(Type):
         names = set(find_tvars(t))
         if constrained - names:
             raise TypeError(
-                'Constraint not applied:', constrained - names
+                f'Constraint not applied: {constrained - names}'
             )
         self.constraints = constraints
         self.type = t

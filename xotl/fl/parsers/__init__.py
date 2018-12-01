@@ -1016,6 +1016,18 @@ def p_type_factor_bracket(prod):
 # type constrains.  The type_constrains is then a list of type_expr that are
 # later required to match the 'Cons var' format.
 #
+# TODO: Should we allow explict 'forall' in constrained types? At the moment,
+# we fail to parse the expressions:
+#
+# - 'forall a. Num a => a -> a -> a'; Invalid constraint 'forall a. Num a'.
+#
+# - 'forall a. Num a, Eq a => a -> a'; Invalid constraint 'forall a. Num a'.
+#
+# - 'forall a. (Num a, Eq a) => a -> a'; Invalid constraint
+#   'forall a. (Num a, Eq a)'.
+#
+# On the other hand, 'Num a => forall a. a -> a'; fails with Constraint not
+# applied: {'a'}; but I find that reasonable.
 def p_constrained_type_expr(prod):
     '''constrained_type_expr : type_constraints FATARROW type_expr
 
