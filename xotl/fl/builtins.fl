@@ -59,12 +59,29 @@ not False = True
 (^) :: Number -> Number -> Number
 
 
-(==) :: a -> a -> Bool
-(!=) :: a -> a -> Bool
-(<) :: a -> a -> Bool
-(>) :: a -> a -> Bool
-(<=) :: a -> a -> Bool
-(>=) :: a -> a -> Bool
+class Eq a where
+  -- minimal implementation requires one of '==' or '/='.
+  (==) :: a -> a -> Bool
+  (==) a b = not (a /= b)
+
+  (/=) :: a -> a -> Bool
+  (/=) a b = not (a == b)
+
+
+
+class Eq a => Ord a where
+  -- minimal implementation requires any of '<', '>', '<=', or '>='.
+  (<) :: a -> a -> Bool
+  (<) a b = not (a >= b)
+
+  (>) :: a -> a -> Bool
+  (>) a b = not (a <= b)
+
+  (<=) :: a -> a -> Bool
+  (<=) a b = a < b `or` a == b
+
+  (>=) :: a -> a -> Bool
+  (>=) a b = a > b `or` a == b
 
 
 -- I'm putting Left, Right and (,) not because they are necessarily

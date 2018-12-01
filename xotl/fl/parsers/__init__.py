@@ -38,6 +38,7 @@ from xotl.fl.expressions import (
     build_application,
     build_list_expr,
 )
+from xotl.fl.typeclasses import TypeClass, Instance
 
 from xotl.fl.builtins import (
     StringType,
@@ -101,8 +102,8 @@ reserved = [
     ('data', None),
 
     # These are just to avoid the expression to (re)define them.
-    ('class', None),
-    ('instance', None),
+    ('class', r'\bclass\s+'),
+    ('instance', r'\binstance\s+'),
 
     ('where', r'\s+where\b'),
     ('let', None),
@@ -1101,6 +1102,7 @@ def p_definition_set2(prod):
 def p_definition(prod):
     '''definition : local_definition
                   | datatype_definition
+                  | typeclass
     '''
     prod[0] = prod[1]
 
@@ -1127,6 +1129,45 @@ def p_local_definition_set(prod):
 
 def p_local_definition_set_empty(prod):
     '''_local_definition_set : empty
+    '''
+    prod[0] = []
+
+
+def p_typeclass(prod):
+    '''typeclass : KEYWORD_CLASS _typeclass_def \
+                   KEYWORD_WHERE PADDING local_definitions
+    '''
+    constraints, newclass = prod[2]
+    prod[0] = TypeClass(constraints, newclass, prod[5])
+
+
+def p_typeclass_def(prod):
+    '''_typeclass_def : simple_type_constraint
+    '''
+    prod[0] = None, prod[1]
+
+
+def p_typeclass_def_with_constraints(prod):
+    '''_typeclass_def : simple_type_constraints FATARROW simple_type_constraint
+    '''
+    prod[0] = prod[1], prod[3]
+
+
+def p_type_constraint_def(prod):
+    '''simple_type_constraint : UPPER_IDENTIFIER SPACE type_variable
+    '''
+    prod[0] = TypeConstraint(prod[1], prod[3])
+
+
+def p_type_constraints(prod):
+    '''simple_type_constraints : simple_type_constraint _simple_type_constraints
+       _simple_type_constraints : COMMA simple_type_constraint _simple_type_constraints
+    '''
+    _collect_item(prod)
+
+
+def p_type_constraints_empty(prod):
+    '''_simple_type_constraints : empty
     '''
     prod[0] = []
 
