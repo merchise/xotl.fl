@@ -24,7 +24,6 @@ from typing import (
     Deque,
     Set,
     Union,
-    Tuple,
 )
 from typing import Optional  # noqa
 from itertools import zip_longest
@@ -220,12 +219,9 @@ class TypeScheme(Type):
         return cls.from_typeexpr(type_, generics=generics)
 
 
-@dataclass
-class ConstrainedType(Type):
-    constraints: Tuple[TypeConstraint, ...]
-    type: Type
-
-    def __init__(self, constraints: Sequence[TypeConstraint], t: Type) -> None:
+class ConstrainedType(TypeScheme):
+    def __init__(self, generics: Sequence[str], t: Type,
+                 constraints: Sequence[TypeConstraint]) -> None:
         constraints = tuple(constraints)
         constrained = {c.variable.name for c in constraints}
         names = set(find_tvars(t))
@@ -234,11 +230,24 @@ class ConstrainedType(Type):
                 f'Constraint not applied: {constrained - names}'
             )
         self.constraints = constraints
-        self.type = t
+        super().__init__(generics, t)
 
     def __str__(self):
         constraints = ', '.join(map(str, self.constraints))
-        return f'{constraints} => {self.type!s}'
+        scheme = super().__str__()
+        return f'{constraints} => {scheme}'
+
+    @classmethod
+    def from_typeexpr(cls, t: Type,
+                      constraints: Sequence[TypeConstraint]) -> 'ConstrainedType':
+        if isinstance(t, ConstrainedType):
+            return t
+        else:
+            if not isinstance(t, TypeScheme):
+                scheme = TypeScheme.from_typeexpr(t)
+            else:
+                scheme = t
+            return ConstrainedType(scheme.generics, scheme.t, constraints)
 
 
 #: Shortcut to create function types
@@ -339,8 +348,6 @@ def find_tvars(t: Type) -> List[str]:
                 current = set()
             generics.append(current | set(t.generics))
             queue.append(POP_GENERICS)
-        elif isinstance(t, ConstrainedType):
-            queue.append(t.type)
         else:
             assert isinstance(t, TypeCons)
             queue.extend(t.subtypes)

@@ -1046,7 +1046,7 @@ def p_constrained_type_expr(prod):
         TypeConstraint(c.cons, c.subtypes[0])
         for c in lst
     ]
-    prod[0] = ConstrainedType(constraints, prod[3])
+    prod[0] = ConstrainedType.from_typeexpr(prod[3], constraints)
 
 
 def p_type_constraint(prod):
