@@ -38,7 +38,7 @@ from xotl.fl.expressions import (
     build_application,
     build_list_expr,
 )
-from xotl.fl.typeclasses import TypeClass, Instance
+from xotl.fl.typeclasses import TypeClass
 
 from xotl.fl.builtins import (
     StringType,
@@ -104,6 +104,7 @@ reserved = [
     # These are just to avoid the expression to (re)define them.
     ('class', r'\bclass\s+'),
     ('instance', r'\binstance\s+'),
+    ('deriving', r'\s*\bderiving\s+'),
 
     ('where', r'\s+where\b'),
     ('let', None),
@@ -300,6 +301,7 @@ def t_FLOAT(t):
 def t_BASE10_INTEGER(t):
     r'-?[0-9][0-9_]*'
     return t
+
 
 # We need to treat space specially in this grammar because it can have a
 # semantical value: the application of expressions 'e1 e2'.
@@ -1200,8 +1202,13 @@ def p_datatype_definition(prod):
     '''datatype_definition : _datatype_lhs EQ _data_rhs
     '''
     name, args, type_ = prod[1]
-    defs = prod[3]
-    prod[0] = DataType(name, type_, defs)
+    rhs = prod[3]
+    # The very last item of the rhs maybe a list of strings (the derivations)
+    if isinstance(rhs[-1], list):
+        *defs, definitions = rhs
+    else:
+        defs, definitions = rhs, []
+    prod[0] = DataType(name, type_, defs, definitions)
 
 
 def p_datatype_lhs(prod):
@@ -1235,6 +1242,12 @@ def p_datatype_body(prod):
 def p_datatype_conses_empty(prod):
     '_data_conses : empty'
     prod[0] = []
+
+
+def p_datatype_derivations(prod):
+    '''_data_conses : _maybe_padding KEYWORD_DERIVING \
+                       LPAREN _derivations_list RPAREN'''
+    prod[0] = [prod[4]]
 
 
 def p_data_cons(prod):
@@ -1278,6 +1291,19 @@ def p_cons_arg_factor_list(prod):
     '''_cons_arg_factor : LBRACKET type_expr RBRACKET
     '''
     prod[0] = ListTypeCons(prod[2])
+
+
+def p_derivations_list(prod):
+    '''_derivations_list : UPPER_IDENTIFIER _derivations_list_trail
+       _derivations_list_trail : COMMA UPPER_IDENTIFIER _derivations_list_trail
+    '''
+    _collect_item(prod)
+
+
+def p_derivations_list_trail_empty(prod):
+    '''_derivations_list_trail : empty
+    '''
+    prod[0] = []
 
 
 type_parser = yacc.yacc(debug=False, start='st_type_expr',

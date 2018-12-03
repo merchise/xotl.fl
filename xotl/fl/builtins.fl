@@ -22,6 +22,10 @@ foldr :: (a -> b -> b) -> b -> [a] -> b
 foldr f z []   = z
 foldr f z x:xs = f z x : foldr f z xs
 
+-- Implemented as a true builtin
+(:) :: a -> [a] -> [a]
+
+
 data Bool = True | False
 
 
@@ -107,17 +111,37 @@ class Eq a => Ord a where
 
 
 data Either a b = Left a | Right b
+                  deriving (Eq, Ord)
 
 -- From the definition it follows that:
 --
 -- Left :: a -> Either a b
 -- Right :: b -> Either a b
 
+
+-- I was not planning to do the deriving of instances; but the idea is quite
+-- reasonable: For products types is quite "easy", Eq is:
+
+_product_eq :: Eq a => [a] -> [a] -> Bool
+_product_eq [] []     = True
+_product_eq x:xs y:ys = x == y `and` _product_eq xs ys
+
+-- and Ord is just:
+
+_product_ord_lt :: Ord a => [a] -> [a] -> Bool
+_product_ord_lt [] []     = True
+_product_ord_lt x:xs y:xs = x < y `or` (x == y `and` _product_ord_lt xs ys)
+
+-- NOTICE: Those implementations fail when given lists of different sizes.
+-- But those implementations are expected to be *generated* for the right
+-- product type, so they have equal amount of components.
+
 either :: (a -> c) -> (b -> c) -> Either a b -> c
 either f _ (Left a) = f a
 either _ g (Right b) = g b
 
 data Maybe a = Nothing | Just a
+               deriving (Eq, Ord)
 
 maybe :: b -> (a -> b) -> Maybe a -> b
 maybe b _ Nothing  = b
@@ -152,8 +176,6 @@ safe_tail :: [a] -> Maybe [a]
 safe_tail []   = Nothing
 safe_tail _:xs = Just xs
 
--- Implemented as a true builtin
-(:) :: a -> [a] -> [a]
 
 (++) :: [a] -> [a] -> [a]
 (++) []   ys = ys
@@ -190,7 +212,7 @@ then :: forall a. a -> Else a
 else = Else
 
 
-is_member :: a -> [a] -> Bool
+is_member :: Eq a => a -> [a] -> Bool
 is_member x []   = False
 is_member x y:xs = if x == y (then True) (else is_member x xs)
 
@@ -220,44 +242,24 @@ snd (_, y) = y
 -- before parsing.
 
 data Date = Date Number Number Number
+            deriving (Eq, Ord)
+
 data Time = Time Number Number Number
+            deriving (Eq, Ord)
+
 data DateTime = DateTime Date Time
-
-date_to_datetime :: Date -> DateTime
-date_to_datetime d = DateTime d (Time 0 0 0)
-
-is_date_before :: Date -> Date -> Bool
--- is_date_before (Date y1 m1 d1) (Date y2 m2 d2) =
-
-
-is_date_after :: Date -> Date -> Bool
-is_date_after (Date y1 m1 d1) (Date y2 m2 d2) = y1 > y2 `or` m1 > m2 `or` d1 > d2
-
-is_time_before :: Time -> Time -> Bool
-is_time_before (Time h1 m1 s1) (Time h2 m2 s2) = h1 < h2 `or` m1 < m2 `or` s1 < s2
-
-is_time_after :: Time -> Time -> Bool
-is_time_after (Time h1 m1 s1) (Time h2 m2 s2) = h1 > h2 `or` m1 > m2 `or` s1 > s2
-
+                deriving (Eq, Ord)
 
 get_date :: DateTime -> Date
 get_date (DateTime d _) = d
 
-get_time :: DateTime -> Hour
+
+get_time :: DateTime -> Time
 get_time (DateTime _ t) = t
 
-is_earlier :: DateTime -> DateTime -> Bool
-is_earlier (_ d1 t1) (_ d2 t2) = let date_before = is_date_before d1 d2
-                                     time_before = is_time_before t1 t2
-                                 in date_before `or` time_before
 
-is_later :: DateTime -> DateTime -> Bool
-
-interval_overlap :: DateInterval -> DateInterval -> DateInterval
-
-is_fully_contained :: DateInterval -> DateInterval -> Bool
-is_interval_empty :: DateInterval -> Bool
-interval :: Maybe Date -> Maybe Date -> DateInterval
+date_to_datetime :: Date -> DateTime
+date_to_datetime d = DateTime d (Time 0 0 0)
 
 
 -- Local Variables:

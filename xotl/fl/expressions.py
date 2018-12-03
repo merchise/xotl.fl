@@ -487,19 +487,28 @@ class DataType:
     the type.
 
     '''
-    def __init__(self, name: str, type_: TypeCons, defs: Sequence[DataCons]) -> None:
+    def __init__(self, name: str, type_: TypeCons,
+                 defs: Sequence[DataCons],
+                 derivations: Sequence[str] = None) -> None:
         self.name = name
         self.t = type_
         self.dataconses = tuple(defs)
+        self.derivations = tuple(derivations or [])
 
     def is_product_type(self):
         return len(self.dataconses) == 1
 
     def __repr__(self):
         defs = ' | '.join(map(str, self.dataconses))
-        return f'<Data {self.t} = {defs}>'
+        if self.derivations:
+            derivations = ', '.join(map(str, self.derivations))
+            return f'<Data {self.t} = {defs} deriving ({derivations})>'
+        else:
+            return f'<Data {self.t} = {defs}>'
 
     def __eq__(self, other):
+        # Derivations are not part of the logical structure of the data type,
+        # they might just as well be provided separately.
         if isinstance(other, DataType):
             return (self.name == other.name and
                     self.t == other.t and

@@ -159,7 +159,7 @@ class TypeScheme(Type):
     # I choose the word 'generic' instead of schematic (and thus non-generic
     # instead of unknown), because that's probably more widespread.
     def __init__(self, generics: Sequence[str], t: Type) -> None:
-        self.generics = generics
+        self.generics = tuple(generics or [])
         self.t = t
 
     @property
@@ -222,7 +222,7 @@ class TypeScheme(Type):
 class ConstrainedType(TypeScheme):
     def __init__(self, generics: Sequence[str], t: Type,
                  constraints: Sequence[TypeConstraint]) -> None:
-        constraints = tuple(constraints)
+        constraints = tuple(constraints or [])
         constrained = {c.variable.name for c in constraints}
         names = set(find_tvars(t))
         if constrained - names:
