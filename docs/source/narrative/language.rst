@@ -26,8 +26,6 @@ simple expressions, function application and composition and a powerful
 pattern matching (probably with some extensions for matching dates and date
 intervals).
 
-It's not clear if we're going to need type classes.  We suspect we do.
-
 We provide a `parser <xotl.fl.parse>`:func:, but the system using this
 language may choose to present its user with a very different way to build
 programs.
@@ -44,9 +42,13 @@ Definitions come in three types:
 
 - Type (scheme) declarations;
 
-- Algebraic data types; and
+- Algebraic data types;
 
-- Value definitions (functions belong here).
+- Value definitions (functions belong here);
+
+- Type classes definitions; and
+
+- Instances (of type classes).
 
 The order of the definitions in a program is unimportant.  But the order of
 the equations within a function definition **is** important.
@@ -70,6 +72,7 @@ A very simple program:
   ...
   ...     data MyList a = EmptyList
   ...                   | Cons a (MyList a)
+  ...                   deriving (Eq)
   ...
   ...     insert a xs  = Cons a xs
   ...
@@ -94,10 +97,12 @@ Notice that:
 - We can provide the type declarations after or before the value definition.
 
 - We may even provide type declarations for things we didn't define
-  ('concat').
+  ('concat').  This makes the name available for type-checking but the value
+  is supposedly provided by other means.  In order, for a program to run all
+  values must be provided.  Undefined values default to a runtime error.
 
-  There are things the `~xotl.fl.parse`:func: allows to do that you shouldn't.
-  We might change our mind and prohibit them in the future.
+  .. note:: There are things the `~xotl.fl.parse`:func: allows to do that you
+     shouldn't.  We might change our mind and prohibit them in the future.
 
 Parsing is not the whole story.  Parsing just creates an Abstract Syntax Tree
 out of your source code.  For things to really work, you need to type-check
@@ -361,12 +366,11 @@ The 'where' expressions produce the same AST.  The general schema is::
                         ...
 
 
-The ``:`` operator
-------------------
+Lists
+~~~~~
 
-Although the expression language does not support literal lists, we do support
-the ``:`` operator, which has the builtin type ``a -> [a] -> [a]``.  ``:`` is
-right-associative:
+The ``:`` operator is used to created lists.  It has the builtin type ``a ->
+[a] -> [a]``.  ``:`` is right-associative:
 
    >>> parse('a:b:xs') == parse('a:(b:xs)')
    True
@@ -380,6 +384,50 @@ It has less precedence than any other operator except the `infix form
    >>> parse('a `f` b:xs') == parse('a `f` (b:xs)')
    True
 
+The empty list is the identifier ``[]``:
+
+  >>> parse('[]')
+  Identifier('[]')
+
+.. seealso:: `The empty list identifier <empty-list-identifier>`:ref: if you
+   want to know why this is an identifier and not a literal.
+
+The *usual* list syntax can be used in place of the ``:`` operator:
+
+  >>> parse('[1, 2]') == parse('1:2:[]')
+  True
+
+.. note:: The parser allows heterogeneous types, but the typechecker will
+   reject them:
+
+   >>> from xotl.fl.typecheck import typecheck
+   >>> from xotl.fl.utils import tvarsupply
+   >>> from xotl.fl.builtins import builtins_env
+
+   >>> typecheck(builtins_env, tvarsupply('.t'), parse('[1, "a"]'))
+   Traceback (...)
+   ...
+   UnificationError: Cannot type-check ...
+
+
+Tuples
+~~~~~~
+
+Tuple are a sequence of 2 or more expressions.  Unlike Python's tuples the
+number (and types) of components of tuple are precise and functions may take
+tuples of a specific type.
+
+Examples:
+
+  >>> parse('(1, "a")')
+  Application(Application(Identifier(','), Literal(1, ...
+
+  >>> parse('(1, "a", id x)')
+  Application(Application(Identifier(',,'), Literal(1, ...
+
+  >>> parse('(1, "a", id x, 0)')
+  Application(Application(Identifier(',,,'), Literal(1, ...
+
 
 Type declarations
 -----------------
@@ -388,17 +436,8 @@ Type declarations state the type of a symbol.  The function
 `xotl.fl.types.parse`:func: parses the type expression (the thing after the
 two colons) and return an instance of AST for types.
 
-The AST of types as only two constructors:
+The AST of types has two basic constructors:
 `~xotl.fl.types.TypeVariable`:class: and `~xotl.fl.types.TypeCons`:class:.
-
-The `~xotl.fl.types.TypeScheme`:class: is not (yet) considered an AST node.
-There's no way to express type schemes in the syntax.  Nevertheless, the
-`parser <xotl.fl.parse>`:func: do return type schemes:
-
-   >>> from xotl.fl import parse
-   >>> from xotl.fl.types import TypeScheme
-   >>> parse('id :: a -> a') == [{'id': TypeScheme.from_str('a -> a')}]
-   True
 
 In the type expression language we use *identifiers* starting with a
 lower-case letter to indicate a `type variable
@@ -439,17 +478,60 @@ The list type constructor is the pair of brackets '[]':
   TypeCons('[]', (TypeVariable('a'),))
 
 
+The tuple type constructor is just types enclosed in parenthesis and separated
+by commas:
+
+  >>> parse('(a, b)')
+  TypeCons(',', (TypeVariable('a'), TypeVariable('b')))
+
+  >>> parse('(a, a -> c, c)')
+  TypeCons(',,', (TypeVariable('a'), ...
+
 Even though the type expression language recognizes those type constructions
 specially there's nothing really special about them in terms of the type
 language AST; they are simply TypeCons with some funny names; for which we
 expect that components that assign meaning to these constructions (i.e
 semantics) assign them with the usual ones.
 
-There's no syntactical support to express tuples yet.  The
-`~xotl.fl.types.TupleTypeCons`:func: uses the syntax-friendly name 'Tuple':
+At the moment, tuples cannot have just one component.
 
-  >>> parse('Tuple a a')
-  TypeCons('Tuple', (TypeVariable('a'), TypeVariable('a')))
+The tuple with 0 components is the *unit type*:
+
+  >>> parse('()')
+  TypeCons('Unit', ())
+
+
+The unit type has a single value, the unit value:
+
+  >>> from xotl.fl import expr_parse
+  >>> expr_parse('()')
+  Literal((), TypeCons('Unit', ()))
+
+
+Type schemes
+~~~~~~~~~~~~
+
+Type schemes express (explicitly) the notion of universal qualification in
+type expressions (*for all*).
+
+You may use the keyword ``forall`` to create type schemes explicitly:
+
+   >>> parse('forall a b. (a, b)')
+   <TypeScheme: forall a b. (a, b)>
+
+Also, the classmethod `~xotl.fl.types.TypeScheme.from_typeexpr`:meth: creates
+type schemes from other types expressions:
+
+   >>> from xotl.fl.types import TypeScheme
+   >>> TypeScheme.from_typeexpr(parse('(a, b)')) == parse('forall a b. (a, b)')
+   True
+
+When you annotate any name, the `parser <xotl.fl.parse>`:func: creates type
+schemes implicitly:
+
+   >>> from xotl.fl import parse
+   >>> parse('id :: a -> a') == parse('id :: forall a. a -> a')
+   True
 
 
 New lines
@@ -487,6 +569,63 @@ This makes the parser to recognize funny, unusual types expressions:
 
 Those types have no semantics assigned but the parser recognizes them.  It's
 the job of another component (kinds?) to recognize those errors.
+
+
+Type classes and instances
+--------------------------
+
+Type classes allow to overload operators over many possible implementations.
+They were introduced in Haskell and formalized in [Wadler1989]_.
+
+The syntax to define a type class is like::
+
+  class [constraints =>] <ClassName> <type variable> where
+       <... type class body ...>
+
+Examples:
+
+  >>> from xotl.fl import parse
+  >>> Eq = parse('''
+  ... class Eq a where
+  ...     (==) :: a -> a -> Bool
+  ... ''')[0]
+
+  >>> Ord = parse('''
+  ... class Eq a => Ord a where
+  ...     (<)  :: a -> a -> Bool
+  ...     (<=) :: a -> a -> Bool
+  ...     (<=) a b = a < b `or` a == b
+  ... ''')[0]
+
+
+Instances provide the implementations of type classes for types.  Assuming
+``_eq_number`` is builtin with type ``Number -> Number -> Bool`, you could
+say:
+
+   >>> _eq_num_instance = parse('''
+   ... instance Eq Number where
+   ...     (==) :: Number -> Number -> Bool
+   ...     (==) = _eq_number
+   ... ''')[0]
+
+
+Instances must constrain all it's variables:
+
+   >>> _eq_either = parse('''
+   ... instances Eq a, Eq b => Eq (Either a b) where
+   ...     (==) (Left a) (Left b)   = a == b
+   ...     (==) (Right a) (Right b) = a == b
+   ...     (==) _ _ = False
+   ... ''')
+
+Data types can derive the instances of **some** type classes:
+
+   >>> dt = parse('''
+   ... data Either a b = Left a | Right b
+   ...                   deriving (Eq)
+   ... ''')[0]
+
+This create the same instance as the one shown above.
 
 
 Notes

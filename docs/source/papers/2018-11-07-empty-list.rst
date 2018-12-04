@@ -1,6 +1,8 @@
-====================================
- The empty list '[]' **identifier**
-====================================
+.. _empty-list-identifier:
+
+===============================
+ The empty list **identifier**
+===============================
 
 Our parser recognizes the empty list '[]' as an identifier::
 
@@ -19,7 +21,7 @@ The following expressions are both valid:
 
 - ``'a':[]``
 
-Furthermore, if we were to create a program:
+Furthermore, if we were to create a program::
 
    data List a = Nil | Cons a (List a)
 

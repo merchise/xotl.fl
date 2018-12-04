@@ -12,3 +12,9 @@
 
 .. [Damas1984] Damas, Luis. *Type Assignment in Programming
    Languages*. PhD. Thesis. University of Edinburgh. 1984.
+
+
+.. [Wadler1989] Wadler, Philip and Blott, Stephen. *How to make ad-hoc
+   polymorphism less ad-hoc*. POPL '89 Proceedings of the 16th ACM
+   SIGPLAN-SIGACT symposium on Principles of programming
+   languages. https://dl.acm.org/citation.cfm?id=75283

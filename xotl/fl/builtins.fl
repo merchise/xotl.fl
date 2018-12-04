@@ -27,6 +27,7 @@ foldr f z x:xs = f z x : foldr f z xs
 
 
 data Bool = True | False
+            deriving (Eq, Ord)
 
 
 -- The implementations of `and`, and `or` might skip the computation of the

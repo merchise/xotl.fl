@@ -196,7 +196,15 @@ class TypeScheme(Type):
     def from_typeexpr(cls, type_: Type, *,
                       generics: Sequence[str] = None) -> 'TypeScheme':
         '''Create a type scheme from a type expression assuming all type
-        variables are generic.'''
+        variables are generic.
+
+        If `type_` is already a TypeScheme, return it unchanged.
+
+        If `generics` is not None, use those instead of `finding
+        <find_tvars>`:func: the free variables.  You may pass the empty list
+        or tuple, to create a TypeScheme without any generic variables.
+
+        '''
         if isinstance(type_, TypeScheme):
             return type_
         if generics is None:
