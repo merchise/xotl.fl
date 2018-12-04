@@ -345,22 +345,25 @@ def t_SPACE(t):
         # but the spaces above the '!' are just padding and can be ignored
         # (don't create a token for them).
         #
+        # In (sub)expressions involving operators like 'a < b' the spaces
+        # shouldn't produce any tokens.  However in expressions involving
+        # date/datetime literals (e.g 'f <2018-12-04> x') spaces are important
+        # and must be kept.
+        #
         before = t.lexer.lexdata[t.lexpos - 1]
         after = t.lexer.lexdata[t.lexpos + len(t.value)]
+        if after == '<':
+            pos = t.lexpos + len(t.value)
+            following = t.lexer.lexdata[pos:pos + MAX_DT_LITERAL_LENGTH]
+            if FOLLOWS_DT_LITERAL_REGEXP.match(following):
+                return t
+        if before == '>':
+            pos = t.lexpos
+            preceding = t.lexer.lexdata[pos - MAX_DT_LITERAL_LENGTH:pos]
+            if PRECEDES_DT_LITERAL_REGEXP.search(preceding):
+                return t
         common = '=<>`.,:+-%@!$*^/|,'
         if before in common + '[(' or after in common + ')]':
-            # The expression 'f <2018-12-04> x'; needs both SPACE because
-            # the '<' and '>' are limiting the date literal value.
-            if after == '<':
-                pos = t.lexpos + len(t.value)
-                following = t.lexer.lexdata[pos:pos + MAX_DT_LITERAL_LENGTH]
-                if FOLLOWS_DT_LITERAL_REGEXP.match(following):
-                    return t
-            if before == '>':
-                pos = t.lexpos
-                preceding = t.lexer.lexdata[pos - MAX_DT_LITERAL_LENGTH:pos]
-                if PRECEDES_DT_LITERAL_REGEXP.search(preceding):
-                    return t
             return  # This removes the token entirely.
         else:
             return t
