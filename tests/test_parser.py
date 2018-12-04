@@ -173,3 +173,19 @@ def test_local_definitions():
             )
         )
     ]
+
+
+# The syntax of typeclasses is being tested with the builtins.fl program.  But
+# it doens't have explicit instances, so we test here
+
+def test_valid_instance():
+    parse('''
+        instance Eq a => Eq [a] where
+           (==) [] []     = True
+           (==) x:xs y:ys = x == y `and` xs == ys
+
+        instance Eq a, Eq b => Eq (Either a b) where
+           (==) (Left a) (Left b)   = a == b
+           (==) (Right a) (Right b) = a == b
+           (==) _         _         = False
+    ''')

@@ -23,6 +23,7 @@ from xotl.fl.types import (
     TupleTypeCons,
     TypeConstraint,
     ConstrainedType,
+    is_simple_type,
 )
 from xotl.fl.types import TypeEnvironment  # noqa
 from xotl.fl.expressions import (
@@ -39,7 +40,7 @@ from xotl.fl.expressions import (
     build_application,
     build_list_expr,
 )
-from xotl.fl.typeclasses import TypeClass
+from xotl.fl.typeclasses import TypeClass, Instance
 
 from xotl.fl.builtins import (
     StringType,
@@ -1071,8 +1072,15 @@ def p_type_factor_bracket(prod):
 # On the other hand, 'Num a => forall a. a -> a'; fails with Constraint not
 # applied: {'a'}; but I find that reasonable.
 def p_constrained_type_expr(prod):
-    '''constrained_type_expr : type_constraints FATARROW type_expr
+    '''constrained_type_expr : _constrained_type_expr_bare
 
+    '''
+    constraints, type_ = prod[1]
+    prod[0] = ConstrainedType.from_typeexpr(type_, constraints)
+
+
+def p_constrained_type_expr_bare(prod):
+    '''_constrained_type_expr_bare : type_constraints FATARROW type_expr
     '''
     def isvalid(constraint):
         return (isinstance(constraint, TypeCons) and
@@ -1087,7 +1095,26 @@ def p_constrained_type_expr(prod):
         TypeConstraint(c.cons, c.subtypes[0])
         for c in lst
     ]
-    prod[0] = ConstrainedType.from_typeexpr(prod[3], constraints)
+    prod[0] = (constraints, prod[3])
+
+
+def p_instance(prod):
+    '''instance : KEYWORD_INSTANCE _constrained_type_expr_bare KEYWORD_WHERE \
+                  PADDING local_definitions'''
+    constraints, type_ = prod[2]
+    # Notice that type_ would be something like 'Ord a' or 'Ord (Either a
+    # b)'.  The cons is Ord, but that the name of the type class, and the type
+    # is its single argument: it must one and it must be a simple type.
+    if isinstance(type_, TypeCons) and len(type_.subtypes) == 1:
+        t = type_.subtypes[0]
+        if is_simple_type(t):
+            defs = prod[5]
+            typeclass_name = type_.cons
+            prod[0] = Instance(constraints, typeclass_name, t, defs)
+            return
+    raise ParserError(
+        f'Invalid instance definition: {constraints} => {type_}'
+    )
 
 
 def p_type_constraint(prod):
@@ -1144,6 +1171,7 @@ def p_definition(prod):
     '''definition : local_definition
                   | datatype_definition
                   | typeclass
+                  | instance
     '''
     prod[0] = prod[1]
 

@@ -58,6 +58,17 @@ class Type(AST):
                 f"unsupported operand type(s) for >>: '{t1}' and '{t2}'"
             )
 
+    def __mod__(self, other):
+        if isinstance(other, Type):
+            from xotl.fl.typecheck import unify
+            return unify(self, other)
+        else:
+            t1 = type(self).__name__
+            t2 = type(other).__name__
+            raise TypeError(
+                f"unsupported operand type(s) for %: '{t1}' and '{t2}'"
+            )
+
 
 class TypeVariable(Type):
     '''A type variable, which may stand for any type.
@@ -89,15 +100,6 @@ class TypeVariable(Type):
 
     def __bool__(self):
         return True   # needed because __len__ is 0.
-
-
-@dataclass
-class TypeConstraint:
-    name: str   # This is the name of the constraint, e.g 'Eq'
-    variable: TypeVariable
-
-    def __str__(self):
-        return f'{self.name} {self.variable.name}'
 
 
 class TypeCons(Type):
@@ -141,6 +143,15 @@ class TypeCons(Type):
 
     def __len__(self):
         return 1 + sum(len(st) for st in self.subtypes)
+
+
+@dataclass
+class TypeConstraint:
+    name: str   # This is the name of the constraint, e.g 'Eq'
+    type: TypeVariable
+
+    def __str__(self):
+        return f'{self.name} {self.type!s}'
 
 
 class TypeScheme(Type):
@@ -209,6 +220,8 @@ class TypeScheme(Type):
             return type_
         if generics is None:
             generics = list(sorted(set(find_tvars(type_))))  # avoid repetitions.
+        else:
+            generics = list(sorted(generics))
         return cls(generics, type_)
 
     @classmethod
@@ -231,7 +244,12 @@ class ConstrainedType(TypeScheme):
     def __init__(self, generics: Sequence[str], t: Type,
                  constraints: Sequence[TypeConstraint]) -> None:
         constraints = tuple(constraints or [])
-        constrained = {c.variable.name for c in constraints}
+        assert all(isinstance(c.type, TypeVariable) for c in constraints)
+        constrained = {
+            c.type.name
+            for c in constraints
+            if isinstance(c.type, TypeVariable)
+        }
         names = set(find_tvars(t))
         if constrained - names:
             raise TypeError(
@@ -246,7 +264,7 @@ class ConstrainedType(TypeScheme):
         return f'{constraints} => {scheme}'
 
     @classmethod
-    def from_typeexpr(cls, t: Type,
+    def from_typeexpr(cls, t: Type,                             # type: ignore
                       constraints: Sequence[TypeConstraint]) -> 'ConstrainedType':
         if isinstance(t, ConstrainedType):
             return t
@@ -360,3 +378,16 @@ def find_tvars(t: Type) -> List[str]:
             assert isinstance(t, TypeCons)
             queue.extend(t.subtypes)
     return list(result)
+
+
+SimpleType = Union[TypeVariable, TypeCons]
+
+
+def is_simple_type(t: Type) -> bool:
+    'Return True iff `t` is only composed of variables and type constructors.'
+    if isinstance(t, TypeVariable):
+        return True
+    elif isinstance(t, TypeCons):
+        return all(is_simple_type(st) for st in t.subtypes)
+    else:
+        return False

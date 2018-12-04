@@ -14,6 +14,7 @@ from xotl.fl.types import (
     TypeEnvironment,
     TypeScheme,
     ConstrainedType,
+    SimpleType,
 )
 from xotl.fl.expressions import Equation
 
@@ -29,15 +30,6 @@ class TypeClass:
     constraints: Tuple[TypeConstraint, ...]
     newclass: TypeConstraint
     definitions: Definitions  # noqa
-
-    @property
-    def type_environment(self) -> TypeEnvironment:
-        return {
-            name: scheme
-            for definition in self.definitions
-            if isinstance(definition, dict)
-            for name, scheme in definition.items()
-        }
 
     def __init__(self, constraints: Sequence[TypeConstraint],
                  newclass: TypeConstraint,
@@ -61,9 +53,47 @@ class TypeClass:
         self.newclass = newclass
         self.definitions = [_constrain_definition(d) for d in definitions]
 
+    @property
+    def type_environment(self) -> TypeEnvironment:
+        return {
+            name: scheme
+            for definition in self.definitions
+            if isinstance(definition, dict)
+            for name, scheme in definition.items()
+        }
+
 
 @dataclass
 class Instance:
     constraints: Tuple[TypeConstraint, ...]
-    instance: TypeConstraint
+    typeclass_name: str
+    type_: SimpleType
     definitions: Sequence[Union[Equation, TypeEnvironment]]  # noqa
+
+    def __init__(self, constraints: Sequence[TypeConstraint],
+                 typeclass_name: str,
+                 type_: SimpleType,
+                 definitions: Definitions) -> None:
+
+        self.constraints = tuple(constraints or [])
+        self.typeclass_name = typeclass_name
+        self.type_ = type_
+        # Unlike TypeClass we cannot create the type environment now.  We need
+        # to match the type-class.
+        #
+        # For instance, the type of (==) in the instance Eq (Maybe a) is
+        # ``(==) :: (Maybe a) -> (Maybe a) -> Bool``.
+        #
+        # In general if a type class defines something like::
+        #
+        #    class Tc x where
+        #        f :: x -> b -> c
+        #
+        # withing the context of the instance:
+        #
+        #      instance Tc (Cons a) where
+        #          ...
+        #
+        # the type `x` becomes `Cons a` (non-generic 'a', i.e NOT `forall
+        # a. Cons a`).
+        self.definitions = list(definitions)
