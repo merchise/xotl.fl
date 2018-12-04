@@ -6,6 +6,7 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
+import re
 from typing import List
 
 from xoutil.objects import setdefaultattr
@@ -348,6 +349,18 @@ def t_SPACE(t):
         after = t.lexer.lexdata[t.lexpos + len(t.value)]
         common = '=<>`.,:+-%@!$*^/|,'
         if before in common + '[(' or after in common + ')]':
+            # The expression 'f <2018-12-04> x'; needs both SPACE because
+            # the '<' and '>' are limiting the date literal value.
+            if after == '<':
+                pos = t.lexpos + len(t.value)
+                following = t.lexer.lexdata[pos:pos + MAX_DT_LITERAL_LENGTH]
+                if FOLLOWS_DT_LITERAL_REGEXP.match(following):
+                    return t
+            if before == '>':
+                pos = t.lexpos
+                preceding = t.lexer.lexdata[pos - MAX_DT_LITERAL_LENGTH:pos]
+                if PRECEDES_DT_LITERAL_REGEXP.search(preceding):
+                    return t
             return  # This removes the token entirely.
         else:
             return t
@@ -419,6 +432,29 @@ def t_DATE_INTERVAL(t):
     end = dateutil.parser.parse(end)
     t.value = TimeSpan(start, end)
     return t
+
+MAX_DATE_LITERAL_LENGTH = len('<YYYY-MM-DD>')
+MAX_DATETIME_LITERAL_LENGTH = len('<YYYY-MM-DDTHH:MM:SS.ZZZZZZZ>')
+MAX_DATEINTERAL_LITERAL_LENGTH = len('<from YYYY-MM-DD to YYYY-MM-DD>')
+MAX_DATETIMEINTERAVAL_LITERAL_LENGTH = len(
+    '<from YYYY-MM-DDTHH:MM:SS.ZZZZZZZ to YYYY-MM-DDTHH:MM:SS.ZZZZZZZ>'
+)
+
+
+MAX_DT_LITERAL_LENGTH = max(
+    MAX_DATE_LITERAL_LENGTH,
+    MAX_DATETIME_LITERAL_LENGTH,
+    MAX_DATEINTERAL_LITERAL_LENGTH,
+    MAX_DATETIMEINTERAVAL_LITERAL_LENGTH,
+)
+
+_DT_LITERAL_REGEXP = (f'{t_DATE.__doc__}|'
+                      f'{t_DATETIME.__doc__}|'
+                      f'{t_DATE_INTERVAL.__doc__}|'
+                      f'{t_DATETIME_INTERVAL.__doc__}')
+
+FOLLOWS_DT_LITERAL_REGEXP = re.compile(f'^{_DT_LITERAL_REGEXP}')
+PRECEDES_DT_LITERAL_REGEXP = re.compile(f'{_DT_LITERAL_REGEXP}$')
 
 
 _OPERATOR_MAP = {

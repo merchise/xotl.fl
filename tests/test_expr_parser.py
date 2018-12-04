@@ -310,6 +310,28 @@ def test_date_literals(d):
     assert res == Literal(d, DateType)
 
 
+@given(s.dates())
+def test_date_literals_application(d):
+    code = f'f <{d!s}>'
+    res = parse(code)
+    assert res == Application(Identifier('f'), Literal(d, DateType))
+
+    code = f'f <{d!s}> x'
+    res = parse(code)
+    assert res == Application(
+        Application(Identifier('f'), Literal(d, DateType)),
+        Identifier('x')
+    )
+
+    # Semantically incorrect but parser must accept it
+    code = f'<{d!s}> x'
+    res = parse(code)
+    assert res == Application(
+        Literal(d, DateType),
+        Identifier('x')
+    )
+
+
 @given(s.datetimes())
 def test_datetime_literals(d):
     code = f'<{d!s}>'
@@ -318,6 +340,28 @@ def test_datetime_literals(d):
     except (lex.LexError, ParserError):
         raise AssertionError(f'Unexpected parsing error: {code}')
     assert res == Literal(d, DateTimeType)
+
+
+@given(s.datetimes())
+def test_datetime_literals_application(d):
+    code = f'f <{d!s}>'
+    res = parse(code)
+    assert res == Application(Identifier('f'), Literal(d, DateType))
+
+    code = f'f <{d!s}> x'
+    res = parse(code)
+    assert res == Application(
+        Application(Identifier('f'), Literal(d, DateType)),
+        Identifier('x')
+    )
+
+    # Semantically incorrect but parser must accept it
+    code = f'<{d!s}> x'
+    res = parse(code)
+    assert res == Application(
+        Literal(d, DateType),
+        Identifier('x')
+    )
 
 
 def test_regression_confusing_unary_plus():
