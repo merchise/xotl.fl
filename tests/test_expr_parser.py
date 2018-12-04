@@ -346,12 +346,12 @@ def test_datetime_literals(d):
 def test_datetime_literals_application(d):
     code = f'f <{d!s}>'
     res = parse(code)
-    assert res == Application(Identifier('f'), Literal(d, DateType))
+    assert res == Application(Identifier('f'), Literal(d, DateTimeType))
 
     code = f'f <{d!s}> x'
     res = parse(code)
     assert res == Application(
-        Application(Identifier('f'), Literal(d, DateType)),
+        Application(Identifier('f'), Literal(d, DateTimeType)),
         Identifier('x')
     )
 
@@ -359,7 +359,7 @@ def test_datetime_literals_application(d):
     code = f'<{d!s}> x'
     res = parse(code)
     assert res == Application(
-        Literal(d, DateType),
+        Literal(d, DateTimeType),
         Identifier('x')
     )
 
