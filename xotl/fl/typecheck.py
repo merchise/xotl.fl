@@ -6,10 +6,31 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''Implements a basic type checker.
+r'''Implements a type checker (Damas-Hindley-Milner) with a extensions.
 
 The main algorithm is described in Chapter 9 of [PeytonJones1987]_.  However,
 some insights are described in [Damas1982]_ and [Damas1984]_.
+
+Extensions to the main algorithm:
+
+- let (and letrec) expressions may have local type annotations, e.g::
+
+      let id :: Number -> a
+          id x = x
+      in id
+
+  will type-check and infer the type ``Number -> Number``.  Without the type
+  annotation, the type inferred is ``a -> a``.
+
+- type schemes can now appear nested inside type expressions, e.g::
+
+       let f :: (forall a. [a] -> [a]) -> ([Bool], [Char])
+           f g = (g [True, False], g "ab")
+       in f
+
+- predicated types (for type classes), e.g ``Eq a => a -> a -> Bool``.
+
+Extensions are described in [Wadler1989]_ and [PeytonJones2011]_.
 
 '''
 from typing import (
