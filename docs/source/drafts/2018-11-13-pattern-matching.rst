@@ -58,7 +58,7 @@ Extract; and AST in Match).  The semantics are to evaluate the argument (.lst)
 to perform the pattern matching.
 
 The commit_ is the beginning of such a refactor.  But, now simpler functions
-like ``id x = x`` get translated to:
+like ``id x = x`` get translated to::
 
    id = \.id_arg0 -> ((\x -> x) .id_arg0) `:OR:` :NO_MATCH_ERROR:
 
@@ -77,7 +77,7 @@ Which becomes::
                  (\x -> <Extract 2 from ,> .p \y -> x)) `:OR:` :NO_MATCH_ERROR:
 
 The semantics of ``<Extract 2 from,>`` might force the evaluation of the
-second component of ``.p``, even it isn't used.
+second component of ``.p``, even if it is not used.
 
 Sum products are also affected in the same-constructor equations::
 
