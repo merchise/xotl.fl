@@ -16,7 +16,7 @@ from xotl.fl.types import (
     ConstrainedType,
     SimpleType,
 )
-from xotl.fl.expressions import Equation
+from xotl.fl.pattern import Equation
 
 
 Definition = Union[Equation, TypeEnvironment]

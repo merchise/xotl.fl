@@ -30,16 +30,14 @@ from xotl.fl.expressions import (
     Identifier,
     Literal,
     Application,
-    ConcreteLet,
-    ConsPattern,
-    Equation,
-    DataType,
-    DataCons,
     build_lambda,
     build_tuple,
     build_application,
     build_list_expr,
 )
+from xotl.fl.adt import DataType, DataCons
+from xotl.fl.let import ConcreteLet
+from xotl.fl.pattern import ConsPattern, Equation
 from xotl.fl.typeclasses import TypeClass, Instance
 
 from xotl.fl.builtins import (

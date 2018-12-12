@@ -9,8 +9,9 @@
 import pytest
 from xotl.fl import parse
 from xotl.fl.types import Type, TypeScheme
-from xotl.fl.expressions import Equation, ConsPattern, Identifier
-from xotl.fl.expressions import DataType, DataCons, Let
+from xotl.fl.expressions import Identifier, Let
+from xotl.fl.adt import DataType, DataCons
+from xotl.fl.pattern import Equation, ConsPattern
 from xotl.fl.expressions import build_application, build_lambda, parse as expr_parse
 
 

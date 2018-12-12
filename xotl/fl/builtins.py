@@ -68,8 +68,8 @@ EXTRACT_FROM_CONS = re.compile(r':extract:(?P<cons>[,\w]+)(:(?P<idx>\d+))?')
 class BuiltinEnvDict(dict):
     def __init__(self, d=None, **kw):
         from xotl.fl.types import TypeScheme
-        from xotl.fl.expressions import NO_MATCH_ERROR, MATCH_OPERATOR
-        from xotl.fl.expressions import Match, Extract
+        from xotl.fl.pattern import NO_MATCH_ERROR, MATCH_OPERATOR
+        from xotl.fl.pattern import Match, Extract
         if not d:
             d = {}
         init = {
@@ -100,7 +100,7 @@ class BuiltinEnvDict(dict):
 
     def __missing__(self, key) -> TypeScheme:
         from xotl.fl.utils import tvarsupply
-        from xotl.fl.expressions import MatchLiteral, Extract
+        from xotl.fl.pattern import MatchLiteral, Extract
         from xotl.fl.types import TypeVariable
         # Constructors of tuples are not fixed, since now you can have (1, 2,
         # 3..., 10000); that's a long tuple with a single constructor
@@ -138,7 +138,7 @@ class BuiltinEnvDict(dict):
 def _load_builtins():
     import pkg_resources
     from xotl.fl import parse
-    from xotl.fl.expressions import DataType
+    from xotl.fl.adt import DataType
     builtins = pkg_resources.resource_filename('xotl.fl', 'builtins.fl')
     with open(builtins, 'r', encoding='utf-8') as f:
         source = f.read()
