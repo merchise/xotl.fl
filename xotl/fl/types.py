@@ -148,10 +148,10 @@ class TypeCons(Type):
 @dataclass
 class TypeConstraint:
     name: str   # This is the name of the constraint, e.g 'Eq'
-    type: TypeVariable
+    type_: TypeVariable
 
     def __str__(self):
-        return f'{self.name} {self.type!s}'
+        return f'{self.name} {self.type_!s}'
 
 
 class TypeScheme(Type):
@@ -171,24 +171,24 @@ class TypeScheme(Type):
     # instead of unknown), because that's probably more widespread.
     def __init__(self, generics: Sequence[str], t: Type) -> None:
         self.generics = tuple(generics or [])
-        self.t = t
+        self.type_ = t
 
     @property
     def nongenerics(self) -> List[str]:
         return [
             name
-            for name in find_tvars(self.t)
+            for name in find_tvars(self.type_)
             if name not in self.generics
         ]
 
     def __eq__(self, other):
         if isinstance(other, TypeScheme):
-            return self.generics == other.generics and self.t == other.t
+            return self.generics == other.generics and self.type_ == other.type_
         else:
             return NotImplemented
 
     def __hash__(self):
-        return hash((TypeScheme, self.generics, self.t))
+        return hash((TypeScheme, self.generics, self.type_))
 
     @property
     def names(self):
@@ -196,9 +196,9 @@ class TypeScheme(Type):
 
     def __str__(self):
         if self.generics:
-            return f'forall {self.names!s}. {self.t!s}'
+            return f'forall {self.names!s}. {self.type_!s}'
         else:
-            return str(self.t)
+            return str(self.type_)
 
     def __repr__(self):
         return f'<TypeScheme: {self!s}>'
@@ -244,11 +244,11 @@ class ConstrainedType(TypeScheme):
     def __init__(self, generics: Sequence[str], t: Type,
                  constraints: Sequence[TypeConstraint]) -> None:
         constraints = tuple(constraints or [])
-        assert all(isinstance(c.type, TypeVariable) for c in constraints)
+        assert all(isinstance(c.type_, TypeVariable) for c in constraints)
         constrained = {
-            c.type.name
+            c.type_.name
             for c in constraints
-            if isinstance(c.type, TypeVariable)
+            if isinstance(c.type_, TypeVariable)
         }
         names = set(find_tvars(t))
         if constrained - names:
@@ -273,7 +273,7 @@ class ConstrainedType(TypeScheme):
                 scheme = TypeScheme.from_typeexpr(t)
             else:
                 scheme = t
-            return ConstrainedType(scheme.generics, scheme.t, constraints)
+            return ConstrainedType(scheme.generics, scheme.type_, constraints)
 
 
 #: Shortcut to create function types

@@ -117,7 +117,7 @@ class BuiltinEnvDict(dict):
             # components of the tuple.  Example, for a triple, Extract(',,',
             # 2) -- i.e. extracting the second element; has the type scheme
             # 'forall a b c r. (a, b, c) -> (b -> r) -> r'.
-            type_ = self[key.name].t
+            type_ = self[key.name].type_
             assert isinstance(type_, TypeCons)
             res = TypeVariable('r')  # this won't clash with vars in type_.
             return TypeScheme.from_typeexpr(
@@ -128,7 +128,7 @@ class BuiltinEnvDict(dict):
             # the literal.  We must ensure to generate a new variable not free
             # in type a.  Everywhere else we generate types '.a0', '.a1'.
             # Let's use '.r' as the result type.
-            a = key.value.type
+            a = key.value.type_
             res = TypeVariable('.r', check=False)
             return TypeScheme.from_typeexpr(a >> ((a >> res) >> res))
         else:

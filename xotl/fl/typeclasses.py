@@ -37,7 +37,7 @@ class TypeClass:
 
         def _constrain_scheme(scheme: TypeScheme) -> TypeScheme:
             # makes 'forall a. ...' be 'forall a. Constrain ...'
-            return ConstrainedType(scheme.generics, scheme.t, (newclass, ))
+            return ConstrainedType(scheme.generics, scheme.type_, (newclass, ))
 
         def _constrain_definition(d: Definition) -> Definition:
             if isinstance(d, Equation):

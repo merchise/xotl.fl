@@ -78,14 +78,14 @@ class Literal(AST):
     '''
     def __init__(self, value: Any, type_: Type, annotation: Any = None) -> None:
         self.value = value
-        self.type = type_
+        self.type_ = type_
         self.annotation = annotation
 
     def __repr__(self):
         if self.annotation is not None:
-            return f'Literal({self.value!r}, {self.type!r}, {self.annotation!r})'
+            return f'Literal({self.value!r}, {self.type_!r}, {self.annotation!r})'
         else:
-            return f'Literal({self.value!r}, {self.type!r})'
+            return f'Literal({self.value!r}, {self.type_!r})'
 
     def __str__(self):
         return str(self.value)
@@ -103,7 +103,7 @@ class Literal(AST):
             return NotImplemented
 
     def __hash__(self):
-        return hash((Literal, self.value, self.type, self.annotation))
+        return hash((Literal, self.value, self.type_, self.annotation))
 
 
 class Lambda(AST):
@@ -225,9 +225,6 @@ class ConcreteLet:
         becomes::
 
            led id = \x -> ...
-
-        For the time being (we don't have pattern matching yet), each symbol can
-        be defined just once.
 
         '''
         localenv: TypeEnvironment = {}
@@ -362,12 +359,12 @@ class ConsPattern:
 
     def __str__(self):
         if self.params:
-            return f'{self.cons} {self.parameters}'
+            return f'{self.cons} {self._parameters}'
         else:
             return self.cons
 
     @property
-    def parameters(self):
+    def _parameters(self):
         def _str(x):
             if isinstance(x, str):
                 return x
@@ -439,7 +436,7 @@ class Equation:
 
 
 class DataCons:
-    '''A data constructor.
+    '''The syntactical notion a data constructor in the type language.
 
     '''
     def __init__(self, cons: str, args: Sequence[Type]) -> None:
@@ -481,17 +478,17 @@ class DataType:
 
     A data type defines both a type and several values of that type.
 
-    You should note that `DataCons`:class: is NOT the value.  Therefore these
-    are not actual objects carrying values in the running program; but they
-    imply the compiler (or interpreter) must produce those values and match
-    the type.
+    You should note that `DataCons`:class: is NOT a value.  Therefore these
+    are not actual objects carrying values in the running program; but imply
+    the compiler (or interpreter) must produce those values and match the
+    type.
 
     '''
     def __init__(self, name: str, type_: TypeCons,
                  defs: Sequence[DataCons],
                  derivations: Sequence[str] = None) -> None:
         self.name = name
-        self.t = type_
+        self.type_ = type_
         self.dataconses = tuple(defs)
         self.derivations = tuple(derivations or [])
 
@@ -502,16 +499,16 @@ class DataType:
         defs = ' | '.join(map(str, self.dataconses))
         if self.derivations:
             derivations = ', '.join(map(str, self.derivations))
-            return f'<Data {self.t} = {defs} deriving ({derivations})>'
+            return f'<Data {self.type_} = {defs} deriving ({derivations})>'
         else:
-            return f'<Data {self.t} = {defs}>'
+            return f'<Data {self.type_} = {defs}>'
 
     def __eq__(self, other):
         # Derivations are not part of the logical structure of the data type,
         # they might just as well be provided separately.
         if isinstance(other, DataType):
             return (self.name == other.name and
-                    self.t == other.t and
+                    self.type_ == other.type_ and
                     set(self.dataconses) == set(other.dataconses))
         else:
             return NotImplemented
@@ -523,7 +520,7 @@ class DataType:
             return NotImplemented
 
     def __hash__(self):
-        return hash((DataType, self.name, self.t, self.dataconses))
+        return hash((DataType, self.name, self.type_, self.dataconses))
 
     @property
     def implied_env(self) -> TypeEnvironment:
@@ -558,7 +555,7 @@ class DataType:
         from xotl.fl.types import FunctionTypeCons
 
         def _implied_type(dc: DataCons) -> Type:
-            result = self.t
+            result = self.type_
             for arg in reversed(dc.args):
                 result = FunctionTypeCons(arg, result)
             return result
@@ -640,13 +637,13 @@ class DataType:
             scheme = TypeScheme.from_typeexpr
             if not self.is_product_type():
                 if not dc.args:
-                    yield Match(dc.name), scheme(self.t)
+                    yield Match(dc.name), scheme(self.type_)
                 else:
                     for i, type_ in enumerate(dc.args):
-                        yield Extract(dc.name, i + 1), scheme(F(self.t, type_))
+                        yield Extract(dc.name, i + 1), scheme(F(self.type_, type_))
             else:
                 for i, type_ in enumerate(dc.args):
-                    yield Select(i + 1), scheme(F(self.t, type_))
+                    yield Select(i + 1), scheme(F(self.type_, type_))
 
         return {
             name: ts
@@ -690,6 +687,8 @@ class FunctionDefinition:
         '''Return the compiled form of the function definition.
 
         '''
+        # This is similar to the function `match` in 5.2 of [PeytonJones1987];
+        # but I want to avoid *enlarging* simple functions needlessly.
         if self.arity:
             vars = list(namesupply(f'.{self.name}_arg', limit=self.arity))
             body: AST = NO_MATCH_ERROR
@@ -877,7 +876,7 @@ def replace_free_occurrences(self: AST,
             if isinstance(expr.annotation, AST):
                 return Literal(
                     expr.value,
-                    expr.type,
+                    expr.type_,
                     replace(expr.annotation, bindings)
                 )
             else:

@@ -95,7 +95,7 @@ def subtype(phi: Substitution, t: Type) -> Type:
         )
     elif isinstance(t, TypeScheme):
         psi = Exclude(phi, t)
-        return TypeScheme(t.generics, subtype(psi, t.t))
+        return TypeScheme(t.generics, subtype(psi, t.type_))
     else:
         assert False, f'Node of unknown type {t!r}'
 
@@ -185,16 +185,16 @@ class delta:
     '''
     def __init__(self, vname: str, t: Type) -> None:
         self.vname = vname
-        self.t = t
+        self.type_ = t
 
     def __call__(self, s: str) -> Type:
-        return self.t if s == self.vname else TypeVariable(s, check=False)
+        return self.type_ if s == self.vname else TypeVariable(s, check=False)
 
     def __repr__(self):
-        return f'delta({self.vname!r}, {self.t!r})'
+        return f'delta({self.vname!r}, {self.type_!r})'
 
     def __str__(self):
-        return f'delta: {self.vname.ljust(20)}{self.t!s}'
+        return f'delta: {self.vname.ljust(20)}{self.type_!s}'
 
 
 class UnificationError(TypeError):
@@ -274,7 +274,7 @@ def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
     assert all(not bool(scvs & set(find_tvars(phi(unk))))
                for scvs in (set(ts.generics), )
                for unk in ts.nongenerics)
-    return TypeScheme(ts.generics, subtype(Exclude(phi, ts), ts.t))
+    return TypeScheme(ts.generics, subtype(Exclude(phi, ts), ts.type_))
 
 
 class Exclude:
@@ -391,7 +391,7 @@ def newinstance(ns: TVarSupply, ts: TypeScheme) -> Type:
     '''
     newvars: List[Tuple[str, TypeVariable]] = list(zip(ts.generics, ns))
     phi: Substitution = build_substitution(newvars)
-    return subtype(phi, ts.t)
+    return subtype(phi, ts.type_)
 
 
 def build_substitution(alist: Sequence[Tuple[str, Type]]) -> Substitution:
@@ -428,7 +428,7 @@ def build_substitution(alist: Sequence[Tuple[str, Type]]) -> Substitution:
 def typecheck_literal(env: TypeEnvironment, ns, exp: Literal) -> TCResult:
     # Extension to the original algorithm but easy: a literal always type
     # check with its type.
-    return sidentity, exp.type
+    return sidentity, exp.type_
 
 
 def typecheck_var(env: TypeEnvironment, ns, exp: Identifier) -> TCResult:
@@ -483,7 +483,7 @@ def typecheck_let(env: TypeEnvironment, ns, exp: Let) -> TCResult:
     local = exp.localenv or {}
     if local:
         typepairs = [
-            (local[name].t, types[i])
+            (local[name].type_, types[i])
             for i, name in enumerate(names)
             if name in local
         ]
@@ -562,7 +562,7 @@ def typecheck_letrec(env: TypeEnvironment,
     local = exp.localenv or {}
     if local:
         typepairs = [
-            (local[name].t, ts[i])
+            (local[name].type_, ts[i])
             for i, name in enumerate(names)
             if name in local
         ]
@@ -572,13 +572,13 @@ def typecheck_letrec(env: TypeEnvironment,
     else:
         gamma = sub_typeenv(phi, env)
     nbvs1 = sub_typeenv(phi, nbvs)
-    ts1 = [sch.t for _, sch in nbvs1.items()]
+    ts1 = [sch.type_ for _, sch in nbvs1.items()]
     psi = unify_exprs(zip(ts, ts1), p=phi)
 
     # Now we have type-checked the definitions, so we can now typecheck the
     # body in the **proper** environment.
     nbvs1 = sub_typeenv(psi, nbvs)
-    ts = [sch.t for _, sch in nbvs1.items()]
+    ts = [sch.type_ for _, sch in nbvs1.items()]
     psi1, t = typecheck(
         add_decls(sub_typeenv(psi, gamma), ns, names, ts),
         ns,
