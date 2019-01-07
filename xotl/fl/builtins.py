@@ -92,7 +92,7 @@ class BuiltinEnvDict(dict):
             Extract(':', 2): TypeScheme.from_str('[a] -> ([a] -> b) -> b'),
 
             # Pattern matching requires 'extracting' the type from the Pattern
-            # Cons.  These are dynamic are require knowledge from the locally
+            # Cons.  These are dynamic and require knowledge from the locally
             # (program) defined types; we cannot provide the types here.
         }
         init.update(d)
