@@ -190,3 +190,11 @@ def test_valid_instance():
            (==) (Right a) (Right b) = a == b
            (==) _         _         = False
     ''')
+
+
+def test_instance_basic_type():
+    parse('''
+        instance Eq Number where
+           (==) = _eq_number
+
+    ''')
