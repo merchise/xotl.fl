@@ -7,7 +7,7 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
-from hypothesis import strategies as s, given, example
+from hypothesis import strategies as s, given, example, assume
 
 from ply import lex
 
@@ -168,6 +168,7 @@ def test_wfe_infix_func_precedence2():
 
 @given(s.text(alphabet='@!<>$+-^/', min_size=1))
 def test_user_operators(op):
+    assume(not op.startswith('--'))
     assert parse(f'a {op} b') == parse(f'({op}) a b') == Application(
         Application(Identifier(op), Identifier('a')),
         Identifier('b')
