@@ -1096,9 +1096,21 @@ def p_constrained_type_expr_bare(prod):
     prod[0] = (constraints, prod[3])
 
 
+def p_maybe_constrained_type_expr_no_constraint(prod):
+    '''_maybe_constrained_type_expr : type_expr
+    '''
+    prod[0] = ([], prod[1])
+
+
+def p_maybe_constrained_type_expr_constrained(prod):
+    '''_maybe_constrained_type_expr : _constrained_type_expr_bare
+    '''
+    prod[0] = prod[1]
+
+
 def p_instance(prod):
-    '''instance : KEYWORD_INSTANCE _constrained_type_expr_bare KEYWORD_WHERE \
-                  PADDING local_definitions'''
+    '''instance : KEYWORD_INSTANCE _maybe_constrained_type_expr \
+                  KEYWORD_WHERE PADDING local_definitions'''
     constraints, type_ = prod[2]
     # Notice that type_ would be something like 'Ord a' or 'Ord (Either a
     # b)'.  The cons is Ord, but that the name of the type class, and the type
