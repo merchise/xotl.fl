@@ -39,11 +39,6 @@ from xotl.fl.utils import namesupply
 #         lenght (x:xs) = 1 + length xs
 #     in  ...
 #
-# For now, we allow only the SIMPLEST of all definitions (we don't have a
-# 'case' keyword to implement pattern matching.)  But, in any case, having the
-# names of productions be 'pattern' and 'equations' is fit.
-#
-#
 # The Pattern and Equation definitions are not part of the final AST, but more
 # concrete syntactical object in the source code.  In the final AST, the let
 # expressions shown above are indistinguishable.
