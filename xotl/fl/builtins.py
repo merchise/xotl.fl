@@ -119,7 +119,7 @@ class BuiltinEnvDict(dict):
             # 'forall a b c r. (a, b, c) -> (b -> r) -> r'.
             type_ = self[key.name].type_
             assert isinstance(type_, TypeCons)
-            res = TypeVariable('r')  # this won't clash with vars in type_.
+            res = TypeVariable('.r', check=False)
             return TypeScheme.from_typeexpr(
                 type_ >> ((type_.subtypes[key.arg - 1] >> res) >> res)
             )
