@@ -401,10 +401,9 @@ The *usual* list syntax can be used in place of the ``:`` operator:
    reject them:
 
    >>> from xotl.fl.typecheck import typecheck
-   >>> from xotl.fl.utils import tvarsupply
    >>> from xotl.fl.builtins import builtins_env
 
-   >>> typecheck(builtins_env, tvarsupply('.t'), parse('[1, "a"]'))
+   >>> typecheck(parse('[1, "a"]'), builtins_env)
    Traceback (...)
    ...
    UnificationError: Cannot type-check ...
@@ -423,10 +422,10 @@ Examples:
   Application(Application(Identifier(','), Literal(1, ...
 
   >>> parse('(1, "a", id x)')
-  Application(Application(Identifier(',,'), Literal(1, ...
+  Application(Application(Application(Identifier(',,'), Literal(1, ...
 
   >>> parse('(1, "a", id x, 0)')
-  Application(Application(Identifier(',,,'), Literal(1, ...
+  Application(Application(Application(Application(Identifier(',,,'), Literal(1, ...
 
 
 Type declarations
@@ -561,10 +560,11 @@ arguments in a constructor:
 
 This makes the parser to recognize funny, unusual types expressions:
 
-  >>> parse('[a] b')
+  >>> from xotl.fl import type_parse
+  >>> type_parse('[a] b')
   TypeCons('[]', (TypeVariable('a'), TypeVariable('b')))
 
-  >>> parse('(a -> b) c')
+  >>> type_parse('(a -> b) c')
   TypeCons('->', (TypeVariable('a'), TypeVariable('b'), TypeVariable('c')))
 
 Those types have no semantics assigned but the parser recognizes them.  It's
@@ -618,14 +618,14 @@ Instances must constrain all it's variables:
    ...     (==) _ _ = False
    ... ''')
 
-Data types can derive the instances of **some** type classes:
+Data types can derive the instances of **some** builtin type classes:
 
    >>> dt = parse('''
    ... data Either a b = Left a | Right b
    ...                   deriving (Eq)
    ... ''')[0]
 
-This create the same instance as the one shown above.
+This creates the same instance of `Eq` as the one shown above.
 
 
 Notes
