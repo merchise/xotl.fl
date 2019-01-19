@@ -612,10 +612,10 @@ say:
 Instances must constrain all it's variables:
 
    >>> _eq_either = parse('''
-   ... instances Eq a, Eq b => Eq (Either a b) where
+   ... instance Eq a, Eq b => Eq (Either a b) where
    ...     (==) (Left a) (Left b)   = a == b
    ...     (==) (Right a) (Right b) = a == b
-   ...     (==) _ _ = False
+   ...     (==) _         _         = False
    ... ''')
 
 Data types can derive the instances of **some** builtin type classes:
