@@ -66,6 +66,10 @@ EXTRACT_FROM_CONS = re.compile(r':extract:(?P<cons>[,\w]+)(:(?P<idx>\d+))?')
 
 
 class BuiltinEnvDict(dict):
+    '''Type environment that contains type schemes for parser-available \
+    identifiers.
+
+    '''
     def __init__(self, d=None, **kw):
         from xotl.fl.types import TypeScheme
         from xotl.fl.pattern import NO_MATCH_ERROR, MATCH_OPERATOR
@@ -79,10 +83,10 @@ class BuiltinEnvDict(dict):
             # Nil | Cons a (List a)'.
             '[]': TypeScheme.from_str('[a]'),
 
-            # There are special identifiers provided for translation of pattern
-            # matching:  The FATBAR (MATCH) operator; notice that type-wise this
-            # is operator takes two arguments or equal type and returns the first
-            # if it matches or the second.
+            # There are special identifiers provided for translation of
+            # pattern matching: The FATBAR (MATCH) operator; notice that
+            # type-wise this is operator takes two arguments or equal type and
+            # returns the first if it matches or the second.
             MATCH_OPERATOR.name: TypeScheme.from_str('a -> a -> a'),
             NO_MATCH_ERROR.name: TypeScheme.from_str('a'),
 

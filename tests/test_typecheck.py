@@ -6,7 +6,6 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-
 import pytest
 
 from xotl.fl.builtins import (
@@ -20,43 +19,37 @@ from xotl.fl.builtins import (
 from xotl.fl import expr_parse
 from xotl.fl.types import Type, TypeScheme, EMPTY_TYPE_ENV, find_tvars
 from xotl.fl.typecheck import typecheck, sidentity, unify
-from xotl.fl.utils import tvarsupply
 
 
 def test_from_literals():
     phi, t = typecheck(
+        expr_parse(r'let x = 1 in x'),
         EMPTY_TYPE_ENV,
-        tvarsupply('.a'),
-        expr_parse(r'let x = 1 in x')
     )
     assert phi is sidentity
     assert t == NumberType
 
     phi, t = typecheck(
-        EMPTY_TYPE_ENV,
-        tvarsupply('.a'),
-        expr_parse(r'let x = "1" in x')
+        expr_parse(r'let x = "1" in x'),
+        EMPTY_TYPE_ENV
     )
     assert phi is sidentity
     assert t == StringType
 
     phi, t = typecheck(
-        EMPTY_TYPE_ENV,
-        tvarsupply('.a'),
-        expr_parse(r"let x = '1' in x")
+        expr_parse(r"let x = '1' in x"),
+        EMPTY_TYPE_ENV
     )
     assert phi is sidentity
     assert t == CharType
 
     # true and false are not recognized as booleans by the parser, so let's
     # provide them as part the env.
-    phi, t = typecheck(builtins_env, tvarsupply('.a'),
-                       expr_parse(r"let x = True in x"))
+    phi, t = typecheck(expr_parse(r"let x = True in x"), builtins_env)
     assert phi is sidentity
     assert t == BoolType
 
-    phi, t = typecheck(builtins_env, tvarsupply('.a'),
-                       expr_parse(r"let x = False in x"))
+    phi, t = typecheck(expr_parse(r"let x = False in x"), builtins_env)
     assert phi is sidentity
     assert t == BoolType
 
@@ -65,26 +58,26 @@ def test_combinators():
     # Since they're closed expressions they should type-check
     K = expr_parse(r'\a b -> a')
     TK = Type.from_str('a -> b -> a')
-    phi, t = typecheck(EMPTY_TYPE_ENV, tvarsupply('.a'), K)
+    phi, t = typecheck(K, EMPTY_TYPE_ENV)
     # we can't ensure TK == t, but they must unify, in fact they
     # must be same type with alpha-renaming.
     unify(TK, t)
 
     S = expr_parse(r'\x y z -> x z (y z)')
     TS = Type.from_str('(a -> b -> c) -> (a -> b) -> a -> c')
-    phi, t = typecheck(EMPTY_TYPE_ENV, tvarsupply('.a'), S)
+    phi, t = typecheck(S, EMPTY_TYPE_ENV)
     unify(TS, t)
 
     # But the paradoxical combinator doesn't type-check
     Y = expr_parse(r'\f -> (\x -> f (x x))(\x -> f (x x))')
     with pytest.raises(TypeError):
-        phi, t = typecheck(EMPTY_TYPE_ENV, tvarsupply('.a'), Y)
+        phi, t = typecheck(Y, EMPTY_TYPE_ENV)
 
 
 def test_paradox_omega():
     r'Test `(\x -> x x)` does not type-check'
     with pytest.raises(TypeError):
-        typecheck(EMPTY_TYPE_ENV, tvarsupply('.a'), expr_parse(r'\x -> x x'))
+        typecheck(expr_parse(r'\x -> x x'), EMPTY_TYPE_ENV)
 
 
 def test_hidden_paradox_omega():
@@ -96,7 +89,7 @@ def test_hidden_paradox_omega():
     in prxI p2 (prxI p2)
     '''
     env = BuiltinEnvDict({'x': TypeScheme.from_str('a', generics=[])})
-    typecheck(env, tvarsupply('.a'), expr_parse(code))
+    typecheck(expr_parse(code), env)
 
     code = '''
     let id x    = x
@@ -106,24 +99,23 @@ def test_hidden_paradox_omega():
     in prxI p1 (prxI p1)
     '''
     with pytest.raises(TypeError):
-        typecheck(env, tvarsupply('.a'), expr_parse(code))
+        typecheck(expr_parse(code), env)
 
 
 def test_basic_builtin_types():
     with pytest.raises(TypeError):
         # not :: Bool -> Bool, but passed a Number
-        typecheck(builtins_env, tvarsupply('.a'), expr_parse('not 0'))
+        typecheck(expr_parse('not 0'), builtins_env)
 
-    phi, t = typecheck(builtins_env, tvarsupply('.a'), expr_parse('not True'))
+    phi, t = typecheck(expr_parse('not True'), builtins_env)
     assert t == BoolType
-    phi, t = typecheck(builtins_env, tvarsupply('.a'), expr_parse('not False'))
+    phi, t = typecheck(expr_parse('not False'), builtins_env)
     assert t == BoolType
 
     userfuncs = {'toString': TypeScheme.from_str('a -> [Char]')}
     phi, t = typecheck(
+        expr_parse('either toString id'),
         dict(builtins_env, **userfuncs),
-        tvarsupply('.a'),
-        expr_parse('either toString id')
     )
     assert len(find_tvars(t)) == 1
     unify(Type.from_str('Either a [Char] -> [Char]'), t)
@@ -131,17 +123,15 @@ def test_basic_builtin_types():
 
 def test_composition():
     phi, t = typecheck(
-        builtins_env,
-        tvarsupply('.a'),
-        expr_parse('let id x = x in id . id')
+        expr_parse('let id x = x in id . id'),
+        builtins_env
     )
     unify(Type.from_str('a -> a'), t)
     unify(Type.from_str('(a -> a) -> (a -> a)'), t)
 
     phi, t = typecheck(
-        builtins_env,
-        tvarsupply('.a'),
-        expr_parse('Left . Right')
+        expr_parse('Left . Right'),
+        builtins_env
     )
     unify(Type.from_str('a -> Either (Either b a) c'), t)
 
@@ -149,21 +139,18 @@ def test_composition():
     # can't be composed with Either.
     with pytest.raises(TypeError):
         typecheck(
-            builtins_env,
-            tvarsupply('.a'),
-            expr_parse('(+) . Left')
+            expr_parse('(+) . Left'),
+            builtins_env
         )
     # If we had a polymorphic (+), it would be composable
     phi, t = typecheck(
+        expr_parse('(+) . Left'),
         dict(builtins_env, **{'+': TypeScheme.from_str('a -> a -> a')}),
-        tvarsupply('.a'),
-        expr_parse('(+) . Left')
     )
     unify(Type.from_str('a -> Either a b -> Either a b'), t)
     phi, t = typecheck(
+        expr_parse('(+) . Right'),
         dict(builtins_env, **{'+': TypeScheme.from_str('a -> a -> a')}),
-        tvarsupply('.a'),
-        expr_parse('(+) . Right')
     )
     unify(Type.from_str('b -> Either a b -> Either a b'), t)
 
@@ -186,8 +173,6 @@ def test_typecheck_recursion():
         'tail': tail
     })
     phi, t = typecheck(
-        env,
-        tvarsupply('.a'),
         # I need to put parenthesis because of the failure of precedence we
         # have; otherwise we could use $ to connect if then and else (they are
         # still functions): 'if cond $ then result $ else other_result'.
@@ -199,103 +184,96 @@ def test_typecheck_recursion():
                               (then 0) \
                               (else let ts = tail xs in 1 + (count ts))
             in count
-        ''')
+        '''),
+        env
     )
     # The count functions counts the number of elements.
     unify(Type.from_str('[a] -> Number'), t)
 
 
 def test_type_checking_tuples():
-    typecheck(builtins_env, tvarsupply('.a'), expr_parse('(1, 2, 3)'))
+    typecheck(expr_parse('(1, 2, 3)'), builtins_env)
 
 
 def test_local_type_annotation_let():
     phi, t = typecheck(
+        expr_parse('''let g = [1, 2, 3]
+                      in reverse g'''),
         BuiltinEnvDict({
             'reverse': TypeScheme.from_str('[a] -> [a]'),
             ':': TypeScheme.from_str('a -> [a] -> [a]')
-        }),
-        tvarsupply('.a'),
-        expr_parse('''let g = [1, 2, 3]
-                      in reverse g''')
+        })
     )
     assert t == Type.from_str('[Number]')
 
     phi, t = typecheck(
-        BuiltinEnvDict({
-            'reverse': TypeScheme.from_str('[a] -> [a]'),
-            ':': TypeScheme.from_str('a -> [a] -> [a]')
-        }),
-        tvarsupply('.a'),
         expr_parse('''let g :: [Number]
                           g = []
-                      in reverse g''')
+                      in reverse g'''),
+        BuiltinEnvDict({
+            'reverse': TypeScheme.from_str('[a] -> [a]'),
+            ':': TypeScheme.from_str('a -> [a] -> [a]')
+        })
     )
     assert t == Type.from_str('[Number]')
 
     phi, t = typecheck(
+        expr_parse('''let g :: [a]
+                          g = [1, 2, 3]
+                      in reverse g'''),
         BuiltinEnvDict({
             'reverse': TypeScheme.from_str('[a] -> [a]'),
             ':': TypeScheme.from_str('a -> [a] -> [a]')
-        }),
-        tvarsupply('.a'),
-        expr_parse('''let g :: [a]
-                          g = [1, 2, 3]
-                      in reverse g''')
+        })
     )
     assert t == Type.from_str('[Number]')
 
     with pytest.raises(TypeError):
         typecheck(
+            expr_parse('''let g :: [Char]
+                              g = [1, 2, 3]
+                          in reverse g'''),
             BuiltinEnvDict({
                 'reverse': TypeScheme.from_str('[a] -> [a]'),
                 ':': TypeScheme.from_str('a -> [a] -> [a]')
-            }),
-            tvarsupply('.a'),
-            expr_parse('''let g :: [Char]
-                              g = [1, 2, 3]
-                          in reverse g''')
+            })
         )
 
 
 def test_local_type_annotation_letrec():
     phi, t = typecheck(
-        BuiltinEnvDict({
-            'reverse': TypeScheme.from_str('[a] -> [a]'),
-            ':': TypeScheme.from_str('a -> [a] -> [a]'),
-            '+': TypeScheme.from_str('a -> a -> a'),
-        }),
-        tvarsupply('.a'),
         expr_parse('''let count :: Number -> [Number]
                           count x = x:count (x + 1)
                           g :: [a]
                           g = count 1
                           g2 = reverse g
-                      in g2''')
+                      in g2'''),
+        BuiltinEnvDict({
+            'reverse': TypeScheme.from_str('[a] -> [a]'),
+            ':': TypeScheme.from_str('a -> [a] -> [a]'),
+            '+': TypeScheme.from_str('a -> a -> a'),
+        })
     )
     assert t == Type.from_str('[Number]')
 
     with pytest.raises(TypeError):
         typecheck(
-            BuiltinEnvDict({
-                'reverse': TypeScheme.from_str('[a] -> [a]'),
-                ':': TypeScheme.from_str('a -> [a] -> [a]'),
-                '+': TypeScheme.from_str('a -> a -> a'),
-            }),
-            tvarsupply('.a'),
             expr_parse('''let count :: Number -> [Number]
                               count x = x:count (x + 1)
                               g :: [Char]
                               g = count 1
-                          in reverse g''')
+                          in reverse g'''),
+            BuiltinEnvDict({
+                'reverse': TypeScheme.from_str('[a] -> [a]'),
+                ':': TypeScheme.from_str('a -> [a] -> [a]'),
+                '+': TypeScheme.from_str('a -> a -> a'),
+            })
         )
 
 
 def test_ill_typed_match():
     with pytest.raises(TypeError):
         typecheck(
-            BuiltinEnvDict(),
-            tvarsupply('.a'),
             expr_parse('''let g x = "a"
                               g x = 1
                           in g''')
@@ -306,8 +284,6 @@ def test_ill_typed_match():
 def test_ill_count1():
     with pytest.raises(TypeError):
         typecheck(
-            BuiltinEnvDict(),
-            tvarsupply('.a'),
             expr_parse('''let count [] = 0
                               count 2  = 1
                           in count''')
@@ -316,8 +292,6 @@ def test_ill_count1():
 
 def test_regression_missing_dynamic_builtins():
     phi, t = typecheck(
-        BuiltinEnvDict({}),
-        tvarsupply('.a'),
         expr_parse('let pair x y = (x, y) in pair 1 2')
     )
     assert unify(t, Type.from_str('(Number, Number)'))

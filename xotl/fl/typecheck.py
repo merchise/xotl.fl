@@ -197,8 +197,12 @@ class delta:
         return f'delta: {self.vname.ljust(20)}{self.type_!s}'
 
 
-class UnificationError(TypeError):
-    pass
+class NormalizationError(TypeError):
+    'Indicates the failure to normalize a constraint'
+
+
+class UnificationError(NormalizationError):
+    'Failure to unify two types; i.e. normalize the constraint "t1 ~ t2"'
 
 
 def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:
@@ -340,14 +344,26 @@ class sub_typeenv(TypeEnvironment):
 TCResult = Tuple[Substitution, Type]
 
 
-def typecheck(env: TypeEnvironment, ns: TVarSupply, exp: AST) -> TCResult:
+def typecheck(exp: AST, env: TypeEnvironment = None, ns: TVarSupply = None) -> TCResult:
     '''Check the type of `exp` in a given type environment `env`.
 
-    The name supply `ns` is used to create new type variables whenever
-    required.  The name supply must ensure not to create the same variable
-    twice.
+    The type environment `evn` is a mapping from program identifiers to type
+    schemes.  If `env` is None, we use the a `suitable empty type environment
+    <xotl.fl.builtins.BuiltinEnvDict>`:class:.
+
+    The type-variables supply `ns` is used to create new type variables
+    whenever required.  The name supply must ensure not to create the same
+    variable twice.  If `ns` is None, we create `one
+    <xotl.fl.utils.tvarsupply>`:class: with prefix set to '.t' (it will create
+    '.t0', '.t1', ...).
 
     '''
+    if env is None:
+        from xotl.fl.builtins import BuiltinEnvDict
+        env = BuiltinEnvDict()
+    if ns is None:
+        from xotl.fl.utils import tvarsupply
+        ns = tvarsupply('.t')
     if isinstance(exp, Identifier):
         return typecheck_var(env, ns, exp)
     elif isinstance(exp, Literal):
@@ -378,7 +394,7 @@ def tcl(env: TypeEnvironment, ns: TVarSupply, exprs: Iterable[AST]) -> TCLResult
         return sidentity, []
     else:
         expr, *exprs = exprs
-        phi, t = typecheck(env, ns, expr)
+        phi, t = typecheck(expr, env, ns)
         psi, ts = tcl(sub_typeenv(phi, env), ns, exprs)
         return scompose(psi, phi), [subtype(psi, t)] + ts
 
@@ -466,9 +482,9 @@ def typecheck_lambda(env: TypeEnvironment, ns, exp: Lambda) -> TCResult:
     newvar = next(ns)
     argtype = TypeScheme.from_typeexpr(newvar, generics=[])
     phi, type_ = typecheck(
+        exp.body,
         ChainMap({exp.varname: argtype}, env),
         ns,
-        exp.body
     )
     return phi, FuncCons(phi(newvar.name), type_)
 
@@ -498,9 +514,9 @@ def typecheck_let(env: TypeEnvironment, ns, exp: Let) -> TCResult:
     else:
         decls = add_decls(sub_typeenv(phi, env), ns, names, types)
     psi, t = typecheck(
-        decls,
-        ns,
         exp.body,
+        decls,
+        ns
     )
     return scompose(psi, phi), t
 
@@ -580,8 +596,8 @@ def typecheck_letrec(env: TypeEnvironment,
     nbvs1 = sub_typeenv(psi, nbvs)
     ts = [sch.type_ for _, sch in nbvs1.items()]
     psi1, t = typecheck(
+        exp.body,
         add_decls(sub_typeenv(psi, gamma), ns, names, ts),
-        ns,
-        exp.body
+        ns
     )
     return scompose(psi1, psi), t
