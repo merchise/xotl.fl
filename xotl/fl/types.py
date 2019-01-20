@@ -346,7 +346,8 @@ def find_tvars(t: Type) -> List[str]:
        ['a', 'c', 'b', 'a']
 
     If `t` is (or contains a TypeScheme) its generics variables will be
-    excluded (unless they're repeated):
+    excluded (unless they're repeated and appear outside the scope of type
+    scheme):
 
        >>> find_tvars(Type.from_str('a -> [forall b. b] -> a'))
        ['a', 'a']

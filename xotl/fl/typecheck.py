@@ -347,8 +347,8 @@ TCResult = Tuple[Substitution, Type]
 def typecheck(exp: AST, env: TypeEnvironment = None, ns: TVarSupply = None) -> TCResult:
     '''Check the type of `exp` in a given type environment `env`.
 
-    The type environment `evn` is a mapping from program identifiers to type
-    schemes.  If `env` is None, we use the a `suitable empty type environment
+    The type environment `env` is a mapping from program identifiers to type
+    schemes.  If `env` is None, we use the a `basic type environment
     <xotl.fl.builtins.BuiltinEnvDict>`:class:.
 
     The type-variables supply `ns` is used to create new type variables
