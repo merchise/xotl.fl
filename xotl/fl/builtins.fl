@@ -212,6 +212,7 @@ count x = x:count (x + 1)
 data Then a = Then a
 data Else a = Else a
 
+-- I use the explicit 'forall a.' as a test of the parsing of type schemes.
 if ::  forall a. Bool -> Then a -> Else a -> a
 if True (Then a) _  = a
 if False _ (Else a) = a
@@ -231,7 +232,6 @@ is_null :: [a] -> Bool
 is_null []  = True
 is_null _   = False
 
--- Pairs; they require special pattern matching support in the parser.
 
 pair :: a -> b -> (a, b)
 pair x y = (x, y)
@@ -242,15 +242,6 @@ fst (x, _) = x
 snd :: (a, b) -> b
 snd (_, y) = y
 
-
--- Date operations.  It's quite evident that I will need type-classes and
--- instances; otherwise, writing the simplest formulae may get really
--- involved.
-
--- NOTICE: The implementations below use pattern matching which is not
--- supported by the parser yet, so we must comment them.  Also notice that the
--- parser does not support comments either but in 'builtins.py' we strip them
--- before parsing.
 
 data Date = Date Number Number Number
             deriving (Eq, Ord)
@@ -264,10 +255,8 @@ data DateTime = DateTime Date Time
 get_date :: DateTime -> Date
 get_date (DateTime d _) = d
 
-
 get_time :: DateTime -> Time
 get_time (DateTime _ t) = t
-
 
 date_to_datetime :: Date -> DateTime
 date_to_datetime d = DateTime d (Time 0 0 0)
