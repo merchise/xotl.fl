@@ -144,7 +144,11 @@ def test_matching_lists():
 
     assert parse('''
        reverse [] = []
-       reverse x:xs = (reverse xs):x:[]
+
+       -- The ((x:xs)) is just the same as x:xs but with
+       -- redundant enclosing parenthesis
+
+       reverse (x:xs) = (reverse xs):x:[]
     ''')
 
     assert parse('second f:s:xs = s') == [Equation(

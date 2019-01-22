@@ -823,6 +823,15 @@ def p_param_pattern(prod):
     prod[0] = ConsPattern(prod[2], prod[4])
 
 
+# This allows unneeded but visually appealing patterns like 'f (x:xs) = x'
+
+def p_pattern_trivially_enclosed(prod):
+    '''
+    pattern : LPAREN pattern RPAREN
+    '''
+    prod[0] = prod[2]
+
+
 def p_empty_list_as_pattern(prod):
     '''empty_list_pattern : LBRACKET RBRACKET'''
     # We cannot have a Literal, because we don't know a monotype for it.  It
@@ -848,14 +857,15 @@ def p_patterns(prod):
     '''patterns : pattern _patterns
        patterns_comma_sep : pattern _patterns_comma
        _patterns : SPACE pattern _patterns
-       _patterns_comma : COMMA pattern _patterns_comma
+       _patterns_comma : COMMA pattern _patterns_comma_trail
+       _patterns_comma_trail : COMMA pattern _patterns_comma_trail
     '''
     _collect_item(prod)
 
 
 def p_patterns_empty(prod):
     '''_patterns : empty
-       _patterns_comma : empty
+       _patterns_comma_trail : empty
     '''
     prod[0] = []
 
