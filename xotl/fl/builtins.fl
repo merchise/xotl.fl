@@ -73,6 +73,16 @@ class Eq a where
   (/=) a b = not (a == b)
 
 
+instance Eq a => Eq [a] where
+  (==) [] []         = True
+  (==) x:xs (y:ys)   = x == y `and` xs == ys
+  (==) _  _          = False
+
+
+-- I cannot declare the each instance Eq of every possible tuple; they are Eq
+-- a, Eq b => Eq (a, b); Eq a, Eq b, Eq c => Eq (a, b, c), etc.  The instances
+-- are generated as demanded.
+
 
 class Eq a => Ord a where
   -- minimal implementation requires any of '<', '>', '<=', or '>='.
