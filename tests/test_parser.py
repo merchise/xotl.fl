@@ -100,7 +100,6 @@ def test_simple_if_program():
     ]
 
 
-@pytest.mark.xfail(reason='Failing to parse pattern-matching parameters')
 def test_if_program():
     parse('''
         data Then a = Then a
