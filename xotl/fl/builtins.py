@@ -143,6 +143,7 @@ def _load_builtins():
     import pkg_resources
     from xotl.fl import parse
     from xotl.fl.adt import DataType
+    from xotl.fl.typeclasses import TypeClass
     builtins = pkg_resources.resource_filename('xotl.fl', 'builtins.fl')
     with open(builtins, 'r', encoding='utf-8') as f:
         source = f.read()
@@ -153,6 +154,8 @@ def _load_builtins():
             gamma.update(definition)
         elif isinstance(definition, DataType):
             gamma.update(definition.full_typeenv)
+        elif isinstance(definition, TypeClass):
+            gamma.update(definition.type_environment)
     return gamma
 
 
