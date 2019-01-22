@@ -9,6 +9,9 @@
 .. [Damas1984] Damas, Luis. *Type Assignment in Programming
    Languages*. PhD. Thesis. University of Edinburgh. 1984.
 
+.. [Jones] Jones, Mark P. *Typing Haskell in Haskell*. Nov 2000. Online
+   article and code: https://gist.github.com/chrisdone/0075a16b32bfd4f62b7b
+
 .. [Odersky1999] Sulzmann, Martin; Odersky, Martin; and Wehr, Martin.  *Type
    Inference with Constrained Types*. Theory and Practice of Object Systems ·
    January 1999.  https://www.researchgate.net/publication/220346751
