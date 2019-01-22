@@ -157,6 +157,7 @@ def test_matching_lists():
     )]
 
 
+@pytest.mark.xfail(reason='Incomplete pattern matching')
 def test_local_definitions():
     # Taken from the paper 'Practical type inference for arbitrary-rank types'
     # by Peyton Jones, Simon et al.

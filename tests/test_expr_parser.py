@@ -198,6 +198,7 @@ def test_lambda_definition():
     assert P(r'\a b -> a') == Lambda('a', Lambda('b', Identifier('a')))
 
 
+@pytest.mark.xfail(reason='Incomplete pattern matching')
 def test_basic_letexpr():
     P = parse
     assert P('let id x = x in map id xs') == P('let id x = x in (map id xs)')
@@ -403,6 +404,7 @@ def test_no_attr_access():
     assert parse('p.children.len') == parse('p . children . len')
 
 
+@pytest.mark.xfail(reason='Incomplete pattern matching')
 def test_pattern_matching_let():
     code = '''let if True t f = t
                   if False t f = f
@@ -450,6 +452,7 @@ def test_list_syntax():
     assert parse('[1, 2]') == parse('1:2:[]')
 
 
+@pytest.mark.xfail(reason='Incomplete pattern matching')
 def test_pattern_matching_nested():
     parse('let second _:x:xs = x in second')
 
