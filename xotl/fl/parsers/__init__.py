@@ -884,18 +884,15 @@ class Equations(list):
 def p_equation_set(prod):
     '''equations : equation _equation_set
     '''
-    result = prod[2]
-    result.append(prod[1])
-    prod[0] = Equations(result)
+    _collect_item(prod)
+    prod[0] = Equations(prod[0])
 
 
 def p_equation_set2(prod):
     '''
     _equation_set : PADDING equation _equation_set
     '''
-    result = prod[3]
-    result.append(prod[2])
-    prod[0] = result
+    _collect_item(prod)
 
 
 def p_equation_set3(prod):
