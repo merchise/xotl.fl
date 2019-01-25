@@ -10,17 +10,13 @@
 from typing import Sequence, Iterator, Tuple
 from collections import ChainMap
 
+from xotl.fl.meta import Symbolic
+
 from .types import (
     Type,
     TypeCons,
     TypeEnvironment,
     TypeScheme,
-    Symbol,
-)
-from .pattern import (
-    Extract,
-    Match,
-    Select,
 )
 
 
@@ -220,9 +216,10 @@ class DataType:
         .. note:: The names of those special functions are not strings.
 
         '''
+        from xotl.fl.match import Match, Extract, Select
         from xotl.fl.ast.types import FunctionTypeCons as F
 
-        def _implied_funs(dc: DataCons) -> Iterator[Tuple[Symbol, TypeScheme]]:
+        def _implied_funs(dc: DataCons) -> Iterator[Tuple[Symbolic, TypeScheme]]:
             scheme = TypeScheme.from_typeexpr
             if not self.is_product_type():
                 if not dc.args:

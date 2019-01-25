@@ -29,6 +29,8 @@ from typing import Optional  # noqa
 from itertools import zip_longest
 from dataclasses import dataclass
 
+from xotl.fl.meta import Symbolic
+
 from .base import AST
 
 
@@ -314,10 +316,6 @@ class ListTypeCons(TypeCons):
         return f'[{t!s}]'
 
 
-class Symbol:
-    pass
-
-
 def find_tvars(t: Type) -> List[str]:
     '''Get all variables names (possibly repeated) in type `t`.
 
@@ -377,4 +375,4 @@ def is_simple_type(t: Type) -> bool:
 
 # XXX: I repeat this definition here because we need it in several of our AST
 # modules, but 'ast' cannot import typecheck.
-TypeEnvironment = Mapping[Union[str, Symbol], TypeScheme]
+TypeEnvironment = Mapping[Symbolic, TypeScheme]

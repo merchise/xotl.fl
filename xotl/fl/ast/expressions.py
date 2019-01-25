@@ -258,8 +258,8 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[str]:
        {'+', ':NO_MATCH_ERROR:', ':OR:'}
 
     '''
-    from xotl.fl.ast.pattern import MATCH_OPERATOR, NO_MATCH_ERROR
-    from xotl.fl.ast.pattern import Match, Extract, MatchLiteral
+    from xotl.fl.match import MATCH_OPERATOR, NO_MATCH_ERROR
+    from xotl.fl.match import Match, Extract, MatchLiteral
     from xotl.fl.ast.pattern import ConcreteLet
 
     POPFRAME = None  # remove a binding from the 'stack'
@@ -325,7 +325,7 @@ def replace_free_occurrences(self: AST,
       Lambda('id', Application(Identifier('id'), Identifier('id')))
 
     '''
-    from xotl.fl.ast.pattern import NO_MATCH_ERROR, MATCH_OPERATOR
+    from xotl.fl.match import NO_MATCH_ERROR, MATCH_OPERATOR
 
     def replace(expr: AST, bindings: FrozenSet[str]):
         if isinstance(expr, Identifier):

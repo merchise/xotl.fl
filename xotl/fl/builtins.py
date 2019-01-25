@@ -74,8 +74,8 @@ class BuiltinEnvDict(dict):
     '''
     def __init__(self, d=None, **kw):
         from xotl.fl.ast.types import TypeScheme
-        from xotl.fl.ast.pattern import NO_MATCH_ERROR, MATCH_OPERATOR
-        from xotl.fl.ast.pattern import Match, Extract
+        from xotl.fl.match import NO_MATCH_ERROR, MATCH_OPERATOR
+        from xotl.fl.match import Match, Extract
         if not d:
             d = {}
         init = {
@@ -106,7 +106,7 @@ class BuiltinEnvDict(dict):
 
     def __missing__(self, key) -> TypeScheme:
         from xotl.fl.utils import tvarsupply
-        from xotl.fl.ast.pattern import MatchLiteral, Extract
+        from xotl.fl.match import MatchLiteral, Extract
         from xotl.fl.ast.types import TypeVariable
         # Constructors of tuples are not fixed, since now you can have (1, 2,
         # 3..., 10000); that's a long tuple with a single constructor
