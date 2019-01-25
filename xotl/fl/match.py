@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from typing import Iterable, Tuple
 
 from xotl.fl.meta import Symbol
-from xotl.fl.ast.base import LCNode
+from xotl.fl.ast.base import AST
 from xotl.fl.ast.pattern import ConsPattern, Equation, Pattern
 from xotl.fl.ast.expressions import (
     Application,
@@ -47,7 +47,7 @@ class FunctionDefinition:
     def extend(self, items: Iterable[Equation]) -> 'FunctionDefinition':
         return FunctionDefinition(self.equations + tuple(items))
 
-    def compile(self) -> LCNode:
+    def compile(self) -> AST:
         '''Return the compiled form of the function definition.
 
         '''
@@ -56,7 +56,7 @@ class FunctionDefinition:
         # but I want to avoid *enlarging* simple functions needlessly.
         if self.arity:
             vars = list(namesupply(f'.{self.name}_arg', limit=self.arity))
-            body: LCNode = NO_MATCH_ERROR
+            body: AST = NO_MATCH_ERROR
             for eq in self.equations:
                 dfn = eq.body
                 patterns: Iterable[Tuple[str, Pattern]] = zip(vars, eq.patterns)
