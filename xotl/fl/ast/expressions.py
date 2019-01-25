@@ -6,41 +6,32 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from dataclasses import dataclass
+'''The AST of the enriched lambda calculus.'''
 from typing import (
     Any,
     Deque,
     FrozenSet,
-    Iterable,
     Iterator,
     List,
     Mapping,
-    MutableMapping,
     Optional,
     Reversible,
     Sequence,
-    Tuple,
-    Type as Class,
-    Union,
 )
-from collections import deque, ChainMap
+from collections import deque
 
 from xoutil.objects import validate_attrs
 from xoutil.fp.tools import fst
 
-from xotl.fl.types import (
-    AST,
+from .base import AST, LCNode
+from .types import (
     Type,
-    TypeCons,
     TypeEnvironment,
-    TypeScheme,
-    Symbol,
 )
 from xotl.fl.builtins import UnitType
-from xotl.fl.utils import namesupply
 
 
-class Identifier(AST):
+class Identifier(LCNode):
     '''A name (variable if you like).'''
     def __init__(self, name: str) -> None:
         self.name = name
@@ -69,11 +60,12 @@ class Identifier(AST):
 
 # An extension to the algorithm.  Literals are allowed, but have a the
 # most specific type possible.
-class Literal(AST):
+class Literal(LCNode):
     '''A literal value with its type.
 
-    The `parser <xotl.fl.expressions.parse>`:func: only recognizes strings,
-    chars, and numbers (integers and floats are represented by a single type).
+    The `parser <xotl.fl.parsers.expressions.parse>`:func: only recognizes
+    strings, chars, and numbers (integers and floats are represented by a
+    single type).
 
     '''
     def __init__(self, value: Any, type_: Type, annotation: Any = None) -> None:
@@ -106,7 +98,7 @@ class Literal(AST):
         return hash((Literal, self.value, self.type_, self.annotation))
 
 
-class Lambda(AST):
+class Lambda(LCNode):
     '''A lambda abstraction over a single parameter. '''
     def __init__(self, varname: str, body: AST) -> None:
         self.varname = varname
@@ -134,7 +126,7 @@ class Lambda(AST):
         return hash((Lambda, self.varname, self.body))
 
 
-class Application(AST):
+class Application(LCNode):
     '''The application of `e1` to its *argument* e2.'''
     def __init__(self, e1: AST, e2: AST) -> None:
         self.e1 = e1
@@ -164,7 +156,7 @@ class Application(AST):
 
 # We assume (as the Book does) that there are no "translation" errors; i.e
 # that you haven't put a Let where you needed a Letrec.
-class _LetExpr(AST):
+class _LetExpr(LCNode):
     def __init__(self, bindings: Mapping[str, AST], body: AST,
                  localenv: TypeEnvironment = None) -> None:
         # Sort by names (in a _LetExpr names can't be repeated, repetition for
@@ -202,9 +194,9 @@ class _LetExpr(AST):
 class Let(_LetExpr):
     '''A non-recursive Let expression.
 
-    The `parser <xotl.fl.expressions.parse>`:func: automatically selects
-    between `Let`:class: and `Letrec`:class.  If you're creating the program
-    by hand you should choose appropriately.
+    The `parser <xotl.fl.parsers.expressions.parse>`:func: automatically
+    selects between `Let`:class: and `Letrec`:class.  If you're creating the
+    program by hand you should choose appropriately.
 
     '''
     def __repr__(self):
@@ -219,13 +211,6 @@ class Letrec(_LetExpr):
     '''
     def __repr__(self):
         return f'Letrec({self.bindings!r}, {self.body!r})'
-
-
-def parse(code: str, debug=False, tracking=False) -> AST:
-    '''Parse a single expression `code`.
-    '''
-    from xotl.fl.parsers import expr_parser, lexer
-    return expr_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
 
 
 def build_lambda(params: Reversible[str], body: AST) -> Lambda:
@@ -273,9 +258,9 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[str]:
        {'+', ':NO_MATCH_ERROR:', ':OR:'}
 
     '''
-    from xotl.fl.pattern import MATCH_OPERATOR, NO_MATCH_ERROR
-    from xotl.fl.pattern import Match, Extract, MatchLiteral
-    from xotl.fl.let import ConcreteLet
+    from xotl.fl.ast.pattern import MATCH_OPERATOR, NO_MATCH_ERROR
+    from xotl.fl.ast.pattern import Match, Extract, MatchLiteral
+    from xotl.fl.ast.pattern import ConcreteLet
 
     POPFRAME = None  # remove a binding from the 'stack'
     result: List[str] = []
@@ -336,11 +321,11 @@ def replace_free_occurrences(self: AST,
 
     You are responsible to avoid the name capture problem::
 
-      >>> replace_free_occurrences(expr_parse('\id -> id x'), {'x': 'id'})
+      >>> replace_free_occurrences(parse_expression('\id -> id x'), {'x': 'id'})
       Lambda('id', Application(Identifier('id'), Identifier('id')))
 
     '''
-    from xotl.fl.pattern import NO_MATCH_ERROR, MATCH_OPERATOR
+    from xotl.fl.ast.pattern import NO_MATCH_ERROR, MATCH_OPERATOR
 
     def replace(expr: AST, bindings: FrozenSet[str]):
         if isinstance(expr, Identifier):

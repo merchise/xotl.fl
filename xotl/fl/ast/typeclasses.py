@@ -9,14 +9,15 @@
 from typing import Tuple, Sequence, Union
 from dataclasses import dataclass
 
-from xotl.fl.types import (
+from .base import AST
+from .types import (
     TypeConstraint,
     TypeEnvironment,
     TypeScheme,
     ConstrainedType,
     SimpleType,
 )
-from xotl.fl.pattern import Equation
+from .pattern import Equation
 
 
 Definition = Union[Equation, TypeEnvironment]
@@ -24,7 +25,7 @@ Definitions = Sequence[Definition]
 
 
 @dataclass
-class TypeClass:
+class TypeClass(AST):
     # class [constrains =>] newclass where
     #     local_definitions
     constraints: Tuple[TypeConstraint, ...]
@@ -64,7 +65,7 @@ class TypeClass:
 
 
 @dataclass
-class Instance:
+class Instance(AST):
     constraints: Tuple[TypeConstraint, ...]
     typeclass_name: str
     type_: SimpleType

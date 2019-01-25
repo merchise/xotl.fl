@@ -7,7 +7,7 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
-from xotl.fl.types import (
+from xotl.fl.ast.types import (
     TypeVariable as T,
     FunctionTypeCons as F,
     TypeCons as C,
@@ -15,7 +15,7 @@ from xotl.fl.types import (
     ConstrainedType,
     TypeConstraint,
 )
-from xotl.fl.types import parse
+from xotl.fl.parsers.types import parse
 from xotl.fl.parsers import ParserError
 
 from xotl.fl.utils import tvarsupply

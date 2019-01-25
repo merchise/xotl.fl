@@ -10,14 +10,14 @@ import pytest
 from functools import partial
 from xoutil.fp.tools import compose
 
-from xotl.fl.types import parse
-from xotl.fl.types import (
+from xotl.fl.ast.types import (
     TypeVariable as T,
     TypeCons as C,
 )
-
 from xotl.fl.typecheck import scompose, subtype, delta
 from xotl.fl.typecheck import unify, UnificationError
+
+from xotl.fl.parsers.types import parse
 
 
 I = parse('a -> a')

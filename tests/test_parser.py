@@ -8,11 +8,12 @@
 #
 import pytest
 from xotl.fl import parse
-from xotl.fl.types import Type, TypeScheme
-from xotl.fl.expressions import Identifier, Let
-from xotl.fl.adt import DataType, DataCons
-from xotl.fl.pattern import Equation, ConsPattern
-from xotl.fl.expressions import build_application, build_lambda, parse as expr_parse
+from xotl.fl.ast.types import Type, TypeScheme
+from xotl.fl.ast.expressions import Identifier, Let
+from xotl.fl.ast.adt import DataType, DataCons
+from xotl.fl.ast.pattern import Equation, ConsPattern
+from xotl.fl.ast.expressions import build_application, build_lambda
+from xotl.fl.parsers.expressions import parse as parse_expression
 
 
 def test_simple_one_definition():
@@ -172,7 +173,7 @@ def test_local_definitions():
             'foo',
             [],
             Let(
-                {'f': build_lambda(['x'], expr_parse("(x [True, False], x ['a', 'b'])"))},
+                {'f': build_lambda(['x'], parse_expression("(x [True, False], x ['a', 'b'])"))},
                 build_application('f', Identifier('reverse')),
                 {'f': TypeScheme.from_str('(forall a. [a] -> [a]) -> ([Bool], [Char])')}
             )

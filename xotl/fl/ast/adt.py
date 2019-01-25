@@ -10,14 +10,14 @@
 from typing import Sequence, Iterator, Tuple
 from collections import ChainMap
 
-from xotl.fl.types import (
+from .types import (
     Type,
     TypeCons,
     TypeEnvironment,
     TypeScheme,
     Symbol,
 )
-from xotl.fl.pattern import (
+from .pattern import (
     Extract,
     Match,
     Select,
@@ -141,7 +141,7 @@ class DataType:
         a b` (for any type `b`).
 
         '''
-        from xotl.fl.types import FunctionTypeCons
+        from xotl.fl.ast.types import FunctionTypeCons
 
         def _implied_type(dc: DataCons) -> Type:
             result = self.type_
@@ -203,7 +203,7 @@ class DataType:
             >>> datatype = parse('data Pair a b = Pair a b')[0]
 
             >>> datatype.pattern_matching_env
-            {<Select: 1>: <TypeScheme: forall a b. (Pair a b) -> a>,
+            {<Select: 1>: <TypeScheme: forall a b. (Pair a b) -> a>, \
              <Select: 2>: <TypeScheme: forall a b. (Pair a b) -> b>}
 
         The unit type (any type with a single value) has none::
@@ -220,7 +220,7 @@ class DataType:
         .. note:: The names of those special functions are not strings.
 
         '''
-        from xotl.fl.types import FunctionTypeCons as F
+        from xotl.fl.ast.types import FunctionTypeCons as F
 
         def _implied_funs(dc: DataCons) -> Iterator[Tuple[Symbol, TypeScheme]]:
             scheme = TypeScheme.from_typeexpr

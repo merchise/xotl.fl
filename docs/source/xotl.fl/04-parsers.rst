@@ -4,7 +4,8 @@
 
 .. testsetup::
 
-   from xotl.fl.expressions import parse, find_free_names
+   from xotl.fl.parsers.expressions import parse
+   from xotl.fl.ast.expressions import find_free_names
 
 .. automodule:: xotl.fl.parsers
 
@@ -17,9 +18,8 @@ There are no public API for the parsers.  You get access to them by calling:
 
 - `xotl.fl.parse`:func: for full programs;
 
-- `xotl.fl.type_parse`:func: for a single type expression; and
+- `xotl.fl.parsers.expressions.parse`:func: for single expressions; and
 
-- `xotl.fl.expr_parse`:func: for a single expression.
-
+- `xotl.fl.parsers.types.parse`:func: for single type expressions.
 
 .. _ply: http://www.dabeaz.com/ply/ply.html

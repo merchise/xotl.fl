@@ -9,18 +9,27 @@
 '''Pattern Matching.
 
 '''
-from typing import Union, Sequence, Tuple, Iterable
+from typing import (
+    Iterable,
+    List,
+    Union,
+    Sequence,
+    Tuple,
+    Type as Class,
+)
 from dataclasses import dataclass
 
-from xotl.fl.types import (
-    AST,
-    Symbol,
-)
-from xotl.fl.expressions import (
+from .base import AST, LCNode
+from .types import Symbol, TypeEnvironment
+from .expressions import (
     Identifier,
     Literal,
     Application,
     Lambda,
+    _LetExpr,
+    Let,
+    Letrec,
+    find_free_names,
 )
 from xotl.fl.utils import namesupply
 
@@ -95,7 +104,7 @@ class MatchLiteral(Symbol):
         return f'<Match value: {self.value}>'
 
 
-class ConsPattern:
+class ConsPattern(AST):
     '''The syntactical notion of a pattern.
 
     '''
@@ -143,7 +152,7 @@ class ConsPattern:
 Pattern = Union[str, Literal, ConsPattern]
 
 
-class Equation:
+class Equation(AST):
     '''The syntactical notion of an equation.
 
     '''
@@ -210,16 +219,16 @@ class FunctionDefinition:
     def extend(self, items: Iterable[Equation]) -> 'FunctionDefinition':
         return FunctionDefinition(self.equations + tuple(items))
 
-    def compile(self) -> AST:
+    def compile(self) -> LCNode:
         '''Return the compiled form of the function definition.
 
         '''
-        from xotl.fl.expressions import build_lambda, build_application
+        from xotl.fl.ast.expressions import build_lambda, build_application
         # This is similar to the function `match` in 5.2 of [PeytonJones1987];
         # but I want to avoid *enlarging* simple functions needlessly.
         if self.arity:
             vars = list(namesupply(f'.{self.name}_arg', limit=self.arity))
-            body: AST = NO_MATCH_ERROR
+            body: LCNode = NO_MATCH_ERROR
             for eq in self.equations:
                 dfn = eq.body
                 patterns: Iterable[Tuple[str, Pattern]] = zip(vars, eq.patterns)
@@ -283,3 +292,57 @@ NO_MATCH_ERROR = Identifier(':NO_MATCH_ERROR:')
 
 class ArityError(TypeError):
     pass
+
+
+LocalDefinition = Union[Equation, TypeEnvironment]
+
+
+@dataclass
+class ConcreteLet(AST):
+    '''The concrete representation of a let/where expression.
+
+    '''
+    definitions: List[LocalDefinition]  # noqa
+    body: AST
+
+    @property
+    def ast(self) -> _LetExpr:
+        return self.compile()
+
+    def compile(self) -> _LetExpr:
+        r'''Build a Let/Letrec from a set of equations and a body.
+
+        We need to decide if we issue a Let or a Letrec: if any of declared
+        names appear in the any of the bodies we must issue a Letrec, otherwise
+        issue a Let.
+
+        Also we need to convert function-patterns into Lambda abstractions::
+
+           let id x = ...
+
+        becomes::
+
+           led id = \x -> ...
+
+        '''
+        localenv: TypeEnvironment = {}
+        defs: MutableMapping[str, FunctionDefinition] = {}   # noqa
+        for dfn in self.definitions:
+            if isinstance(dfn, Equation):
+                eq = defs.get(dfn.name)
+                if not eq:
+                    defs[dfn.name] = FunctionDefinition([dfn])
+                else:
+                    assert isinstance(eq, FunctionDefinition)
+                    defs[dfn.name] = eq.append(dfn)
+            elif isinstance(dfn, dict):
+                localenv.update(dfn)  # type: ignore
+            else:
+                assert False, f'Unknown definition type {dfn!r}'
+        names = set(defs)
+        compiled = {name: dfn.compile() for name, dfn in defs.items()}
+        if any(set(find_free_names(fn)) & names for fn in compiled.values()):
+            klass: Class[_LetExpr] = Letrec
+        else:
+            klass = Let
+        return klass(compiled, self.body, localenv)

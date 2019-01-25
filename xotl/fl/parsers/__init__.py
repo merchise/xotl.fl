@@ -14,7 +14,7 @@ from xoutil.future.datetime import TimeSpan
 
 from ply import lex, yacc
 
-from xotl.fl.types import (
+from xotl.fl.ast.types import (
     TypeVariable,
     TypeCons,
     ListTypeCons,
@@ -25,8 +25,8 @@ from xotl.fl.types import (
     ConstrainedType,
     is_simple_type,
 )
-from xotl.fl.types import TypeEnvironment  # noqa
-from xotl.fl.expressions import (
+from xotl.fl.ast.types import TypeEnvironment  # noqa
+from xotl.fl.ast.expressions import (
     Identifier,
     Literal,
     Application,
@@ -35,10 +35,10 @@ from xotl.fl.expressions import (
     build_application,
     build_list_expr,
 )
-from xotl.fl.adt import DataType, DataCons
-from xotl.fl.let import ConcreteLet
-from xotl.fl.pattern import ConsPattern, Equation
-from xotl.fl.typeclasses import TypeClass, Instance
+from xotl.fl.ast.adt import DataType, DataCons
+from xotl.fl.ast.pattern import ConcreteLet
+from xotl.fl.ast.pattern import ConsPattern, Equation
+from xotl.fl.ast.typeclasses import TypeClass, Instance
 
 from xotl.fl.builtins import (
     StringType,
@@ -434,6 +434,7 @@ def t_DATE_INTERVAL(t):
     end = dateutil.parser.parse(end)
     t.value = TimeSpan(start, end)
     return t
+
 
 MAX_DATE_LITERAL_LENGTH = len('<YYYY-MM-DD>')
 MAX_DATETIME_LITERAL_LENGTH = len('<YYYY-MM-DDTHH:MM:SS.ZZZZZZZ>')
@@ -910,7 +911,7 @@ def p_let_expr(prod):
     letexpr : KEYWORD_LET SPACE local_definitions KEYWORD_IN SPACE st_expr
 
     '''
-    prod[0] = ConcreteLet(prod[3], prod[6]).ast
+    prod[0] = ConcreteLet(list(prod[3]), prod[6])
 
 
 def p_where_expr(prod):
@@ -918,7 +919,7 @@ def p_where_expr(prod):
     where_expr : expr KEYWORD_WHERE SPACE equations
     where_expr : expr KEYWORD_WHERE PADDING equations
     '''
-    prod[0] = ConcreteLet(prod[4], prod[1]).ast
+    prod[0] = ConcreteLet(list(prod[4]), prod[1])
 
 
 def p_error(prod):

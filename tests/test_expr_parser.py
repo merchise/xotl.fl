@@ -12,8 +12,7 @@ from hypothesis import strategies as s, given, example, assume
 from ply import lex
 
 from xotl.fl import tokenize
-from xotl.fl.expressions import parse
-from xotl.fl.expressions import (
+from xotl.fl.ast.expressions import (
     Identifier,
     Literal,
     Application,
@@ -22,7 +21,11 @@ from xotl.fl.expressions import (
     Letrec,
     find_free_names,
 )
+from xotl.fl.ast.pattern import Equation, ConcreteLet, ConsPattern
+
 from xotl.fl.parsers import string_repr, ParserError
+from xotl.fl.parsers.expressions import parse
+
 from xotl.fl.builtins import (
     NumberType,
     CharType,
@@ -247,12 +250,13 @@ def test_nested_let():
                   g3 = g2 y3
               in f2 g3)
     in f3
-    ''') == Letrec(
-        {'f1': App(App(Id('x1'), Id('x2')), Id('x3')),
-         'f2': Let({'g1': Id('y1')}, App(Id('f1'), Id('g1'))),
-         'f3': Letrec({'g2': Id('y2'), 'g3': App(Id('g2'), Id('y3'))},
-                      App(Id('f2'), Id('g3')))},
-        Id('f3')
+    ''') == ConcreteLet(
+        [
+            Equation('f1', [], parse('x1 x2 x3')),
+            Equation('f2', [], parse('let g1 = y1 in f1 g1')),
+            Equation('f3', [], parse('let g2 = y2\n  g3 = g2 y3\n  in f2 g3')),
+        ],
+        Id('f3'),
     )
 
 
@@ -404,18 +408,18 @@ def test_no_attr_access():
     assert parse('p.children.len') == parse('p . children . len')
 
 
-@pytest.mark.xfail(reason='Incomplete pattern matching')
 def test_pattern_matching_let():
     code = '''let if True t f = t
                   if False t f = f
               in g . if'''
-    assert parse(code) == Let(
-        {
-            'if': None  # TODO: Pattern-matching lambda abstraction
-        },
+    result = parse(code)
+    expected = ConcreteLet(
+        [Equation('if', [ConsPattern('True'), 't', 'f'], Identifier('t')),
+         Equation('if', [ConsPattern('False'), 't', 'f'], Identifier('f'))],
         Application(Application(Identifier('.'), Identifier('g')),
                     Identifier('if'))
     )
+    assert result == expected
 
 
 def test_list_cons_operator():
@@ -452,12 +456,10 @@ def test_list_syntax():
     assert parse('[1, 2]') == parse('1:2:[]')
 
 
-@pytest.mark.xfail(reason='Incomplete pattern matching')
 def test_pattern_matching_nested():
     parse('let second _:x:xs = x in second')
 
 
-@pytest.mark.xfail(reaseon='Look-ahead by 1 token, I need to work it out')
 def test_regression_ambigous_tuple_pattern():
     assert parse('''let count [] = 0
                  count (x:xs) = 1 + (count xs)

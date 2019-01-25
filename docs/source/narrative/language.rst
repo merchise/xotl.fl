@@ -114,10 +114,11 @@ Expressions
 
 The right hand side of values (and function) definitions are made up from
 expressions.  The AST of expressions is documented in
-`xotl.fl.expressions`:mod:.
+`xotl.fl.ast.expressions`:mod:.
 
-In the examples below, the return of the `xotl.fl.expression.parse`:func: is
-always an instance of some AST class.
+In the examples below, the return of the
+`~xotl.fl.parsers.expressions.parse`:func: is always an instance of some AST
+class.
 
 
 Literals and identifiers
@@ -131,7 +132,7 @@ with a digit.
 
 Examples:
 
-   >>> from xotl.fl.expressions import parse
+   >>> from xotl.fl.parsers.expressions import parse
    >>> parse('a')
    Identifier('a')
 
@@ -158,7 +159,7 @@ The expression language allows literal values:
      >>> parse(r"'\u0020'")
      Literal(' ', TypeCons('Char', ()))
 
-  Notice that the value in the `~xotl.fl.expressions.Literal`:class:
+  Notice that the value in the `~xotl.fl.ast.expressions.Literal`:class:
   object is a Python string; but it will always be one character long.
 
 - Strings are surrounded with quotation mark ``"``.  You can use the backslash
@@ -315,7 +316,7 @@ Lambda abstractions are represented with the concise syntax of Haskell::
 
   \args -> body
 
-Even though the AST `~xotl.fl.expressions.Lambda`:class: supports a
+Even though the AST `~xotl.fl.ast.expressions.Lambda`:class: supports a
 single argument the parser admits several and does the expected currying:
 
    >>> parse(r'\a b -> a') == parse(r'\a -> \b -> a')
@@ -352,12 +353,10 @@ do pattern matching.  This is represented by transforming your code:
    ...               is_null _  = False
    ...           in is_null'''
    >>> parse(code)   # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-   Let((('is_null', Lambda('.is_null_arg0', Application(Application(Identifier(':OR:'), ..., Identifier('is_null'))
+    ConcreteLet(definitions=[<equation is_null [] = Identifier('True')>, <equation is_null _ = Identifier('False')>], body=Identifier('is_null'))
 
 
-The parser will produce a `~xotl.fl.expressions.Let`:class: node if there are
-no recursive definitions, otherwise it will create a
-`~xotl.fl.expressions.Letrec`:class:.
+The parser will produce a `~xotl.fl.ast.pattern.ConcreteLet`:class: node.
 
 The 'where' expressions produce the same AST.  The general schema is::
 
@@ -447,7 +446,7 @@ constructor.
 
 Examples:
 
-  >>> from xotl.fl.types import parse
+  >>> from xotl.fl.parsers.types import parse
   >>> parse('a')
   TypeVariable('a')
 
@@ -502,8 +501,8 @@ The tuple with 0 components is the *unit type*:
 
 The unit type has a single value, the unit value:
 
-  >>> from xotl.fl import expr_parse
-  >>> expr_parse('()')
+  >>> from xotl.fl.parsers.expressions import parse as parse_expression
+  >>> parse_expression('()')
   Literal((), TypeCons('Unit', ()))
 
 
@@ -521,7 +520,7 @@ You may use the keyword ``forall`` to create type schemes explicitly:
 Also, the classmethod `~xotl.fl.types.TypeScheme.from_typeexpr`:meth: creates
 type schemes from other types expressions:
 
-   >>> from xotl.fl.types import TypeScheme
+   >>> from xotl.fl.ast.types import TypeScheme
    >>> TypeScheme.from_typeexpr(parse('(a, b)')) == parse('forall a b. (a, b)')
    True
 
@@ -560,11 +559,11 @@ arguments in a constructor:
 
 This makes the parser to recognize funny, unusual types expressions:
 
-  >>> from xotl.fl import type_parse
-  >>> type_parse('[a] b')
+  >>> from xotl.fl.parsers.types import parse as parse_type
+  >>> parse_type('[a] b')
   TypeCons('[]', (TypeVariable('a'), TypeVariable('b')))
 
-  >>> type_parse('(a -> b) c')
+  >>> parse_type('(a -> b) c')
   TypeCons('->', (TypeVariable('a'), TypeVariable('b'), TypeVariable('c')))
 
 Those types have no semantics assigned but the parser recognizes them.  It's

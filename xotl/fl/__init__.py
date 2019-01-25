@@ -17,7 +17,7 @@ def parse(program_source: str, *, debug: bool = False):
     It returns a list of definitions.  Definitions come in three types:
 
     - Type annotations, which are dictionaries of type
-      `xotl.fl.types.TypeEnvironment`:data:;
+      `xotl.fl.ast.types.TypeEnvironment`:data:;
 
     - Value definitions, which may span several `equations
       <xotl.fl.expressions.Equation>`:class:; and
@@ -47,28 +47,6 @@ def parse(program_source: str, *, debug: bool = False):
     # separated stuff (several equations for the same name are given
     # separately, but we group them under a single Equations object).
     return defs
-
-
-def type_parse(code: str, debug=False, tracking=False):
-    '''Parse a single type expression `code`.
-
-    Return a `type expression AST <xotl.fl.types>`:mod:.
-
-    Example:
-
-       >>> type_parse('a -> b')
-       TypeCons('->', (TypeVariable('a'), TypeVariable('b')))
-
-    '''
-    from .parsers import type_parser, lexer
-    return type_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
-
-
-def expr_parse(code: str, debug=False, tracking=False):
-    '''Parse a single expression `code`.
-    '''
-    from .parsers import expr_parser, lexer
-    return expr_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
 
 
 def tokenize(source):

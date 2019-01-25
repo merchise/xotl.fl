@@ -12,12 +12,14 @@
 import re
 from xoutil.modules import moduleproperty
 
-from xotl.fl.types import (
+from xotl.fl.ast.types import (
     Type,
     TypeScheme,
     TypeCons,
     ListTypeCons,
     TupleTypeCons,
+
+    # We need to import here because the AST imports the builtins UnitType
     TypeEnvironment,
 )
 
@@ -71,9 +73,9 @@ class BuiltinEnvDict(dict):
 
     '''
     def __init__(self, d=None, **kw):
-        from xotl.fl.types import TypeScheme
-        from xotl.fl.pattern import NO_MATCH_ERROR, MATCH_OPERATOR
-        from xotl.fl.pattern import Match, Extract
+        from xotl.fl.ast.types import TypeScheme
+        from xotl.fl.ast.pattern import NO_MATCH_ERROR, MATCH_OPERATOR
+        from xotl.fl.ast.pattern import Match, Extract
         if not d:
             d = {}
         init = {
@@ -104,8 +106,8 @@ class BuiltinEnvDict(dict):
 
     def __missing__(self, key) -> TypeScheme:
         from xotl.fl.utils import tvarsupply
-        from xotl.fl.pattern import MatchLiteral, Extract
-        from xotl.fl.types import TypeVariable
+        from xotl.fl.ast.pattern import MatchLiteral, Extract
+        from xotl.fl.ast.types import TypeVariable
         # Constructors of tuples are not fixed, since now you can have (1, 2,
         # 3..., 10000); that's a long tuple with a single constructor
         # (,,...,,); i.e 9999 commas.
@@ -142,8 +144,8 @@ class BuiltinEnvDict(dict):
 def _load_builtins():
     import pkg_resources
     from xotl.fl import parse
-    from xotl.fl.adt import DataType
-    from xotl.fl.typeclasses import TypeClass
+    from xotl.fl.ast.adt import DataType
+    from xotl.fl.ast.typeclasses import TypeClass
     builtins = pkg_resources.resource_filename('xotl.fl', 'builtins.fl')
     with open(builtins, 'r', encoding='utf-8') as f:
         source = f.read()

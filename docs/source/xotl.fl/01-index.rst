@@ -3,10 +3,10 @@
 =======================================
 
 .. automodule:: xotl.fl
-   :members: parse, expr_parse, type_parse, tokenize
+   :members: parse, tokenize
 
 .. testsetup::
 
-   from xotl.fl.types import *
-   from xotl.fl.expressions import *
+   from xotl.fl.ast.types import *
+   from xotl.fl.ast.expressions import *
    from xotl.fl import *

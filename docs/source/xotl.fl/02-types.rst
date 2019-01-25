@@ -1,13 +1,13 @@
-=========================================================
- :mod:`xotl.fl.types` -- The AST of the type expressions
-=========================================================
+=============================================================
+ :mod:`xotl.fl.ast.types` -- The AST of the type expressions
+=============================================================
 
-.. automodule:: xotl.fl.types
+.. automodule:: xotl.fl.ast.types
    :members: parse, find_tvars
 
 .. testsetup::
 
-   from xotl.fl.types import *
+   from xotl.fl.ast.types import *
 
 
 .. autoclass:: Type

@@ -29,9 +29,7 @@ from typing import Optional  # noqa
 from itertools import zip_longest
 from dataclasses import dataclass
 
-
-class AST:
-    pass
+from .base import AST
 
 
 class Type(AST):
@@ -45,6 +43,7 @@ class Type(AST):
             TypeCons('->', (TypeVariable('a'), TypeCons('->', (...))))
 
         '''
+        from xotl.fl.parsers.types import parse
         return parse(source)
 
     def __rshift__(self, other):
@@ -159,9 +158,9 @@ class TypeScheme(Type):
 
     Example:
 
-      >>> from xotl.fl import type_parse
+      >>> from xotl.fl.parsers.types import parse as parse_type
       >>> map_type = TypeScheme(['a', 'b'],
-      ...                       type_parse('(a -> b) -> List a -> List b'))
+      ...                       parse_type('(a -> b) -> List a -> List b'))
 
       >>> map_type
       <TypeScheme: forall a b. (a -> b) -> ((List a) -> (List b))>
@@ -236,6 +235,7 @@ class TypeScheme(Type):
            <TypeScheme: forall a b. a -> (b -> a)>
 
         '''
+        from xotl.fl.parsers.types import parse
         type_ = parse(source)
         return cls.from_typeexpr(type_, generics=generics)
 
@@ -318,25 +318,6 @@ class Symbol:
     pass
 
 
-TypeEnvironment = Mapping[Union[str, Symbol], TypeScheme]
-EMPTY_TYPE_ENV: TypeEnvironment = {}
-
-
-def parse(code: str, debug=False, tracking=False) -> Type:
-    '''Parse a single type expression `code`.
-
-    Return a `type expression AST <xotl.fl.types>`:mod:.
-
-    Example:
-
-       >>> parse('a -> b')
-       TypeCons('->', (TypeVariable('a'), TypeVariable('b')))
-
-    '''
-    from xotl.fl.parsers import type_parser, lexer
-    return type_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)
-
-
 def find_tvars(t: Type) -> List[str]:
     '''Get all variables names (possibly repeated) in type `t`.
 
@@ -376,7 +357,7 @@ def find_tvars(t: Type) -> List[str]:
             generics.append(current | set(t.generics))
             queue.append(POP_GENERICS)
         else:
-            assert isinstance(t, TypeCons)
+            assert isinstance(t, TypeCons), f"Unexpected type: {t!r}"
             queue.extend(t.subtypes)
     return list(result)
 
@@ -392,3 +373,8 @@ def is_simple_type(t: Type) -> bool:
         return all(is_simple_type(st) for st in t.subtypes)
     else:
         return False
+
+
+# XXX: I repeat this definition here because we need it in several of our AST
+# modules, but 'ast' cannot import typecheck.
+TypeEnvironment = Mapping[Union[str, Symbol], TypeScheme]

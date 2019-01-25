@@ -36,6 +36,7 @@ Extensions are described in [Wadler1989]_ and [PeytonJones2011]_.
 from typing import (
     Sequence,
     List,
+    Mapping,
     Tuple,
     Iterable,
     Callable,
@@ -44,18 +45,17 @@ from typing import (
 from typing import Any  # noqa
 from collections import ChainMap
 
-from xotl.fl.types import (
-    AST,
+from xotl.fl.ast.base import AST
+from xotl.fl.ast.types import (
     Type,
     TypeVariable,
     TypeCons,
     FunctionTypeCons as FuncCons,
     TypeScheme,
     find_tvars,
-    TypeEnvironment,
     Symbol,
 )
-from xotl.fl.expressions import (
+from xotl.fl.ast.expressions import (
     Identifier,
     Literal,
     Lambda,
@@ -63,7 +63,12 @@ from xotl.fl.expressions import (
     Let,
     Letrec,
 )
+from xotl.fl.ast.pattern import ConcreteLet
 from xotl.fl.utils import TVarSupply
+
+
+TypeEnvironment = Mapping[Union[str, Symbol], TypeScheme]
+EMPTY_TYPE_ENV: TypeEnvironment = {}
 
 
 _STR_PADDING = ' ' * 4
@@ -376,6 +381,9 @@ def typecheck(exp: AST, env: TypeEnvironment = None, ns: TVarSupply = None) -> T
         return typecheck_let(env, ns, exp)
     elif isinstance(exp, Letrec):
         return typecheck_letrec(env, ns, exp)
+    elif isinstance(exp, ConcreteLet):
+        # TODO: Remove this
+        return typecheck(exp.ast, env, ns)
     else:
         assert False, f'Unknown AST node {exp!r}'
 
