@@ -9,8 +9,11 @@
 '''Pattern Matching.
 
 '''
+from xoutil.objects import memoized_property
+
 from typing import (
     List,
+    Mapping,
     MutableMapping,
     Union,
     Sequence,
@@ -142,6 +145,7 @@ class Equation(AST):
 
 
 LocalDefinition = Union[Equation, TypeEnvironment]
+ValueDefinitions = Mapping[str, List[Equation]]
 
 
 @dataclass
@@ -152,9 +156,34 @@ class ConcreteLet(AST):
     definitions: List[LocalDefinition]  # noqa
     body: AST
 
-    @property
+    @memoized_property
     def ast(self) -> _LetExpr:
         return self.compile()
+
+    @memoized_property
+    def value_definitions(self) -> ValueDefinitions:
+        '''The function definitions.'''
+        result, _ = self._definitions
+        return result
+
+    @memoized_property
+    def local_environment(self) -> TypeEnvironment:
+        _, result = self._definitions
+        return result
+
+    @memoized_property
+    def _definitions(self) -> Tuple[ValueDefinitions, TypeEnvironment]:
+        localenv: TypeEnvironment = {}
+        defs: MutableMapping[str, List[Equation]] = {}   # noqa
+        for dfn in self.definitions:
+            if isinstance(dfn, Equation):
+                equations = defs.setdefault(dfn.name, [])
+                equations.append(dfn)
+            elif isinstance(dfn, dict):
+                localenv.update(dfn)  # type: ignore
+            else:
+                assert False, f'Unknown definition type {dfn!r}'
+        return defs, localenv
 
     def compile(self) -> _LetExpr:
         r'''Build a Let/Letrec from a set of equations and a body.
@@ -173,24 +202,14 @@ class ConcreteLet(AST):
 
         '''
         from xotl.fl.match import FunctionDefinition
-        localenv: TypeEnvironment = {}
-        defs: MutableMapping[str, FunctionDefinition] = {}   # noqa
-        for dfn in self.definitions:
-            if isinstance(dfn, Equation):
-                eq = defs.get(dfn.name)
-                if not eq:
-                    defs[dfn.name] = FunctionDefinition([dfn])
-                else:
-                    assert isinstance(eq, FunctionDefinition)
-                    defs[dfn.name] = eq.append(dfn)
-            elif isinstance(dfn, dict):
-                localenv.update(dfn)  # type: ignore
-            else:
-                assert False, f'Unknown definition type {dfn!r}'
+        defs = {
+            name: FunctionDefinition(equations)
+            for name, equations in self.value_definitions.items()
+        }
         names = set(defs)
         compiled = {name: dfn.compile() for name, dfn in defs.items()}
         if any(set(find_free_names(fn)) & names for fn in compiled.values()):
             klass: Class[_LetExpr] = Letrec
         else:
             klass = Let
-        return klass(compiled, self.body, localenv)
+        return klass(compiled, self.body, self.local_environment)

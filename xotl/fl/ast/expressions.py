@@ -291,9 +291,11 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[str]:
             bindings.append(node.varname)
             nodes.append(POPFRAME)
             nodes.append(node.body)
-        elif isinstance(node, (ConcreteLet, Let, Letrec)):
+        elif isinstance(node, (ConcreteLet, _LetExpr)):
             if isinstance(node, ConcreteLet):
-                node = node.ast
+                exp = node.ast
+            else:
+                exp = node
             # This is tricky; the bindings can be used recursively in the
             # bodies of a letrec:
             #
@@ -306,10 +308,10 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[str]:
             # look at all the definitions.
             #
             # We push several POPFRAME to account for that.
-            bindings.extend(node.keys())
-            nodes.extend(POPFRAME for _ in node.keys())
-            nodes.extend(node.values())
-            nodes.append(node.body)
+            bindings.extend(exp.keys())
+            nodes.extend(POPFRAME for _ in exp.keys())
+            nodes.extend(exp.values())
+            nodes.append(exp.body)
         else:
             assert False, f'Unknown AST node: {node!r}'
     return result
