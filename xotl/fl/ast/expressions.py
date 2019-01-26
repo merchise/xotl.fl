@@ -246,15 +246,16 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[str]:
       >>> find_free_names(parse('twice x x')).count('x')
       2
 
-    If `exclude` is None, we exclude any special identifiers used internally.  If you want
-    to expose them, pass the empty tuple:
+    If `exclude` is None, we exclude all special identifiers used internally
+    after pattern matching translation.  If you want to expose them, pass the
+    empty tuple:
 
        >>> program = """
        ...     let length [] = 0
        ...         length x:xs = 1 + length xs
        ...     in length
        ... """
-       >>> set(find_free_names(parse(program), exclude=()))  # doctest: +LITERAL_EVAL
+       >>> set(find_free_names(parse(program).compile(), exclude=()))  # doctest: +LITERAL_EVAL
        {'+', ':NO_MATCH_ERROR:', ':OR:'}
 
     '''
@@ -291,11 +292,7 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[str]:
             bindings.append(node.varname)
             nodes.append(POPFRAME)
             nodes.append(node.body)
-        elif isinstance(node, (ConcreteLet, _LetExpr)):
-            if isinstance(node, ConcreteLet):
-                exp = node.ast
-            else:
-                exp = node
+        elif isinstance(node, _LetExpr):
             # This is tricky; the bindings can be used recursively in the
             # bodies of a letrec:
             #
@@ -308,10 +305,43 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[str]:
             # look at all the definitions.
             #
             # We push several POPFRAME to account for that.
-            bindings.extend(exp.keys())
-            nodes.extend(POPFRAME for _ in exp.keys())
-            nodes.extend(exp.values())
-            nodes.append(exp.body)
+            bindings.extend(node.keys())
+            nodes.extend(POPFRAME for _ in node.keys())
+            nodes.extend(node.values())
+            nodes.append(node.body)
+        elif isinstance(node, ConcreteLet):
+            # This is much like the _LetExpr below; but patterns may bind more
+            # names; but for a single equation.
+            #
+            # In the following (ill-programmed) expression the 'xs' is bound
+            # in the first equation, but free in the last.  However, 'tail' is
+            # bound in the last equation.  The name 'y' is free in the body.
+            #
+            #    let tail  x:xs = xs
+            #        tail2 y:ys = tail xs
+            #    in (tail, tail2, y)
+            #
+            # We must collect all the names to look in all equations and the
+            # body; but must collect the bindings in patterns but for the
+            # single span of the right-hand side of the equation.
+            #
+            # So we cannot accumulate the nodes as in the rest of the
+            # algorithm and we chose a recursive one:
+            names = node.value_definitions.keys()
+            for equations in node.value_definitions.values():
+                for equation in equations:
+                    args = tuple(equation.bindings)
+                    fnames = find_free_names(equation.body, exclude=exclude)
+                    result.extend(
+                        name
+                        for name in fnames
+                        if name not in args
+                        if name not in bindings
+                        if name not in names
+                    )
+            bindings.extend(names)
+            nodes.extend(POPFRAME for _ in names)
+            nodes.append(node.body)
         else:
             assert False, f'Unknown AST node: {node!r}'
     return result

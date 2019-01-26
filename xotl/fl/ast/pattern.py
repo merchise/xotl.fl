@@ -12,6 +12,7 @@
 from xoutil.objects import memoized_property
 
 from typing import (
+    Iterator,
     List,
     Mapping,
     MutableMapping,
@@ -55,13 +56,17 @@ from .expressions import (
 # object for each line of the definition.
 
 
+Pattern = Union[str, Literal, 'ConsPattern']
+
+
 class ConsPattern(AST):
     '''The syntactical notion of a pattern.
 
     '''
-    def __init__(self, cons: str, params=None) -> None:
+
+    def __init__(self, cons: str, params: Sequence[Pattern]=None) -> None:
         self.cons: str = cons
-        self.params = tuple(params or [])
+        self.params: Tuple[Pattern, ...] = tuple(params or [])
 
     def __repr__(self):
         return f'<pattern {self.cons!r} {self.params!r}>'
@@ -99,8 +104,13 @@ class ConsPattern(AST):
     def __hash__(self):
         return hash((ConsPattern, self.cons, self.params))
 
-
-Pattern = Union[str, Literal, ConsPattern]
+    @property
+    def bindings(self) -> Iterator[str]:
+        for param in self.params:
+            if isinstance(param, str):
+                yield param
+            elif isinstance(param, ConsPattern):
+                yield from param.bindings
 
 
 class Equation(AST):
@@ -142,6 +152,15 @@ class Equation(AST):
 
     def __hash__(self):
         return hash((Equation, self.name, self.patterns, self.body))
+
+    @property
+    def bindings(self) -> Iterator[str]:
+        '''The names bound in the arguments'''
+        for pattern in self.patterns:
+            if isinstance(pattern, str):
+                yield pattern
+            elif isinstance(pattern, ConsPattern):
+                yield from pattern.bindings
 
 
 LocalDefinition = Union[Equation, TypeEnvironment]
