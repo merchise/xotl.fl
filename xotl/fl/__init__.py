@@ -41,7 +41,7 @@ def parse(program_source: str, *, debug: bool = False):
         <equation lhead (Cons a _) = Identifier('a')>]
 
     '''
-    from .parsers import program_parser, lexer
+    from xotl.fl.parsers import program_parser, lexer
     defs = program_parser.parse(program_source, lexer=lexer, debug=debug)
     # Here we try to perform sanity checks and also *group* otherwise
     # separated stuff (several equations for the same name are given
@@ -50,7 +50,7 @@ def parse(program_source: str, *, debug: bool = False):
 
 
 def tokenize(source):
-    from .parsers import lexer
+    from xotl.fl.parsers import lexer
     lexer = lexer.clone()
     lexer.input(source)
     return [tok for tok in lexer]

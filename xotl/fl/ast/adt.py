@@ -12,7 +12,7 @@ from collections import ChainMap
 
 from xotl.fl.meta import Symbolic
 
-from .types import (
+from xotl.fl.ast.types import (
     Type,
     TypeCons,
     TypeEnvironment,

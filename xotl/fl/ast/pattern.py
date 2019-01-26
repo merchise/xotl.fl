@@ -23,9 +23,9 @@ from typing import (
 )
 from dataclasses import dataclass
 
-from .base import AST
-from .types import TypeEnvironment
-from .expressions import (
+from xotl.fl.ast.base import AST
+from xotl.fl.ast.types import TypeEnvironment
+from xotl.fl.ast.expressions import (
     Literal,
     _LetExpr,
     Let,

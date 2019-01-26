@@ -23,8 +23,8 @@ from collections import deque
 from xoutil.objects import validate_attrs
 from xoutil.fp.tools import fst
 
-from .base import AST, LCNode
-from .types import (
+from xotl.fl.ast.base import AST, LCNode
+from xotl.fl.ast.types import (
     Type,
     TypeEnvironment,
 )

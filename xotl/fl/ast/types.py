@@ -31,7 +31,7 @@ from dataclasses import dataclass
 
 from xotl.fl.meta import Symbolic
 
-from .base import AST
+from xotl.fl.ast.base import AST
 
 
 class Type(AST):

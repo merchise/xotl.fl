@@ -9,15 +9,15 @@
 from typing import Tuple, Sequence, Union
 from dataclasses import dataclass
 
-from .base import AST
-from .types import (
+from xotl.fl.ast.base import AST
+from xotl.fl.ast.types import (
     TypeConstraint,
     TypeEnvironment,
     TypeScheme,
     ConstrainedType,
     SimpleType,
 )
-from .pattern import Equation
+from xotl.fl.ast.pattern import Equation
 
 
 Definition = Union[Equation, TypeEnvironment]
