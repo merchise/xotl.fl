@@ -16,6 +16,7 @@ from xotl.fl.ast.types import (
     TypeScheme,
     ConstrainedType,
     SimpleType,
+    find_tvars,
 )
 from xotl.fl.ast.pattern import Equation
 
@@ -26,13 +27,13 @@ Definitions = Sequence[Definition]
 
 @dataclass
 class TypeClass(AST):
-    # class [constrains =>] newclass where
+    # class [superclasses =>] newclass where
     #     local_definitions
-    constraints: Tuple[TypeConstraint, ...]
+    superclasses: Tuple[TypeConstraint, ...]
     newclass: TypeConstraint
     definitions: Definitions  # noqa
 
-    def __init__(self, constraints: Sequence[TypeConstraint],
+    def __init__(self, superclasses: Sequence[TypeConstraint],
                  newclass: TypeConstraint,
                  definitions: Definitions) -> None:
 
@@ -49,9 +50,11 @@ class TypeClass(AST):
                     name: _constrain_scheme(scheme)
                     for name, scheme in d.items()
                 }
-
-        self.constraints = tuple(constraints or [])
+        self._check_qual(superclasses, newclass)
+        self.superclasses = tuple(superclasses or [])
         self.newclass = newclass
+        # Reject non-matching or non-applied type variables, e.g
+        # 'class Eq b => Ord a'.
         self.definitions = [_constrain_definition(d) for d in definitions]
 
     @property
@@ -62,6 +65,24 @@ class TypeClass(AST):
             if isinstance(definition, dict)
             for name, scheme in definition.items()
         }
+
+    @classmethod
+    def _check_qual(cls, constraints: Sequence[TypeConstraint],
+                    newclass: TypeConstraint) -> None:
+        '''Check that all type variables in constraints match the class_'s.'''
+        if constraints:
+            # TypeConstraint admits only one variable, so all constraints must
+            # share the same one.  That's why we can use set's intersection
+            # operator.
+            tvars = set.intersection(
+                {newclass.type_},
+                *({tc.type_} for tc in constraints)
+            )
+            if not tvars:
+                tcs = ", ".join(map(str, constraints))
+                raise TypeError(
+                    f"Constraints don't match: {tcs} => {newclass}"
+                )
 
 
 @dataclass
@@ -75,7 +96,7 @@ class Instance(AST):
                  typeclass_name: str,
                  type_: SimpleType,
                  definitions: Definitions) -> None:
-
+        self._check_qual(constraints, typeclass_name, type_)
         self.constraints = tuple(constraints or [])
         self.typeclass_name = typeclass_name
         self.type_ = type_
@@ -98,3 +119,22 @@ class Instance(AST):
         # the type `x` becomes `Cons a` (non-generic 'a', i.e NOT `forall
         # a. Cons a`).
         self.definitions = list(definitions)
+
+    @classmethod
+    def _check_qual(cls, constraints: Sequence[TypeConstraint],
+                    class_: str, type_: SimpleType) -> None:
+        '''Check that instances type variables are not partially applied'''
+        tvars = set(find_tvars(type_))
+        cvars = {tc.type_ for tc in constraints}
+        if tvars != cvars:
+            if constraints:
+                tcs = ", ".join(map(str, constraints))
+                raise TypeError(
+                    "Unconstrained instance type variables: "
+                    f"{tcs} => {class_} {type_}"
+                )
+            else:
+                raise TypeError(
+                    "Unconstrained instance type variables: "
+                    f"{class_} {type_}"
+                )
