@@ -262,7 +262,6 @@ def test_nested_let():
 
 def test_find_free_names():
     P = parse
-    import ipdb; ipdb.set_trace()    # TODO: Remove this
     res = find_free_names(P('let id x = x in map id xs'))
     assert all(n in res for n in ('map', 'xs'))
     assert all(n not in res for n in ('id', 'x'))
