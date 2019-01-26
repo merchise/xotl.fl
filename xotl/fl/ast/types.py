@@ -177,9 +177,9 @@ class TypeScheme(Type):
     @property
     def nongenerics(self) -> List[str]:
         return [
-            name
-            for name in find_tvars(self.type_)
-            if name not in self.generics
+            tv.name
+            for tv in find_tvars(self.type_)
+            if tv.name not in self.generics
         ]
 
     def __eq__(self, other):
@@ -220,7 +220,7 @@ class TypeScheme(Type):
         if isinstance(type_, TypeScheme):
             return type_
         if generics is None:
-            generics = list(sorted(set(find_tvars(type_))))  # avoid repetitions.
+            generics = list(sorted(set(tv.name for tv in find_tvars(type_))))  # avoid repetitions.
         else:
             generics = list(sorted(generics))
         return cls(generics, type_)
@@ -252,10 +252,10 @@ class ConstrainedType(TypeScheme):
             for c in constraints
             if isinstance(c.type_, TypeVariable)
         }
-        names = set(find_tvars(t))
+        names = set(tv.name for tv in find_tvars(t))
         if constrained - names:
             raise TypeError(
-                f'Constraint not applied: {constrained - names}'
+                f'Constraint not applied: {constrained - names} in {t}'
             )
         self.constraints = constraints
         super().__init__(generics, t)
@@ -316,26 +316,26 @@ class ListTypeCons(TypeCons):
         return f'[{t!s}]'
 
 
-def find_tvars(t: Type) -> List[str]:
-    '''Get all variables names (possibly repeated) in type `t`.
+def find_tvars(t: Type) -> List[TypeVariable]:
+    '''Get all type variables (possibly repeated) in type `t`.
 
     Example:
 
-       >>> find_tvars(Type.from_str('a -> b -> c -> a'))
+       >>> find_tvars_names(Type.from_str('a -> b -> c -> a'))
        ['a', 'c', 'b', 'a']
 
     If `t` is (or contains a TypeScheme) its generics variables will be
     excluded (unless they're repeated and appear outside the scope of type
     scheme):
 
-       >>> find_tvars(Type.from_str('a -> [forall b. b] -> a'))
+       >>> find_tvars_names(Type.from_str('a -> [forall b. b] -> a'))
        ['a', 'a']
 
-       >>> find_tvars(Type.from_str('[forall a. a] -> b -> a'))
+       >>> find_tvars_names(Type.from_str('[forall a. a] -> b -> a'))
        ['a', 'b']
 
     '''
-    result: Deque[str] = deque([])
+    result: Deque[TypeVariable] = deque([])
     queue: Deque[Type] = deque([t])
     generics: Deque[Set[str]] = deque([])
     POP_GENERICS: Type = None  # type: ignore
@@ -346,7 +346,7 @@ def find_tvars(t: Type) -> List[str]:
         elif isinstance(t, TypeVariable):
             skip = generics[-1] if generics else set()
             if t.name not in skip:
-                result.append(t.name)
+                result.append(t)
         elif isinstance(t, TypeScheme):
             if generics:
                 current = generics[-1]
@@ -358,6 +358,11 @@ def find_tvars(t: Type) -> List[str]:
             assert isinstance(t, TypeCons), f"Unexpected type: {t!r}"
             queue.extend(t.subtypes)
     return list(result)
+
+
+def find_tvars_names(t: Type) -> List[TypeVariable]:
+    'Get all type variables names in `t`.'
+    return [tv.name for tv in find_tvars(t)]
 
 
 SimpleType = Union[TypeVariable, TypeCons]

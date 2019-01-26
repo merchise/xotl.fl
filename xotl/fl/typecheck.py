@@ -221,7 +221,7 @@ def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:
     def extend(phi: Substitution, name: str, t: Type) -> Substitution:
         if isinstance(t, TypeVariable) and name == t.name:
             return phi
-        elif name in find_tvars(t):
+        elif name in {tv.name for tv in find_tvars(t)}:
             raise UnificationError(f'Cannot unify {name!s} with {t!s}')
         else:
             # TODO: Make the result *descriptible*
@@ -279,7 +279,7 @@ def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
     # instance of σ; the notions of substitution and instance extend naturally
     # to larger syntactic constructs containing type-schemes.
     #
-    assert all(not bool(scvs & set(find_tvars(phi(unk))))
+    assert all(not bool(scvs & set(tv.name for tv in find_tvars(phi(unk))))
                for scvs in (set(ts.generics), )
                for unk in ts.nongenerics)
     return TypeScheme(ts.generics, subtype(Exclude(phi, ts), ts.type_))
@@ -535,9 +535,9 @@ def add_decls(env: TypeEnvironment,
     '''Create an extended type environment with ...'''
     def genbar(unknowns, names, type_):
         schvars = list({
-            var
-            for var in find_tvars(type_)
-            if var not in unknowns
+            tv.name
+            for tv in find_tvars(type_)
+            if tv.name not in unknowns
         })
         alist: List[Tuple[str, TypeVariable]] = list(zip(schvars, ns))
         restype = subtype(build_substitution(alist), type_)
