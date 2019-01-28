@@ -9,6 +9,7 @@
 '''Algebraic Data Types.'''
 from typing import Sequence, Iterator, Tuple
 from collections import ChainMap
+from xoutil.objects import memoized_property
 
 from xotl.fl.meta import Symbolic
 
@@ -27,6 +28,11 @@ class DataCons:
     def __init__(self, cons: str, args: Sequence[Type]) -> None:
         self.name = cons
         self.args: Sequence[Type] = tuple(args)
+
+    @property
+    def free_type_variables(self):
+        from xotl.fl.ast.types import find_tvars
+        return {name for type_ in self.args for name in find_tvars(type_)}
 
     def __repr__(self):
         def _str(x):
@@ -72,10 +78,40 @@ class DataType:
     def __init__(self, name: str, type_: TypeCons,
                  defs: Sequence[DataCons],
                  derivations: Sequence[str] = None) -> None:
+        assert name == type_.cons
         self.name = name
         self.type_ = type_
         self.dataconses = tuple(defs)
         self.derivations = tuple(derivations or [])
+        self._check_non_repeated_datacons()
+        self._check_non_existential_vars()
+        self._check_non_unused_vars()
+
+    def _check_non_repeated_datacons(self):
+        names = {dc.name for dc in self.dataconses}
+        if len(names) != len(self.dataconses):
+            raise TypeError(f"Repeated data constructor in: {self}")
+
+    def _check_non_existential_vars(self):
+        existential = self.dataconses_vars - self.free_type_variables
+        if existential:
+            svars = ", ".join(map(str, existential))
+            raise TypeError(f"Non allowed existential variables: {svars}")
+
+    def _check_non_unused_vars(self):
+        unused = self.free_type_variables - self.dataconses_vars
+        if unused:
+            svars = ", ".join(map(str, unused))
+            raise TypeError(f"Unused type variables: {svars}")
+
+    @memoized_property
+    def free_type_variables(self):
+        from xotl.fl.ast.types import find_tvars
+        return set(find_tvars(self.type_))
+
+    @memoized_property
+    def dataconses_vars(self):
+        return set.union(*(dc.free_type_variables for dc in self.dataconses))
 
     def is_product_type(self):
         return len(self.dataconses) == 1

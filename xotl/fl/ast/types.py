@@ -220,7 +220,7 @@ class TypeScheme(Type):
         if isinstance(type_, TypeScheme):
             return type_
         if generics is None:
-            generics = list(sorted(set(tv.name for tv in find_tvars(type_))))  # avoid repetitions.
+            generics = list(sorted(set(find_tvars_names(type_))))
         else:
             generics = list(sorted(generics))
         return cls(generics, type_)
@@ -360,7 +360,7 @@ def find_tvars(t: Type) -> List[TypeVariable]:
     return list(result)
 
 
-def find_tvars_names(t: Type) -> List[TypeVariable]:
+def find_tvars_names(t: Type) -> List[str]:
     'Get all type variables names in `t`.'
     return [tv.name for tv in find_tvars(t)]
 

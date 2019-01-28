@@ -90,7 +90,7 @@ class Instance(AST):
     constraints: Tuple[TypeConstraint, ...]
     typeclass_name: str
     type_: SimpleType
-    definitions: Sequence[Union[Equation, TypeEnvironment]]  # noqa
+    definitions: Sequence[Definition]  # noqa
 
     def __init__(self, constraints: Sequence[TypeConstraint],
                  typeclass_name: str,
