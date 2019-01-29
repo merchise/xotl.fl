@@ -82,7 +82,8 @@ def test_paradox_omega():
 
 def test_hidden_paradox_omega():
     code = '''
-    let id x    = x
+    let id :: forall a. a -> a
+        id x    = x
         prxI c  = c x id
         p1 x y  = x
         p2 x y  = y
