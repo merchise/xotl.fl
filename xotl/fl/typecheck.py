@@ -534,7 +534,7 @@ def _add_decls(env: TypeEnvironment,
                ns: TVarSupply,
                names: Iterable[Symbolic],
                types: Iterable[Type],
-               _generalize: bool = True) -> TypeEnvironment:
+               _generalize: bool = False) -> TypeEnvironment:
     '''Extend the type environment with new schemes for `names`.
 
     This function is used for generalization in the context of type-checking
