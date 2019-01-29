@@ -331,37 +331,21 @@ Let and where
 
 A let expression has the general schema::
 
-    let <pattern 1> = <body 1>
-        <pattern 2> = <body 2>
+    let <name 1> [<patterns 1>] = <body 1>
+        ...
+        <name n> [<patterns n>] = <body 2>
     in <expression>
 
-The patterns must be a sequence of identifiers (or a single identifier).  The
-first identifier in the pattern is the name being *defined*.  If the pattern
-has more than one identifier, the *excess* of identifiers are pushed to the
-body as parameters of a lambda:
-
-   >>> parse('let id x = x in id') == parse(r'let id = \x -> x in id')
-   True
-
-When doing several definitions you must split each definition with a newline
-[#newline]_.
-
-When having several definitions for the same name, the code is transformed to
-do pattern matching.  This is represented by transforming your code:
-
-   >>> code = '''let is_null [] = True
-   ...               is_null _  = False
-   ...           in is_null'''
-   >>> parse(code)   # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-    ConcreteLet(definitions=[<equation is_null [] = Identifier('True')>, <equation is_null _ = Identifier('False')>], body=Identifier('is_null'))
-
+The patterns must be identifiers of pattern-matching data constructor.  When
+doing several definitions you *must* split each definition with a newline and
+indent the next line [#newline]_.
 
 The parser will produce a `~xotl.fl.ast.pattern.ConcreteLet`:class: node.
 
 The 'where' expressions produce the same AST.  The general schema is::
 
-     <expression> where <pattern 1> = <body 1>
-                        <pattern 2> = <body 2>
+     <expression> where <name 1> [<patterns 1>] = <body 1>
+                        <name 2> [<patterns 2>] = <body 2>
                         ...
 
 
