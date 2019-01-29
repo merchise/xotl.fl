@@ -80,15 +80,33 @@ def test_paradox_omega():
         typecheck(parse_expression(r'\x -> x x'), EMPTY_TYPE_ENV)
 
 
-def test_hidden_paradox_omega_1():
+def test_hidden_paradox_omega_letrec():
     code = r'''
-    let id x    = x
+    let id x = x
+        prxI :: forall b c. (free -> (b -> b) -> c) -> c
         prxI c  = c free id
+        p1 x y  = x
+        p2 :: x -> y -> y
+        p2 x y  = y
+    in prxI p2 (prxI p2)
+    '''
+    env = BuiltinEnvDict({
+        'free': TypeScheme.from_str('free', generics=[]),
+    })
+    typecheck(parse_expression(code), env)
+
+
+def test_hidden_paradox_omega_let():
+    code = r'''
+    let prxI c  = c free id
         p1 x y  = x
         p2 x y  = y
     in prxI p2 (prxI p2)
     '''
-    env = BuiltinEnvDict({'free': TypeScheme.from_str('a', generics=[])})
+    env = BuiltinEnvDict({
+        'free': TypeScheme.from_str('f', generics=[]),
+        'id': TypeScheme.from_str('a -> a'),
+    })
     typecheck(parse_expression(code), env)
 
 

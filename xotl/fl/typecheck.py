@@ -518,7 +518,8 @@ def typecheck_let(env: TypeEnvironment, ns, exp: Let) -> TCResult:
             sub_typeenv(phi, ChainMap(local, env)),
             ns,
             names,
-            types
+            types,
+            _generalize_over=local.keys(),
         )
     else:
         decls = _add_decls(sub_typeenv(phi, env), ns, names, types)
@@ -534,22 +535,24 @@ def _add_decls(env: TypeEnvironment,
                ns: TVarSupply,
                names: Iterable[Symbolic],
                types: Iterable[Type],
-               _generalize: bool = False) -> TypeEnvironment:
+               _generalize_over=None) -> TypeEnvironment:
     '''Extend the type environment with new schemes for `names`.
 
     This function is used for generalization in the context of type-checking
     let and letrec.
 
-    The `_generalize` parameter is experimental; it simply avoids the
-    generalization as explained in [OutsideInX]_.
+    The `_generalize_over` parameter is experimental; it controls which names
+    must be generalized as explained in [OutsideInX]_.  If no names are given,
+    nothing is generalized.  If some names are given, only those are
+    generalized in the result.
 
     '''
     names = list(names)
     types = list(types)
     assert len(names) == len(types)
 
-    def genbar(unknowns, names, type_):
-        if _generalize:
+    def genbar(unknowns, names, type_, name):
+        if not _generalize_over or name in _generalize_over:
             schvars = list({
                 tv.name
                 for tv in find_tvars(type_)
@@ -565,7 +568,7 @@ def _add_decls(env: TypeEnvironment,
             return TypeScheme([], type_)
 
     unknowns = get_typeenv_unknowns(env)
-    schemes = (genbar(unknowns, names, t) for t in types)
+    schemes = (genbar(unknowns, names, t, name) for name, t in zip(names, types))
     return ChainMap(dict(zip(names, schemes)), env)
 
 
@@ -625,7 +628,7 @@ def typecheck_letrec(env: TypeEnvironment,
     ts = [sch.type_ for _, sch in nbvs1.items()]
     psi1, t = typecheck(
         exp.body,
-        _add_decls(sub_typeenv(psi, gamma), ns, names, ts),
+        _add_decls(sub_typeenv(psi, gamma), ns, names, ts, _generalize_over=local.keys()),
         ns
     )
     return scompose(psi1, psi), t
