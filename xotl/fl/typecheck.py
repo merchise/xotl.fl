@@ -478,7 +478,7 @@ def typecheck_app(env: TypeEnvironment, ns, exp: Application) -> TCResult:
         result = unify(t1, FuncCons(t2, t), phi=phi)
     except UnificationError as error:
         raise UnificationError(
-            f'Cannot type-check ({exp!s}) :: {t1!s} ~ {t2!s} -> {t!s}'
+            f'Cannot type-check {exp!s} :: {t1!s} ~ {t2!s} -> {t!s}'
         )
     return result, result(t.name)
 

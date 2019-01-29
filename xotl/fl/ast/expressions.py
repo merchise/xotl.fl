@@ -136,7 +136,13 @@ class Application(LCNode):
         return f'Application({self.e1!r}, {self.e2!r})'
 
     def __str__(self):
-        return f'{self.e1!s} {self.e2!s}'
+        e1 = str(self.e1)
+        if ' ' in e1 and not isinstance(self.e1, Application):
+            e1 = f'({e1})'
+        e2 = str(self.e2)
+        if ' ' in e2:
+            e2 = f'({e2})'
+        return f'{e1} {e2}'
 
     def __eq__(self, other):
         if isinstance(other, Application):
