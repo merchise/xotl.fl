@@ -30,8 +30,8 @@
 .. [PottierATPL2005] Pottier, François; and Rémy, Didier. *The Essence of ML
    Type Inference*; chapter 10 of [Pierce2005]_ pp. 389-489.
 
-.. [Vytiniotis2011] Vytiniotis, Dimitrios; Peyton Jones, Simon L; Schrijvers,
-   Tom; and Sulzmann, Martin. *OutsideIn(X). Modular type inference with local
+.. [OutsideInX] Vytiniotis, Dimitrios; Peyton Jones, Simon L; Schrijvers, Tom;
+   and Sulzmann, Martin. *OutsideIn(X). Modular type inference with local
    assumptions*. 2011. https://www.microsoft.com/en-us/research/publication/outsideinx-modular-type-inference-with-local-assumptions/
 
 .. [Wadler1989] Wadler, Philip and Blott, Stephen. *How to make ad-hoc

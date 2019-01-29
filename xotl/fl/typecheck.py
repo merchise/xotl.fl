@@ -514,14 +514,14 @@ def typecheck_let(env: TypeEnvironment, ns, exp: Let) -> TCResult:
         ]
         phi = unify_exprs(typepairs, p=phi)
         types = [subtype(phi, t) for t in types]
-        decls = add_decls(
+        decls = _add_decls(
             sub_typeenv(phi, ChainMap(local, env)),
             ns,
             names,
             types
         )
     else:
-        decls = add_decls(sub_typeenv(phi, env), ns, names, types)
+        decls = _add_decls(sub_typeenv(phi, env), ns, names, types)
     psi, t = typecheck(
         exp.body,
         decls,
@@ -530,23 +530,42 @@ def typecheck_let(env: TypeEnvironment, ns, exp: Let) -> TCResult:
     return scompose(psi, phi), t
 
 
-def add_decls(env: TypeEnvironment,
-              ns: TVarSupply,
-              names: Iterable[Symbolic],
-              types: Iterable[Type]) -> TypeEnvironment:
-    '''Create an extended type environment with ...'''
+def _add_decls(env: TypeEnvironment,
+               ns: TVarSupply,
+               names: Iterable[Symbolic],
+               types: Iterable[Type],
+               _generalize: bool = True) -> TypeEnvironment:
+    '''Extend the type environment with new schemes for `names`.
+
+    This function is used for generalization in the context of type-checking
+    let and letrec.
+
+    The `_generalize` parameter is experimental; it simply avoids the
+    generalization as explained in [OutsideInX]_.
+
+    '''
+    names = list(names)
+    types = list(types)
+    assert len(names) == len(types)
+
     def genbar(unknowns, names, type_):
-        schvars = list({
-            tv.name
-            for tv in find_tvars(type_)
-            if tv.name not in unknowns
-        })
-        alist: List[Tuple[str, TypeVariable]] = list(zip(schvars, ns))
-        restype = subtype(build_substitution(alist), type_)
-        return TypeScheme([v.name for _, v in alist], restype)
+        if _generalize:
+            schvars = list({
+                tv.name
+                for tv in find_tvars(type_)
+                if tv.name not in unknowns
+            })
+            alist: List[Tuple[str, TypeVariable]] = list(zip(schvars, ns))
+            restype = subtype(build_substitution(alist), type_)
+            return TypeScheme([v.name for _, v in alist], restype)
+        else:
+            # This correspond to the No Qualification rule explained in
+            # [OutsideInX], section 4.2.4; which means that let-bound
+            # variables are not generalized but left as unknown.
+            return TypeScheme([], type_)
 
     unknowns = get_typeenv_unknowns(env)
-    schemes = [genbar(unknowns, names, t) for t in types]
+    schemes = (genbar(unknowns, names, t) for t in types)
     return ChainMap(dict(zip(names, schemes)), env)
 
 
@@ -606,7 +625,7 @@ def typecheck_letrec(env: TypeEnvironment,
     ts = [sch.type_ for _, sch in nbvs1.items()]
     psi1, t = typecheck(
         exp.body,
-        add_decls(sub_typeenv(psi, gamma), ns, names, ts),
+        _add_decls(sub_typeenv(psi, gamma), ns, names, ts),
         ns
     )
     return scompose(psi1, psi), t
