@@ -387,7 +387,7 @@ The *usual* list syntax can be used in place of the ``:`` operator:
    >>> from xotl.fl.builtins import builtins_env
 
    >>> typecheck(parse('[1, "a"]'), builtins_env)
-   Traceback (...)
+   Traceback (most recent call last):
    ...
    UnificationError: Cannot type-check ...
 
