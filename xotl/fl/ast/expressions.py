@@ -17,13 +17,14 @@ from typing import (
     Optional,
     Reversible,
     Sequence,
+    Tuple,
 )
 from collections import deque
 
 from xoutil.objects import validate_attrs
 from xoutil.fp.tools import fst
 
-from xotl.fl.ast.base import AST, LCNode
+from xotl.fl.ast.base import AST, ILC, Dual
 from xotl.fl.ast.types import (
     Type,
     TypeEnvironment,
@@ -31,7 +32,7 @@ from xotl.fl.ast.types import (
 from xotl.fl.builtins import UnitType
 
 
-class Identifier(LCNode):
+class Identifier(Dual):
     '''A name (variable if you like).'''
     def __init__(self, name: str) -> None:
         self.name = name
@@ -60,7 +61,7 @@ class Identifier(LCNode):
 
 # An extension to the algorithm.  Literals are allowed, but have a the
 # most specific type possible.
-class Literal(LCNode):
+class Literal(Dual):
     '''A literal value with its type.
 
     The `parser <xotl.fl.parsers.expressions.parse>`:func: only recognizes
@@ -98,12 +99,10 @@ class Literal(LCNode):
         return hash((Literal, self.value, self.type_, self.annotation))
 
 
-class Lambda(LCNode):
-    '''A lambda abstraction over a single parameter. '''
-    def __init__(self, varname: str, body: AST) -> None:
-        self.varname = varname
-        self.body = body
+class _Lambda:
+    '''A lambda abstraction over a single parameter.
 
+    '''
     def __repr__(self):
         return f'Lambda({self.varname!r}, {self.body!r})'
 
@@ -111,33 +110,44 @@ class Lambda(LCNode):
         return f'\{self.varname!s} -> {self.body!s}'
 
     def __eq__(self, other):
-        if isinstance(other, Lambda):
+        if isinstance(other, _Lambda):
             return self.varname == other.varname and self.body == other.body
         else:
             return NotImplemented
 
     def __ne__(self, other):
-        if isinstance(other, Lambda):
+        if isinstance(other, _Lambda):
             return not (self == other)
         else:
             return NotImplemented
 
     def __hash__(self):
-        return hash((Lambda, self.varname, self.body))
+        return hash((type(self), self.varname, self.body))
 
 
-class Application(LCNode):
+class Lambda(_Lambda, AST):
+    def __init__(self, varname: str, body: AST) -> None:
+        self.varname = varname
+        self.body = body
+
+    def translate(self) -> ILC:
+        return LambdaLC(self.varname, self.body.translate())
+
+
+class LambdaLC(_Lambda, ILC):
+    def __init__(self, varname: str, body: ILC) -> None:
+        self.varname = varname
+        self.body = body
+
+
+class _Application:
     '''The application of `e1` to its *argument* e2.'''
-    def __init__(self, e1: AST, e2: AST) -> None:
-        self.e1 = e1
-        self.e2 = e2
-
     def __repr__(self):
         return f'Application({self.e1!r}, {self.e2!r})'
 
     def __str__(self):
         e1 = str(self.e1)
-        if ' ' in e1 and not isinstance(self.e1, Application):
+        if ' ' in e1 and not isinstance(self.e1, _Application):
             e1 = f'({e1})'
         e2 = str(self.e2)
         if ' ' in e2:
@@ -145,30 +155,47 @@ class Application(LCNode):
         return f'{e1} {e2}'
 
     def __eq__(self, other):
-        if isinstance(other, Application):
+        if isinstance(other, _Application):
             return self.e1 == other.e1 and self.e2 == other.e2
         else:
             return NotImplemented
 
     def __ne__(self, other):
-        if isinstance(other, Application):
+        if isinstance(other, _Application):
             return not (self == other)
         else:
             return NotImplemented
 
     def __hash__(self):
-        return hash((Application, self.e1, self.e2))
+        return hash((type(self), self.e1, self.e2))
+
+
+class Application(_Application, AST):
+    def __init__(self, e1: AST, e2: AST) -> None:
+        self.e1 = e1
+        self.e2 = e2
+
+    def translate(self) -> ILC:
+        return ApplicationLC(self.e1.translate(), self.e2.translate())
+
+
+class ApplicationLC(_Application, ILC):
+    def __init__(self, e1: ILC, e2: ILC) -> None:
+        self.e1 = e1
+        self.e2 = e2
 
 
 # We assume (as the Book does) that there are no "translation" errors; i.e
 # that you haven't put a Let where you needed a Letrec.
-class _LetExpr(LCNode):
-    def __init__(self, bindings: Mapping[str, AST], body: AST,
+class _LetExpr:
+    def __init__(self, bindings: Mapping[str, Any], body,
                  localenv: TypeEnvironment = None) -> None:
         # Sort by names (in a _LetExpr names can't be repeated, repetition for
         # pattern-matching should be translated to a lambda using the MATCH
         # operator).
-        self.bindings = tuple(sorted(bindings.items(), key=fst))
+        self.bindings: Sequence[Tuple[str, Any]] = tuple(
+            sorted(bindings.items(), key=fst)
+        )
         self.localenv = localenv or {}  # type: TypeEnvironment
         self.body = body
 
@@ -197,7 +224,7 @@ class _LetExpr(LCNode):
         return (v for _, v in self.bindings)
 
 
-class Let(_LetExpr):
+class _Let(_LetExpr):
     '''A non-recursive Let expression.
 
     The `parser <xotl.fl.parsers.expressions.parse>`:func: automatically
@@ -209,7 +236,7 @@ class Let(_LetExpr):
         return f'Let({self.bindings!r}, {self.body!r})'
 
 
-class Letrec(_LetExpr):
+class _Letrec(_LetExpr):
     '''A recursive Let expression.
 
     .. seealso:: `Let`:class:
@@ -217,6 +244,54 @@ class Letrec(_LetExpr):
     '''
     def __repr__(self):
         return f'Letrec({self.bindings!r}, {self.body!r})'
+
+
+class Let(_Let, AST):
+    bindings: Sequence[Tuple[str, AST]]
+    body: AST
+
+    def __init__(self, bindings: Mapping[str, AST], body: AST,
+                 localenv: TypeEnvironment = None) -> None:
+        super().__init__(bindings, body, localenv)
+
+    def translate(self) -> ILC:
+        return LetLC(
+            {name: body.translate() for name, body in self.bindings},
+            self.body.translate()
+        )
+
+
+class LetLC(_Let, ILC):
+    bindings: Sequence[Tuple[str, ILC]]
+    body: ILC
+
+    def __init__(self, bindings: Mapping[str, ILC], body: ILC,
+                 localenv: TypeEnvironment = None) -> None:
+        super().__init__(bindings, body, localenv)
+
+
+class Letrec(_Letrec, AST):
+    bindings: Sequence[Tuple[str, AST]]
+    body: AST
+
+    def __init__(self, bindings: Mapping[str, AST], body: AST,
+                 localenv: TypeEnvironment = None) -> None:
+        super().__init__(bindings, body, localenv)
+
+    def translate(self) -> ILC:
+        return LetrecLC(
+            {name: body.translate() for name, body in self.bindings},
+            self.body.translate()
+        )
+
+
+class LetrecLC(_Letrec, ILC):
+    bindings: Sequence[Tuple[str, ILC]]
+    body: ILC
+
+    def __init__(self, bindings: Mapping[str, ILC], body: ILC,
+                 localenv: TypeEnvironment = None) -> None:
+        super().__init__(bindings, body, localenv)
 
 
 def build_lambda(params: Reversible[str], body: AST) -> Lambda:

@@ -9,15 +9,22 @@
 '''The language AST.'''
 
 
-class AST:
-    '''A AST node in the language.
-
-    '''
-
-
-class LCNode(AST):
-    '''Subclasses are those in the enriched lambda calculus.
+class ILC:
+    '''The intermediate language nodes.
 
     They are subject to type-checking and compilation.
 
     '''
+
+
+class AST:
+    '''A AST node in the language.
+
+    '''
+    def translate(self) -> ILC:
+        ...
+
+
+class Dual(AST, ILC):
+    def translate(self) -> ILC:
+        return self

@@ -31,10 +31,10 @@ from dataclasses import dataclass
 
 from xotl.fl.meta import Symbolic
 
-from xotl.fl.ast.base import AST
+from xotl.fl.ast.base import Dual
 
 
-class Type(AST):
+class Type(Dual):
     @classmethod
     def from_str(cls, source: str) -> 'Type':
         '''Parse a single type expression.

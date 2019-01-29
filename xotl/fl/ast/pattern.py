@@ -23,7 +23,7 @@ from typing import (
 )
 from dataclasses import dataclass
 
-from xotl.fl.ast.base import AST
+from xotl.fl.ast.base import AST, ILC
 from xotl.fl.ast.types import TypeEnvironment
 from xotl.fl.ast.expressions import (
     Literal,
@@ -32,6 +32,7 @@ from xotl.fl.ast.expressions import (
     Letrec,
     find_free_names,
 )
+from xotl.fl.ast.adt import DataCons
 
 
 # Patterns and Equations.  In the final AST, an expression like:
@@ -232,3 +233,48 @@ class ConcreteLet(AST):
         else:
             klass = Let
         return klass(compiled, self.body, self.local_environment)
+
+
+class Case(ILC):
+    '''The case expression.
+
+    Part of the intermediate language.  ConcreteLet, if using pattern matching
+    may get translated to case expressions.
+
+    '''
+    def __init__(self, expr: ILC,
+                 branches: Sequence[Tuple['CaseBranch', ILC]]) -> None:
+        pass
+
+
+class CaseBranch:
+    pass
+
+
+@dataclass
+class LiteralBranch(CaseBranch):
+    value: Literal
+
+    def __init__(self, value: Literal) -> None:
+        self.value = value
+
+
+@dataclass
+class ConstructorBranch(CaseBranch):
+    datacons: DataCons
+
+    @property
+    def params(self):
+        from xotl.fl.utils import namesupply
+        return list(namesupply(limit=len(self.datacons.args)))
+
+    @property
+    def cons(self):
+        return self.datacons.name
+
+    def __repr__(self):
+        if self.params:
+            params = ' '.join(map(str, self.params))
+            return f'{{{self.cons} {params}}}'
+        else:
+            return f'{{{self.cons}}}'
