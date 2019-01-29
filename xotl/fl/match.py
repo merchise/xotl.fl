@@ -163,7 +163,7 @@ class Select(Symbol):
 class MatchLiteral(Symbol):
     value: Literal
 
-    def __init__(self, value: Literal):
+    def __init__(self, value: Literal) -> None:
         super().__init__()
         str.__setattr__(self, 'value', value)
 
