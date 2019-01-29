@@ -508,7 +508,7 @@ def typecheck_let(env: TypeEnvironment, ns, exp: Let) -> TCResult:
     local = exp.localenv or {}
     if local:
         typepairs = [
-            (local[name].type_, types[i])
+            (newinstance(ns, local[name]), types[i])
             for i, name in enumerate(names)
             if name in local
         ]
@@ -587,7 +587,7 @@ def typecheck_letrec(env: TypeEnvironment,
     local = exp.localenv or {}
     if local:
         typepairs = [
-            (local[name].type_, ts[i])
+            (newinstance(ns, local[name]), ts[i])
             for i, name in enumerate(names)
             if name in local
         ]
