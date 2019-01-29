@@ -227,7 +227,7 @@ class DataType:
              <Extract: 1 from Cons>: <TypeScheme: forall a. (List a) -> a>,
              <Extract: 2 from Cons>: <TypeScheme: forall a. (List a) -> (List a)>}
 
-        For product types, Extract becomes select and there's no Match::
+        For product types, Extract becomes select and there's no Match:
 
         .. doctest::
            :options: +NORMALIZE_WHITESPACE
@@ -235,10 +235,10 @@ class DataType:
             >>> datatype = parse('data Pair a b = Pair a b')[0]
 
             >>> datatype.pattern_matching_env
-            {<Select: 1>: <TypeScheme: forall a b. (Pair a b) -> a>, \
+            {<Select: 1>: <TypeScheme: forall a b. (Pair a b) -> a>,
              <Select: 2>: <TypeScheme: forall a b. (Pair a b) -> b>}
 
-        The unit type (any type with a single value) has none::
+        The unit type (any type with a single value) has none:
 
         .. doctest::
            :options: +NORMALIZE_WHITESPACE
@@ -247,7 +247,6 @@ class DataType:
 
             >>> datatype.pattern_matching_env
             {}
-
 
         .. note:: The names of those special functions are not strings.
 
