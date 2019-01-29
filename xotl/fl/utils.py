@@ -43,7 +43,7 @@ class namesupply:
         assert self.count < 20000, \
             'No expression should be so complex to require 20 000 new type variables'
 
-        if not self.limit or self.count < self.limit:
+        if self.limit is None or self.count < self.limit:
             result = None
             while not result:
                 name = f'{self.prefix}{self.current_index}'
