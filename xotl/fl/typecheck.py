@@ -403,7 +403,9 @@ def tcl(env: TypeEnvironment, ns: TVarSupply, exprs: Iterable[AST]) -> TCLResult
         expr, *exprs = exprs
         phi, t = typecheck(expr, env, ns)
         psi, ts = tcl(sub_typeenv(phi, env), ns, exprs)
-        return scompose(psi, phi), [subtype(psi, t)] + ts
+        # We can safely modify the ts and improve performance.
+        ts.insert(0, subtype(psi, t))
+        return scompose(psi, phi), ts
 
 
 def newinstance(ns: TVarSupply, ts: TypeScheme) -> Type:
