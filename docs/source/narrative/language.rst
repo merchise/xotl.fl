@@ -38,7 +38,7 @@ The language allows to *define* algebraic data types (ADTs) and values
 (functions, most likely).  A full program is just a *non-empty* sequence of
 definitions.
 
-Definitions come in three types:
+Definitions come in five types:
 
 - Type (scheme) declarations;
 
@@ -415,15 +415,16 @@ Type declarations
 -----------------
 
 Type declarations state the type of a symbol.  The function
-`xotl.fl.types.parse`:func: parses the type expression (the thing after the
-two colons) and return an instance of AST for types.
+`xotl.fl.parsers.types.parse`:func: parses the type expression (the thing
+after the two colons) and return an instance of AST for types.
 
 The AST of types has two basic constructors:
-`~xotl.fl.types.TypeVariable`:class: and `~xotl.fl.types.TypeCons`:class:.
+`~xotl.fl.ast.types.TypeVariable`:class: and
+`~xotl.fl.ast.types.TypeCons`:class:.
 
 In the type expression language we use *identifiers* starting with a
 lower-case letter to indicate a `type variable
-<xotl.fl.types.base.TypeVariable>`:class:, unless they are applied to other
+<xotl.fl.ast.types.TypeVariable>`:class:, unless they are applied to other
 type expression, in which case they're regarded as type constructors.
 Identifiers starting with an upper-case letter always denote a type
 constructor.
@@ -501,8 +502,8 @@ You may use the keyword ``forall`` to create type schemes explicitly:
    >>> parse('forall a b. (a, b)')
    <TypeScheme: forall a b. (a, b)>
 
-Also, the classmethod `~xotl.fl.types.TypeScheme.from_typeexpr`:meth: creates
-type schemes from other types expressions:
+Also, the classmethod `~xotl.fl.ast.types.TypeScheme.from_typeexpr`:meth:
+creates type schemes from other types expressions:
 
    >>> from xotl.fl.ast.types import TypeScheme
    >>> TypeScheme.from_typeexpr(parse('(a, b)')) == parse('forall a b. (a, b)')
@@ -533,7 +534,7 @@ controlled manner:
 Quirks of type expression language
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`~xotl.fl.types.TypeCons`:class: does not have an implicit limit to the type
+`~xotl.fl.ast.types.TypeCons`:class: does not have an implicit limit to the type
 arguments any given constructor admits.  This is the job of the semantic
 analyzer.  This also means that the parser has a very liberal rule about type
 arguments in a constructor:
@@ -582,7 +583,7 @@ Examples:
 
 
 Instances provide the implementations of type classes for types.  Assuming
-``_eq_number`` is builtin with type ``Number -> Number -> Bool`, you could
+``_eq_number`` is builtin with type ``Number -> Number -> Bool``, you could
 say:
 
    >>> _eq_num_instance = parse('''

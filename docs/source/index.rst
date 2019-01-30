@@ -5,9 +5,16 @@
 .. toctree::
    :glob:
    :maxdepth: 1
-   :caption: The language and its API
+   :caption: The language
 
    narrative/*
+
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :caption: The package API and the language AST
+
    xotl.fl/*
    history
    references

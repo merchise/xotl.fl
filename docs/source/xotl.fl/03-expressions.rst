@@ -1,6 +1,6 @@
-=======================================================================
- :mod:`xotl.fl.ast.expressions` -- The AST of the expressions language
-=======================================================================
+=====================================
+ The AST of the expressions language
+=====================================
 
 .. automodule:: xotl.fl.ast.expressions
    :members: find_free_names, replace_free_occurrences, build_lambda
@@ -15,8 +15,6 @@
 
 Core objects of the abstract syntax
 ===================================
-
-.. module:: xotl.fl.ast.expressions
 
 .. autoclass:: Identifier
 

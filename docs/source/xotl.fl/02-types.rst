@@ -1,6 +1,6 @@
-=============================================================
- :mod:`xotl.fl.ast.types` -- The AST of the type expressions
-=============================================================
+=================================
+ The AST of the type expressions
+=================================
 
 .. automodule:: xotl.fl.ast.types
    :members: parse, find_tvars

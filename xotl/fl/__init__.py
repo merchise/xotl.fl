@@ -14,15 +14,19 @@
 def parse(program_source: str, *, debug: bool = False):
     '''Parse the program source and return its AST.
 
-    It returns a list of definitions.  Definitions come in three types:
+    It returns a list of definitions.  Definitions come in five types:
 
     - Type annotations, which are dictionaries of type
-      `xotl.fl.ast.types.TypeEnvironment`:data:;
+      `~xotl.fl.ast.types.TypeEnvironment`:data:;
 
     - Value definitions, which may span several `equations
-      <xotl.fl.expressions.Equation>`:class:; and
+      <xotl.fl.ast.pattern.Equation>`:class:;
 
-    - Data type definitions, `xotl.fl.expressions.DataType`:class:.
+    - Data type definitions, `~xotl.fl.ast.adt.DataType`:class:;
+
+    - Type classes, `~xotl.fl.ast.typeclasses.TypeClass`:class:; and
+
+    - Instances, `~xotl.fl.ast.typeclasses.Instance`:class:.
 
     This function doesn't type-check the program.
 
