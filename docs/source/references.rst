@@ -34,6 +34,11 @@
    and Sulzmann, Martin. *OutsideIn(X). Modular type inference with local
    assumptions*. 2011. https://www.microsoft.com/en-us/research/publication/outsideinx-modular-type-inference-with-local-assumptions/
 
+.. [Tarjan1972] Tarjan, Robert. *Depth-first search and linear graph
+   algorithms*.  SIAM Journal on Computing, 1 (2): 146–160,
+   doi:10.1137/0201010.
+   https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
+
 .. [Wadler1989] Wadler, Philip and Blott, Stephen. *How to make ad-hoc
    polymorphism less ad-hoc*. POPL '89 Proceedings of the 16th ACM
    SIGPLAN-SIGACT symposium on Principles of programming
