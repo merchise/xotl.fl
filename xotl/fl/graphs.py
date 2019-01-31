@@ -6,10 +6,7 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''Implements Tarjan's algorithm__ to find a Graph's Strongly Connected
-Components.
-
-__ https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
+'''Implements algorithms for Direct Graphs.
 
 '''
 from typing import AbstractSet, Deque, List, MutableMapping, Set
@@ -37,6 +34,9 @@ class SimpleGraph(Graph[T]):
     def __init__(self) -> None:
         self.nodes = {}
 
+    def __getitem__(self, node: T) -> AbstractSet[T]:
+        return self.nodes.get(node, set())
+
     def add_edge(self, from_: T, to_: T) -> None:
         links = self.nodes.setdefault(from_, set())
         links.add(to_)
@@ -45,15 +45,55 @@ class SimpleGraph(Graph[T]):
         links = self.nodes.setdefault(from_, set())
         links |= to_
 
-    def get_strongly_connected_components(self) -> List[AbstractSet[T]]:
+    def get_topological_order(self) -> List[T]:
+        '''Find a topological sort of the nodes.
 
+        If the graph contains cycles, raise a RuntimeError.
+
+        '''
+        def raise_on_cycle(func):
+            '''Make `func` to raise on the first recursive call with the same
+            argument.
+
+            '''
+            stack = deque([])
+
+            def inner(node):
+                if node in stack:
+                    raise NonDAGError(
+                        'Cycle detected: %r' % (list(stack) +[node])
+                    )
+                else:
+                    stack.append(node)
+                    try:
+                        return func(node)
+                    finally:
+                        stack.pop()
+            return inner
+
+        @raise_on_cycle
+        def score(node):
+            links = self.nodes.get(node, [])
+            if links:
+                return max(score(dep) for dep in links) + 1
+            else:
+                return 0
+
+        return list(sorted(self.nodes.keys(), key=score))
+
+    def get_sccs(self) -> List[AbstractSet[T]]:
+        '''Find the Strongly Connected Components.
+
+        This is an implementation of Tarjan's Algorithm [Tarjan1972]_.
+
+        '''
         def _find_scc(node):
             nonlocal index
             indexed[node] = index
             lowlinks[node] = index
             index += 1
             stack.append(node)
-            for link in self.nodes.get(node, []):
+            for link in self[node]:
                 if link not in indexed:
                     _find_scc(link)
                     lowlinks[node] = min(lowlinks[node], lowlinks[link])
@@ -83,3 +123,7 @@ class SimpleGraph(Graph[T]):
             if node not in indexed:
                 _find_scc(node)
         return result  # type: ignore
+
+
+class NonDAGError(RuntimeError):
+    pass
