@@ -61,7 +61,7 @@ class SimpleGraph(Graph[T]):
             def inner(node):
                 if node in stack:
                     raise NonDAGError(
-                        'Cycle detected: %r' % (list(stack) +[node])
+                        'Cycle detected: %r' % (list(stack) + [node])
                     )
                 else:
                     stack.append(node)
