@@ -24,6 +24,7 @@ from collections import deque
 from xoutil.objects import validate_attrs
 from xoutil.fp.tools import fst
 
+from xotl.fl.meta import Symbolic
 from xotl.fl.ast.base import AST, ILC, Dual
 from xotl.fl.ast.types import (
     Type,
@@ -34,14 +35,14 @@ from xotl.fl.builtins import UnitType
 
 class Identifier(Dual):
     '''A name (variable if you like).'''
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: Symbolic) -> None:
         self.name = name
 
     def __repr__(self):
         return f'Identifier({self.name!r})'
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     def __hash__(self):
         return hash((Identifier, self.name))
