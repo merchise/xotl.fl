@@ -306,8 +306,8 @@ def test_ill_count1():
     with pytest.raises(TypeError):
         typecheck(
             parse_expression('''let count [] = 0
-                              count 2  = 1
-                          in count''')
+                                    count 2  = 1
+                                in count''')
         )
 
 
@@ -316,3 +316,11 @@ def test_regression_missing_dynamic_builtins():
         parse_expression('let pair x y = (x, y) in pair 1 2')
     )
     assert unify(t, Type.from_str('(Number, Number)'))
+
+
+def test_regression_typing_if():
+    expr = parse_expression(r'''
+       let map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
+       in map
+    ''')
+    typecheck(expr, builtins_env)

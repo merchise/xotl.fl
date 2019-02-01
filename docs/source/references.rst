@@ -12,9 +12,18 @@
 .. [Jones] Jones, Mark P. *Typing Haskell in Haskell*. Nov 2000. Online
    article and code: https://gist.github.com/chrisdone/0075a16b32bfd4f62b7b
 
+.. [Mycroft1984] Mycroft, Alan. *Polymorphic Type Scheme and Recursive
+   Definitions*. International Symposium on Programming, 6th
+   Colloquium. Toulouse, April 1984.  Proceedings.
+   LNCS 167. Springer-Verlag. pp. 217-228.
+
 .. [Odersky1999] Sulzmann, Martin; Odersky, Martin; and Wehr, Martin.  *Type
    Inference with Constrained Types*. Theory and Practice of Object Systems ·
    January 1999.  https://www.researchgate.net/publication/220346751
+
+.. [OutsideInX] Vytiniotis, Dimitrios; Peyton Jones, Simon L; Schrijvers, Tom;
+   and Sulzmann, Martin. *OutsideIn(X). Modular type inference with local
+   assumptions*. 2011. https://www.microsoft.com/en-us/research/publication/outsideinx-modular-type-inference-with-local-assumptions/
 
 .. [PeytonJones1987] Peyton Jones, Simon L; with chapters by Wadler, Philip;
    Hancock, Peter; and Turner, David. *The implementation of functional
@@ -29,10 +38,6 @@
 
 .. [PottierATPL2005] Pottier, François; and Rémy, Didier. *The Essence of ML
    Type Inference*; chapter 10 of [Pierce2005]_ pp. 389-489.
-
-.. [OutsideInX] Vytiniotis, Dimitrios; Peyton Jones, Simon L; Schrijvers, Tom;
-   and Sulzmann, Martin. *OutsideIn(X). Modular type inference with local
-   assumptions*. 2011. https://www.microsoft.com/en-us/research/publication/outsideinx-modular-type-inference-with-local-assumptions/
 
 .. [Tarjan1972] Tarjan, Robert. *Depth-first search and linear graph
    algorithms*.  SIAM Journal on Computing, 1 (2): 146–160,
