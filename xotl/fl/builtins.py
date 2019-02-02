@@ -151,12 +151,23 @@ def _load_builtins():
         source = f.read()
     res = parse(source)
     gamma = {}
+    # The strange dict(**gamma, **x) are there to catch duplicated annotations
+    # that may cause trouble.
     for definition in res:
         if isinstance(definition, dict):
+            duplicates = set(gamma) & set(definition)
+            assert not duplicates, \
+                f"Duplicated type(s): {duplicates}"
             gamma.update(definition)
         elif isinstance(definition, DataType):
+            duplicates = set(gamma) & set(definition.full_typeenv)
+            assert not duplicates, \
+                f"Duplicated type(s): {duplicates}"
             gamma.update(definition.full_typeenv)
         elif isinstance(definition, TypeClass):
+            duplicates = set(gamma) & set(definition.type_environment)
+            assert not duplicates, \
+                f"Duplicated type(s): {duplicates}"
             gamma.update(definition.type_environment)
     return gamma
 

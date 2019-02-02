@@ -227,18 +227,14 @@ class DataType:
              <Extract: 1 from Cons>: <TypeScheme: forall a. (List a) -> a>,
              <Extract: 2 from Cons>: <TypeScheme: forall a. (List a) -> (List a)>}
 
-        For product types, Extract becomes select and there's no Match:
-
         .. doctest::
            :options: +NORMALIZE_WHITESPACE
 
             >>> datatype = parse('data Pair a b = Pair a b')[0]
 
             >>> datatype.pattern_matching_env
-            {<Select: 1>: <TypeScheme: forall a b. (Pair a b) -> a>,
-             <Select: 2>: <TypeScheme: forall a b. (Pair a b) -> b>}
-
-        The unit type (any type with a single value) has none:
+            {<Extract: 1 from Pair>: <TypeScheme: forall a b. (Pair a b) -> a>,
+             <Extract: 2 from Pair>: <TypeScheme: forall a b. (Pair a b) -> b>}
 
         .. doctest::
            :options: +NORMALIZE_WHITESPACE
@@ -246,25 +242,21 @@ class DataType:
             >>> datatype = parse('data Unit = Unit')[0]
 
             >>> datatype.pattern_matching_env
-            {}
+            {<Match: Unit>: <TypeScheme: Unit>}
 
         .. note:: The names of those special functions are not strings.
 
         '''
-        from xotl.fl.match import Match, Extract, Select
+        from xotl.fl.match import Match, Extract
         from xotl.fl.ast.types import FunctionTypeCons as F
 
         def _implied_funs(dc: DataCons) -> Iterator[Tuple[Symbolic, TypeScheme]]:
             scheme = TypeScheme.from_typeexpr
-            if not self.is_product_type():
-                if not dc.args:
-                    yield Match(dc.name), scheme(self.type_)
-                else:
-                    for i, type_ in enumerate(dc.args):
-                        yield Extract(dc.name, i + 1), scheme(F(self.type_, type_))
+            if not dc.args:
+                yield Match(dc.name), scheme(self.type_)
             else:
                 for i, type_ in enumerate(dc.args):
-                    yield Select(i + 1), scheme(F(self.type_, type_))
+                    yield Extract(dc.name, i + 1), scheme(F(self.type_, type_))
 
         return {
             name: ts

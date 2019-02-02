@@ -220,7 +220,7 @@ if False _ (Else a) = a
 then :: forall a. a -> Then a
 then = Then
 
-then :: forall a. a -> Else a
+else :: forall a. a -> Else a
 else = Else
 
 
