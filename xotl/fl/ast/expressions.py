@@ -315,7 +315,7 @@ def build_lambda(params: Reversible[str], body: AST) -> Lambda:
     return result  # type: ignore
 
 
-def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[str]:
+def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[Symbolic]:
     '''Find all names that appear free in `expr`.
 
     Example:
@@ -346,9 +346,9 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[str]:
     from xotl.fl.ast.pattern import ConcreteLet
 
     POPFRAME = None  # remove a binding from the 'stack'
-    result: List[str] = []
+    result: List[Symbolic] = []
     if exclude is None:
-        bindings: Deque[str] = deque([MATCH_OPERATOR.name, NO_MATCH_ERROR.name])
+        bindings: Deque[Symbolic] = deque([MATCH_OPERATOR.name, NO_MATCH_ERROR.name])
     else:
         bindings = deque([])
     nodes: Deque[Optional[AST]] = deque([expr])
@@ -430,7 +430,7 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[str]:
 
 
 def replace_free_occurrences(self: AST,
-                             substitutions: Mapping[str, str]) -> AST:
+                             substitutions: Mapping[Symbolic, str]) -> AST:
     '''Create a new expression replacing free occurrences of variables.
 
     You are responsible to avoid the name capture problem::
@@ -441,7 +441,7 @@ def replace_free_occurrences(self: AST,
     '''
     from xotl.fl.match import NO_MATCH_ERROR, MATCH_OPERATOR
 
-    def replace(expr: AST, bindings: FrozenSet[str]):
+    def replace(expr: AST, bindings: FrozenSet[Symbolic]):
         if isinstance(expr, Identifier):
             if expr.name not in bindings:
                 replacement = substitutions.get(expr.name, None)
