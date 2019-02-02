@@ -9,43 +9,25 @@
 '''Implements algorithms for Direct Graphs.
 
 '''
-from typing import AbstractSet, Deque, List, MutableMapping, Set
-from typing import Generic, TypeVar
 from collections import deque
 
 
-T = TypeVar('T')
-
-
-class Graph(Generic[T]):
-    nodes: MutableMapping[T, Set[T]]
-
-    def add_edge(self, from_: T, to_: T) -> None:
-        ...
-
-    def add_many(self, from_: T, to_: AbstractSet[T]) -> None:
-        ...
-
-    def get_strongly_connected_components(self) -> List[AbstractSet[T]]:
-        ...
-
-
-class SimpleGraph(Graph[T]):
+class Graph:
     def __init__(self) -> None:
         self.nodes = {}
 
-    def __getitem__(self, node: T) -> AbstractSet[T]:
+    def __getitem__(self, node):
         return self.nodes.get(node, set())
 
-    def add_edge(self, from_: T, to_: T) -> None:
+    def add_edge(self, from_, to_):
         links = self.nodes.setdefault(from_, set())
         links.add(to_)
 
-    def add_many(self, from_: T, to_: AbstractSet[T]):
+    def add_many(self, from_, to_):
         links = self.nodes.setdefault(from_, set())
         links |= to_
 
-    def get_topological_order(self) -> List[T]:
+    def get_topological_order(self):
         '''Find a topological sort of the nodes.
 
         If the graph contains cycles, raise a RuntimeError.
@@ -81,7 +63,7 @@ class SimpleGraph(Graph[T]):
 
         return list(sorted(self.nodes.keys(), key=score))
 
-    def get_sccs(self) -> List[AbstractSet[T]]:
+    def get_sccs(self):
         '''Find the Strongly Connected Components.
 
         This is an implementation of Tarjan's Algorithm [Tarjan1972]_.
@@ -115,10 +97,10 @@ class SimpleGraph(Graph[T]):
                 result.append(scc)
 
         index = 0
-        indexed: MutableMapping[T, int] = {}
-        lowlinks: MutableMapping[T, int] = {}
-        result: List[Set[T]] = []
-        stack: Deque[T] = deque([])
+        indexed = {}
+        lowlinks = {}
+        result = []
+        stack = deque([])
         for node in self.nodes:
             if node not in indexed:
                 _find_scc(node)

@@ -8,10 +8,10 @@
 #
 import pytest
 
-from xotl.fl.graphs import SimpleGraph
+from xotl.fl.graphs import Graph
 
 
-graph = SimpleGraph()
+graph = Graph()
 graph.add_many(1, {2, 3})
 graph.add_many(2, {3})
 graph.add_many(3, {1})
@@ -45,7 +45,7 @@ def test_topo_dag():
         for node in scc
     }
     # A DAG implied the SCC; we create the DAG of the *names* in sccs.
-    newgraph = SimpleGraph()
+    newgraph = Graph()
     for name, scc in sccs.items():
         for node in scc:
             links = {index[l] for l in graph[node] if l not in scc}
