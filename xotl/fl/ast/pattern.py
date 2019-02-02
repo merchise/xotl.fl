@@ -57,7 +57,8 @@ from xotl.fl.ast.adt import DataCons
 # object for each line of the definition.
 
 
-Pattern = Union[str, Literal, 'ConsPattern']
+UnnamedPattern = Union[str, Literal, 'ConsPattern']
+Pattern = Union[str, Literal, 'ConsPattern', 'NamedPattern']
 
 
 class ConsPattern(AST):
@@ -112,6 +113,28 @@ class ConsPattern(AST):
                 yield param
             elif isinstance(param, ConsPattern):
                 yield from param.bindings
+            elif isinstance(param, NamedPattern):
+                yield from param.bindings
+
+
+class NamedPattern(AST):
+    def __init__(self, name: str, pattern: UnnamedPattern) -> None:
+        self.name = name
+        self.pattern = pattern
+
+    def __str__(self):
+        return f"{self.name} @ {self.pattern}"
+
+    @property
+    def bindings(self) -> Iterator[str]:
+        yield self.name
+        pattern = self.pattern
+        if isinstance(pattern, str) and pattern != '_':
+            yield pattern
+        elif isinstance(pattern, ConsPattern):
+            yield from pattern.bindings
+        elif isinstance(pattern, NamedPattern):
+            yield from pattern.bindings
 
 
 class Equation(AST):

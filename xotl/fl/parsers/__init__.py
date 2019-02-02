@@ -37,7 +37,7 @@ from xotl.fl.ast.expressions import (
 )
 from xotl.fl.ast.adt import DataType, DataCons
 from xotl.fl.ast.pattern import ConcreteLet
-from xotl.fl.ast.pattern import ConsPattern, Equation
+from xotl.fl.ast.pattern import NamedPattern, ConsPattern, Equation
 from xotl.fl.ast.typeclasses import TypeClass, Instance
 
 from xotl.fl.builtins import (
@@ -86,6 +86,7 @@ tokens = [
     'PERCENT',
     'OPERATOR',
     'TICK_OPERATOR',
+    'ATSYM',
     'ANNOTATION',
     'FLOAT',
     'EQ',
@@ -478,6 +479,7 @@ _OPERATOR_MAP = {
     '=': 'EQ',
     '|': 'PIPE',
     ',': 'COMMA',
+    '@': 'ATSYM',
 }
 
 
@@ -713,10 +715,12 @@ def p_operator(prod):
     infixl_operator_6 : PLUS
                      | MINUS
 
+
     infixr_operator_2 : COLON
 
     infixl_operator_2 : OPERATOR
                       | ARROW
+                      | ATSYM
 
     infixl_operator_0 : TICK_OPERATOR
 
@@ -794,31 +798,57 @@ def p_lambda_definition(prod):
 
 def p_pattern(prod):
     '''
-    pattern : literal
-    pattern : cons_pattern
-    pattern : list_cons_pattern
-    pattern : tuple_cons_pattern
-    pattern : empty_list_pattern
-    pattern : empty_tuple_pattern
+    pattern : possibly_named_pattern
+
+    simple_pattern : literal
+    simple_pattern : cons_pattern
+    simple_pattern : list_cons_pattern
+    simple_pattern : tuple_cons_pattern
+    simple_pattern : empty_list_pattern
+    simple_pattern : empty_tuple_pattern
     '''
     prod[0] = prod[1]
 
 
 def p_var_pattern(prod):
-    '''pattern : LOWER_IDENTIFIER
-       pattern : UNDER_IDENTIFIER
+    '''simple_pattern : LOWER_IDENTIFIER
+       simple_pattern : UNDER_IDENTIFIER
     '''
     prod[0] = prod[1]
 
 
+def p_possibly_named_pattern(prod):
+    '''possibly_named_pattern : _pattern_name simple_pattern
+    '''
+    name = prod[1]
+    pattern = prod[2]
+    if name:
+        prod[0] = NamedPattern(name, pattern)
+    else:
+        prod[0] = pattern
+
+
+def p_pattern_name(prod):
+    '''_pattern_name : LOWER_IDENTIFIER ATSYM
+    '''
+    prod[0] = prod[1]
+
+
+def p_no_pattern_name(prod):
+    '''_pattern_name : empty
+    '''
+    prod[0] = None
+
+
 def p_simplecons_pattern(prod):
-    '''pattern : UPPER_IDENTIFIER
+    '''simple_pattern : UPPER_IDENTIFIER
     '''
     prod[0] = ConsPattern(prod[1])
 
 
 def p_list_cons_for_param(prod):
     '''list_cons_pattern : pattern COLON pattern
+       list_cons_pattern : simple_pattern COLON simple_pattern
     '''
     prod[0] = ConsPattern(':', [prod[1], prod[3]])
 
@@ -832,7 +862,8 @@ def p_param_pattern(prod):
 
 def p_pattern_trivially_enclosed(prod):
     '''
-    pattern : LPAREN pattern RPAREN
+    simple_pattern : LPAREN pattern RPAREN
+    simple_pattern : LPAREN simple_pattern RPAREN
     '''
     prod[0] = prod[2]
 
@@ -860,10 +891,15 @@ def p_tuple_cons_pattern(prod):
 
 def p_patterns(prod):
     '''patterns : pattern _patterns
+       patterns : simple_pattern _patterns
        patterns_comma_sep : pattern _patterns_comma
+       patterns_comma_sep : simple_pattern _patterns_comma
        _patterns : SPACE pattern _patterns
+       _patterns : SPACE simple_pattern _patterns
        _patterns_comma : COMMA pattern _patterns_comma_trail
+       _patterns_comma : COMMA simple_pattern _patterns_comma_trail
        _patterns_comma_trail : COMMA pattern _patterns_comma_trail
+       _patterns_comma_trail : COMMA simple_pattern _patterns_comma_trail
     '''
     _collect_item(prod)
 
