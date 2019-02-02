@@ -141,7 +141,7 @@ _product_eq x:xs y:ys = x == y `and` _product_eq xs ys
 
 _product_ord_lt :: Ord a => [a] -> [a] -> Bool
 _product_ord_lt [] []     = True
-_product_ord_lt x:xs y:xs = x < y `or` (x == y `and` _product_ord_lt xs ys)
+_product_ord_lt x:xs y:ys = x < y `or` (x == y `and` _product_ord_lt xs ys)
 
 -- NOTICE: Those implementations fail when given lists of different sizes.
 -- But those implementations are expected to be *generated* for the right

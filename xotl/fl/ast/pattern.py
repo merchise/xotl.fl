@@ -108,7 +108,7 @@ class ConsPattern(AST):
     @property
     def bindings(self) -> Iterator[str]:
         for param in self.params:
-            if isinstance(param, str):
+            if isinstance(param, str) and param != '_':
                 yield param
             elif isinstance(param, ConsPattern):
                 yield from param.bindings
@@ -122,6 +122,12 @@ class Equation(AST):
         self.name = name
         self.patterns: Tuple[Pattern, ...] = tuple(patterns or [])
         self.body = body
+        self._check_non_repeated_vars()
+
+    def _check_non_repeated_vars(self):
+        names = list(n for n in self.bindings)
+        if len(names) != len(set(names)):
+            raise ValueError(f"Repeated bindings in patterns: {self!s}")
 
     def __repr__(self):
         def _str(x):
@@ -158,7 +164,7 @@ class Equation(AST):
     def bindings(self) -> Iterator[str]:
         '''The names bound in the arguments'''
         for pattern in self.patterns:
-            if isinstance(pattern, str):
+            if isinstance(pattern, str) and pattern != '_':
                 yield pattern
             elif isinstance(pattern, ConsPattern):
                 yield from pattern.bindings
