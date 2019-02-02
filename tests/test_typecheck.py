@@ -324,3 +324,38 @@ def test_regression_typing_if():
        in map
     ''')
     typecheck(expr, builtins_env)
+
+
+@pytest.mark.xfail(reason="We don't perform dependency analysis")
+def test_conflicting_uses_of_non_generalized_map():
+    expr = parse_expression(r'''
+       let map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
+           squarelist xs = map (\x -> x * x) xs
+           conflict   xs = map (\x -> "" ++ x) xs
+       in conflict
+    ''')
+    typecheck(expr, builtins_env)
+
+
+@pytest.mark.xfail(reason="We don't perform dependency analysis")
+def test_annotated_uses_of_non_generalized_map():
+    expr = parse_expression(r'''
+       let map :: (a -> b) -> [a] -> [b]
+           map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
+           squarelist xs = map (\x -> x * x) xs
+           conflict   xs = map (\x -> "" ++ x) xs
+       in conflict
+    ''')
+    typecheck(expr, builtins_env)
+
+
+def test_resolved_uses_of_non_generalized_map():
+    # This is the same as test_conflicting_uses_of_non_generalized_map
+    # But we have extracted map so that it can become generalized.
+    expr = parse_expression(r'''
+       let map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
+       in let squarelist xs = map (\x -> x * x) xs
+              conflict   xs = map (\x -> "" ++ x) xs
+       in conflict
+    ''')
+    typecheck(expr, builtins_env)
