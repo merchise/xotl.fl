@@ -219,11 +219,15 @@ def t_NLE(t):
 
 
 def t_STRING(t):
-    r'\"([^\n]|\\["])*\"'
-    # eval is safe because t.value must match the regular expression.  Notice
-    # that you must use `string_repr`:func: to get a string representation
-    # that work in our language.
-    t.value = eval(t.value)
+    r'\"([^\n"]|(?<=\\)")*\"'
+    # eval is safe because t.value must match the regular expression; but it
+    # can fail if there's an even number of escape \ before a non-closing ".
+    # Notice that you must use `string_repr`:func: to get a string
+    # representation that work in our language.
+    try:
+        t.value = eval(t.value)
+    except SyntaxError:
+        raise ParserError(f"Invalid string {t.value!r}")
     return t
 
 

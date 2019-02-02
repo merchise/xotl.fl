@@ -475,3 +475,17 @@ def test_regression_ambigous_tuple_pattern():
                  count x:xs = 1 + (count xs)
              in count
     ''')
+
+
+def test_regression_two_strings():
+    # Discovered 2019-02-01.
+    parse(r'\x -> if x < 0 (then "neg") (else "pos")')
+    parse('""')  # The empty string
+    parse(r'"\""')
+    parse(r'"\\"')
+    with pytest.raises(ParserError):
+        parse(r'"\\""')
+    with pytest.raises(ParserError):
+        parse(r'"\"')
+    with pytest.raises(ParserError):
+        parse(r'"\\\"')
