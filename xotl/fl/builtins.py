@@ -58,7 +58,7 @@ _gamma = None
 def builtins_env(self) -> TypeEnvironment:
     global _gamma
     if _gamma is None:
-        _gamma = _load_builtins()
+        _gamma = _load_builtin_typeenv()
     return BuiltinEnvDict(_gamma)
 
 
@@ -141,15 +141,20 @@ class BuiltinEnvDict(dict):
             raise KeyError(key)
 
 
-def _load_builtins():
+def _load_builtins_program():
     import pkg_resources
     from xotl.fl import parse
-    from xotl.fl.ast.adt import DataType
-    from xotl.fl.ast.typeclasses import TypeClass
     builtins = pkg_resources.resource_filename('xotl.fl', 'builtins.fl')
     with open(builtins, 'r', encoding='utf-8') as f:
         source = f.read()
-    res = parse(source)
+    program = parse(source)
+    return program
+
+
+def _load_builtin_typeenv():
+    from xotl.fl.ast.adt import DataType
+    from xotl.fl.ast.typeclasses import TypeClass
+    res = _load_builtins_program()
     gamma = {}
     # The strange dict(**gamma, **x) are there to catch duplicated annotations
     # that may cause trouble.
