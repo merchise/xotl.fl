@@ -6,50 +6,24 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-r'''Implements a type checker (Damas-Hindley-Milner) with a extensions.
-
-The main algorithm is described in Chapter 9 of [PeytonJones1987]_.  However,
-some insights are described in [Damas1982]_ and [Damas1984]_.
-
-Extensions to the main algorithm:
-
-- let (and letrec) expressions may have local type annotations, e.g::
-
-      let id :: Number -> a
-          id x = x
-      in id
-
-  will type-check and infer the type ``Number -> Number``.  Without the type
-  annotation, the type inferred is ``a -> a``.
-
-- type schemes can now appear nested inside type expressions, e.g::
-
-       let f :: (forall a. [a] -> [a]) -> ([Bool], [Char])
-           f g = (g [True, False], g "ab")
-       in f
-
-- predicated types (for type classes), e.g ``Eq a => a -> a -> Bool``.
-
-Extensions are described in [Wadler1989]_ and [PeytonJones2011]_.
+'''Implements a type checker (Damas-Hindley-Milner) with extensions.
 
 '''
 from typing import (
-    Sequence,
+    Iterable,
     List,
     Mapping,
     Tuple,
-    Iterable,
-    Callable,
+    Sequence,
 )
-from typing import Any  # noqa
 from collections import ChainMap
+from dataclasses import dataclass
 
 from xotl.fl.meta import Symbolic
 from xotl.fl.ast.base import AST
 from xotl.fl.ast.types import (
     Type,
     TypeVariable,
-    TypeCons,
     FunctionTypeCons as FuncCons,
     TypeScheme,
     find_tvars,
@@ -62,262 +36,30 @@ from xotl.fl.ast.expressions import (
     Let,
     Letrec,
 )
+from xotl.fl.ast.typeclasses import TypeClass, Instance
 from xotl.fl.ast.pattern import ConcreteLet
 from xotl.fl.utils import TVarSupply
 
+from .subst import (
+    sidentity,
+    scompose,
+    subscheme,
+    subtype,
+    Substitution,
+)
+from .unification import unify, unify_exprs
+from .exceptions import UnificationError
 
+
+@dataclass
+class Class:
+    typeclass: TypeClass
+    instances: Sequence[Instance]
+
+
+ClassEnvironment = Mapping[Symbolic, Class]
 TypeEnvironment = Mapping[Symbolic, TypeScheme]
 EMPTY_TYPE_ENV: TypeEnvironment = {}
-
-
-_STR_PADDING = ' ' * 4
-
-
-# `Substitution` is a type; `scompose`:class: is a substitution by
-# composition, `delta`:class: creates the simplest non-empty substitution.
-#
-# TODO: We could modify the algorithm so that we can *inspect* which variables
-# are being substituted; but that's not essential to the Substitution Type.
-Substitution = Callable[[str], Type]
-
-
-def subtype(phi: Substitution, t: Type) -> Type:
-    '''Get the sub-type of `t` by applying the substitution `phi`.
-
-    '''
-    # 'subtype(sidentity, t) == t'; and since Type, TypeVariables and TypeCons
-    # are treated immutably we should be safe to return the same type.
-    if phi is sidentity:
-        return t
-    elif isinstance(t, TypeVariable):
-        return phi(t.name)
-    elif isinstance(t, TypeCons):
-        return TypeCons(
-            t.cons,
-            [subtype(phi, subt) for subt in t.subtypes],
-            binary=t.binary
-        )
-    elif isinstance(t, TypeScheme):
-        psi = Exclude(phi, t)
-        return TypeScheme(t.generics, subtype(psi, t.type_))
-    else:
-        assert False, f'Node of unknown type {t!r}'
-
-
-def scompose(f: Substitution, g: Substitution) -> Substitution:
-    '''Compose two substitutions.
-
-    The crucial property of `scompose`:func: is that::
-
-       subtype (scompose f g) = (subtype f) . (subtype g)
-
-    '''
-    if f is sidentity:
-        return g
-    elif g is sidentity:
-        return f
-    else:
-        return Composition(f, g)
-
-
-class Composition:
-    def __init__(self, f: Substitution, g: Substitution) -> None:
-        assert self is not f
-        self.f = f
-        self.g = g
-
-    def __call__(self, s: str) -> Type:
-        return subtype(self.f, self.g(s))
-
-    def __repr__(self):
-        return f'Composition({self.f!r}, {self.g!r})'
-
-    def __str__(self):
-        import textwrap
-        if self._composes_deltas:
-            deltas = '\n'.join(
-                textwrap.indent(str(dl), _STR_PADDING)
-                for dl in self._deltas
-            )
-            return f'Composition of\n{deltas}'
-        else:
-            f = textwrap.indent(str(self.f), _STR_PADDING)
-            g = textwrap.indent(str(self.g), _STR_PADDING)
-            return f'Composition of\n{f}and\n{g}'
-
-    @property
-    def _composes_deltas(self):
-        first = (isinstance(self.f, delta) or
-                 isinstance(self.f, Composition) and self.f._composes_deltas)
-        if first:
-            second = (isinstance(self.g, delta) or
-                      isinstance(self.g, Composition) and self.g._composes_deltas)
-        else:
-            second = True   # it doesn't really matter
-        return first and second
-
-    @property
-    def _deltas(self):
-        from collections import deque
-        stack = deque([self.g, self.f])
-        while stack:
-            node = stack.pop()
-            if isinstance(node, delta):
-                yield node
-            elif isinstance(node, Composition):
-                stack.append(node.g)
-                stack.append(node.f)
-            else:
-                assert False
-
-
-class Identity:
-    'The identity substitution.'
-    def __call__(self, s: str) -> Type:
-        return TypeVariable(s, check=False)
-
-    def __repr__(self):
-        return 'Identity()'
-
-
-sidentity = Identity()
-
-
-class delta:
-    '''A `delta substitution` from a variable name `vname`.
-
-    '''
-    def __init__(self, vname: str, t: Type) -> None:
-        self.vname = vname
-        self.type_ = t
-
-    def __call__(self, s: str) -> Type:
-        return self.type_ if s == self.vname else TypeVariable(s, check=False)
-
-    def __repr__(self):
-        return f'delta({self.vname!r}, {self.type_!r})'
-
-    def __str__(self):
-        return f'delta: {self.vname.ljust(20)}{self.type_!s}'
-
-
-class NormalizationError(TypeError):
-    'Indicates the failure to normalize a constraint'
-
-
-class UnificationError(NormalizationError):
-    'Failure to unify two types; i.e. normalize the constraint "t1 ~ t2"'
-
-
-def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:
-    '''Extend `phi` so that it unifies `e1` and `e2`.
-
-    If `phi` is None, uses the identity substitution `Identity`:class:.
-
-    If there's no substitution that unifies the given terms, raise a
-    `UnificationError`:class:.
-
-    '''
-    def extend(phi: Substitution, name: str, t: Type) -> Substitution:
-        if isinstance(t, TypeVariable) and name == t.name:
-            return phi
-        elif name in {tv.name for tv in find_tvars(t)}:
-            raise UnificationError(f'Cannot unify {name!s} with {t!s}')
-        else:
-            # TODO: Make the result *descriptible*
-            return scompose(delta(name, t), phi)
-
-    def unify_with_tvar(tvar, t):
-        phitvn = phi(tvar.name)
-        if phitvn == tvar:
-            return extend(phi, tvar.name, subtype(phi, t))
-        else:
-            return unify(phitvn, subtype(phi, t), phi=phi)
-
-    if isinstance(e1, TypeVariable):
-        return unify_with_tvar(e1, e2)
-    elif isinstance(e2, TypeVariable):
-        return unify_with_tvar(e2, e1)
-    else:
-        assert isinstance(e1, TypeCons) and isinstance(e2, TypeCons)
-        if e1.cons == e2.cons:
-            return unify_exprs(zip(e1.subtypes, e2.subtypes), p=phi)
-        else:
-            raise UnificationError(f'Cannot unify {e1!s} with {e2!s}')
-
-
-TypePairs = Iterable[Tuple[Type, Type]]
-
-
-# This is the unifyl in the Book.
-def unify_exprs(exprs: TypePairs, *, p: Substitution = sidentity) -> Substitution:
-    '''Extend `p` to unify all pairs of type expressions in `exprs`.'''
-    for se1, se2 in exprs:
-        p = unify(se1, se2, phi=p)
-    return p
-
-
-def subscheme(phi: Substitution, ts: TypeScheme) -> TypeScheme:
-    '''Apply a substitution to a type scheme.
-
-    .. warning:: You must ensure that the type scheme's generic variables are
-       distinct from the variables occurring in the result of applying the
-       substitution `phi` to any of the non-generic variables of `ts`.
-
-       The way in which we ensure this (in the algorithm) is to guarantee that
-       the names of the generic variables in the type scheme are always
-       distinct from those which can occur in the range of the substitution
-       (which are always non-generic).
-
-    '''
-    # From Damas1982:
-    #
-    # If S is a substitution of types for type variables, often written
-    # [τ1/α1, ..., τn/αn ] or [τi/αi], and σ is a type-scheme, then Sσ is the
-    # type-scheme obtained by replacing each free occurrence of αi in σ by τi,
-    # renaming the generic variables of σ if necessary.  Then Sσ is called an
-    # instance of σ; the notions of substitution and instance extend naturally
-    # to larger syntactic constructs containing type-schemes.
-    #
-    assert all(not bool(scvs & set(tv.name for tv in find_tvars(phi(unk))))
-               for scvs in (set(ts.generics), )
-               for unk in ts.nongenerics)
-    return TypeScheme(ts.generics, subtype(Exclude(phi, ts), ts.type_))
-
-
-class Exclude:
-    '''A substitution over the non-generics in a type scheme.
-
-    Applies `phi` only if the variable name is a non-generic of the type
-    scheme `ts`.
-
-    '''
-    def __new__(cls, phi, ts):
-        # type: (Any, Substitution, TypeScheme) -> Substitution
-        if not ts.generics:
-            return phi
-        else:
-            res = super().__new__(cls)  # type: ignore
-            res.__init__(phi, ts)
-            return res
-
-    def __init__(self, phi: Substitution, ts: TypeScheme) -> None:
-        self.phi = phi
-        self.ts = ts
-
-    def __call__(self, s: str) -> Type:
-        if s not in self.ts.generics:
-            return self.phi(s)
-        else:
-            return TypeVariable(s, check=False)
-
-    def __repr__(self):
-        return f'Exclude({self.phi!r}, {self.ts!r})'
-
-    def __str__(self):
-        import textwrap
-        sub = textwrap.indent(str(self.phi), _STR_PADDING)
-        return f'exclude all {self.ts.generics} in \n{sub}'
 
 
 def get_typeenv_unknowns(te: TypeEnvironment) -> List[str]:
@@ -476,7 +218,7 @@ def typecheck_app(env: TypeEnvironment, ns, exp: Application) -> TCResult:
     t: TypeVariable = next(ns)
     try:
         result = unify(t1, FuncCons(t2, t), phi=phi)
-    except UnificationError as error:
+    except UnificationError:
         raise UnificationError(
             f'Cannot type-check {exp!s} :: {t1!s} ~ {t2!s} -> {t!s}'
         )

@@ -14,8 +14,8 @@ from xotl.fl.ast.types import (
     TypeVariable as T,
     TypeCons as C,
 )
-from xotl.fl.typecheck import scompose, subtype, delta
-from xotl.fl.typecheck import unify, UnificationError
+from xotl.fl.typecheck.subst import scompose, subtype, delta
+from xotl.fl.typecheck.unification import unify, UnificationError
 
 from xotl.fl.parsers.types import parse
 
