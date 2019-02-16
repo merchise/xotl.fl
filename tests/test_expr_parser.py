@@ -201,11 +201,10 @@ def test_lambda_definition():
     assert P(r'\a b -> a') == Lambda('a', Lambda('b', Identifier('a')))
 
 
-@pytest.mark.xfail(reason='Incomplete pattern matching')
 def test_basic_letexpr():
     P = parse
     assert P('let id x = x in map id xs') == P('let id x = x in (map id xs)')
-    assert isinstance(P('let id x = x in id'), Let)
+    assert isinstance(P('let id x = x in id'), ConcreteLet)
 
     code = '''
     let id x    = x
@@ -216,17 +215,12 @@ def test_basic_letexpr():
     '''
     Id = Identifier
     App = Application
-    L = Lambda
-    assert isinstance(parse(code), Letrec)
-    assert parse(code) == Letrec(
-        {'id': L('x', Id('x')),
-         'prxI': L('c', App(App(Id('c'), Id('x')), Id('id'))),
-         'p1': L('x', L('y', Id('x'))),
-         'p2': L('x', L('y', Id('y')))},
-        App(
-            App(Id('prxI'), Id('p2')),
-            App(Id('prxI'), Id('p2'))
-        )
+    assert parse(code) == ConcreteLet(
+        [Equation('id', ('x', ), Identifier('x')),
+         Equation('prxI', ('c', ), App(App(Id('c'), Id('x')), Id('id'))),
+         Equation('p1', ('x', 'y'), Id('x')),
+         Equation('p2', ('x', 'y'), Id('y'))],
+        parse('prxI p2 (prxI p2)')
     )
 
 
