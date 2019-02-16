@@ -21,10 +21,10 @@ class AST:
     '''A AST node in the language.
 
     '''
-    def translate(self) -> ILC:
+    def translate(self) -> ILC:  # pragma: no cover
         ...
 
 
 class Dual(AST, ILC):
-    def translate(self) -> ILC:
+    def translate(self) -> ILC:  # pragma: no cover
         return self
