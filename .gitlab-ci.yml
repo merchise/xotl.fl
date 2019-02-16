@@ -2,7 +2,7 @@
 stages:
   - pre-check
   - test doc
-  - unit-test
+  - test
   - check
   - build
   - publish
@@ -17,7 +17,7 @@ check code smells:
     - branches
 
 .run_tox_tests: &run_tox_tests
-  stage: unit-test
+  stage: test
   script:
     - tox -e $PYTHON-unit
   tags:
@@ -65,6 +65,15 @@ run doctests:
   only:
     - branches
   allow_failure: true
+
+
+run coverage tests:
+  stage: test
+  script:
+    - tox -e 3.6-coverage
+  allow_failure: true
+  tags:
+    - virtualenv
 
 
 check signature of tag:

@@ -7,7 +7,7 @@
 .hypothesis/
 .mypy_cache/
 .pytest_cache/
-.coverage/
+.coverage
 __pycache__
 build/
 dist/
