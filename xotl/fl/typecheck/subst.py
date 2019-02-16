@@ -55,7 +55,7 @@ class Composition:
             return f'Composition of\n{f}and\n{g}'
 
     @property
-    def _composes_deltas(self):
+    def _composes_deltas(self):  # pragma: no cover
         first = (isinstance(self.f, delta) or
                  isinstance(self.f, Composition) and self.f._composes_deltas)
         if first:
@@ -66,7 +66,7 @@ class Composition:
         return first and second
 
     @property
-    def _deltas(self):
+    def _deltas(self):  # pragma: no cover
         from collections import deque
         stack = deque([self.g, self.f])
         while stack:
