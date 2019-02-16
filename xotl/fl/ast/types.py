@@ -52,7 +52,7 @@ class Type(Dual):
         '''Return the function type 'self -> other'.'''
         if isinstance(other, Type):
             return FunctionTypeCons(self, other)
-        else:
+        else:  # pragma: no cover
             t1 = type(self).__name__
             t2 = type(other).__name__
             raise TypeError(
@@ -63,7 +63,7 @@ class Type(Dual):
         if isinstance(other, Type):
             from xotl.fl.typecheck import unify
             return unify(self, other)
-        else:
+        else:  # pragma: no cover
             t1 = type(self).__name__
             t2 = type(other).__name__
             raise TypeError(
@@ -100,7 +100,7 @@ class TypeVariable(Type):
         return 0   # So that 'Int' has a bigger size than 'a'.
 
     def __bool__(self):
-        return True   # needed because __len__ is 0.
+        return True   # pragma: no cover; needed because __len__ is 0.
 
 
 class TypeCons(Type):

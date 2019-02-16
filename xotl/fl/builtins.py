@@ -138,7 +138,7 @@ class BuiltinEnvDict(dict):
             res = TypeVariable('.r', check=False)
             return TypeScheme.from_typeexpr(a >> ((a >> res) >> res))
         else:
-            raise KeyError(key)
+            raise KeyError(key)  # pragma: no cover
 
 
 def _load_builtins_program():
