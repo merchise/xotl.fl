@@ -54,12 +54,6 @@ class DataCons:
         else:
             return NotImplemented
 
-    def __ne__(self, other):
-        if isinstance(other, DataCons):
-            return not (self == other)
-        else:
-            return NotImplemented
-
     def __hash__(self):
         return hash((DataCons, self.name, self.args))
 
@@ -131,12 +125,6 @@ class DataType:
             return (self.name == other.name and
                     self.type_ == other.type_ and
                     set(self.dataconses) == set(other.dataconses))
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, DataType):
-            return not (self == other)
         else:
             return NotImplemented
 

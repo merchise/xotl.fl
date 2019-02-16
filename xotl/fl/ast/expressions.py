@@ -53,12 +53,6 @@ class Identifier(Dual):
         else:
             return NotImplemented
 
-    def __ne__(self, other):
-        if isinstance(other, Identifier):
-            return not (self == other)
-        else:
-            return NotImplemented
-
 
 # An extension to the algorithm.  Literals are allowed, but have a the
 # most specific type possible.
@@ -90,12 +84,6 @@ class Literal(Dual):
         else:
             return NotImplemented
 
-    def __ne__(self, other):
-        if isinstance(other, Literal):
-            return not (self == other)
-        else:
-            return NotImplemented
-
     def __hash__(self):
         return hash((Literal, self.value, self.type_, self.annotation))
 
@@ -113,12 +101,6 @@ class _Lambda:
     def __eq__(self, other):
         if isinstance(other, _Lambda):
             return self.varname == other.varname and self.body == other.body
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, _Lambda):
-            return not (self == other)
         else:
             return NotImplemented
 
@@ -161,12 +143,6 @@ class _Application:
         else:
             return NotImplemented
 
-    def __ne__(self, other):
-        if isinstance(other, _Application):
-            return not (self == other)
-        else:
-            return NotImplemented
-
     def __hash__(self):
         return hash((type(self), self.e1, self.e2))
 
@@ -205,12 +181,6 @@ class _LetExpr:
             return (self.bindings == other.bindings and
                     self.localenv == other.localenv and
                     self.body == self.body)
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, type(self)):
-            return not (self == other)
         else:
             return NotImplemented
 

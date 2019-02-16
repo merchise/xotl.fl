@@ -97,12 +97,6 @@ class ConsPattern(AST):
         else:
             return NotImplemented
 
-    def __ne__(self, other):
-        if isinstance(other, ConsPattern):
-            return not (self == other)
-        else:
-            return NotImplemented
-
     def __hash__(self):
         return hash((ConsPattern, self.cons, self.params))
 
@@ -171,12 +165,6 @@ class Equation(AST):
             return (self.name == other.name and
                     self.patterns == other.patterns and
                     self.body == other.body)
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, Equation):
-            return not (self == other)
         else:
             return NotImplemented
 
