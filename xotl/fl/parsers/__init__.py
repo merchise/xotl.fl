@@ -64,6 +64,7 @@ tokens = [
     'BASE8_INTEGER',
     'BASE2_INTEGER',
     'COLON',
+    'DOUBLE_COLON',
     'COMMA',
     'DOT_OPERATOR',
     'SPACE',
@@ -136,9 +137,6 @@ for keyword, regexp in reserved:
 
     globals()[tkname] = tkdef
     tokens.append(tk)
-
-
-t_COLON = r':'
 
 
 # t_NL and tNLE remove runs of empty spaces at the beginning or end of the
@@ -480,11 +478,13 @@ _OPERATOR_MAP = {
     '|': 'PIPE',
     ',': 'COMMA',
     '@': 'ATSYM',
+    ':': 'COLON',
+    '::': 'DOUBLE_COLON',
 }
 
 
 def t_OPERATOR(t):
-    r'[/\.\-\+\*<>\$%\^&!@\#=\\\|,]+'
+    r'[/\.\-\+\*<>\$%\^&!@\#=\\\|,:]+'
     t.type = _OPERATOR_MAP.get(t.value, 'OPERATOR')
     return t
 
@@ -1306,19 +1306,19 @@ def p_valuedef(prod):
 
 
 def p_nametype_decl(prod):
-    '''nametype_decl : _identifier COLON COLON st_type_expr
+    '''nametype_decl : _identifier DOUBLE_COLON st_type_expr
     '''
     name = prod[1]
-    type_ = prod[4]
+    type_ = prod[3]
     scheme = TypeScheme.from_typeexpr(type_)
     prod[0] = {name: scheme}  # type: TypeEnvironment
 
 
 def p_nametype_decl_operators(prod):
-    '''nametype_decl : LPAREN _st_operator RPAREN COLON COLON st_type_expr
+    '''nametype_decl : LPAREN _st_operator RPAREN DOUBLE_COLON st_type_expr
     '''
     name = prod[2]
-    type_ = prod[6]
+    type_ = prod[5]
     scheme = TypeScheme.from_typeexpr(type_)
     prod[0] = {name: scheme}  # type: TypeEnvironment
 
