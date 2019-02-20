@@ -211,3 +211,10 @@ def test_parse_deriving_single_typeclass():
 
 def test_parse_deriving_several_typeclasses():
     parse('data Bool = True | False deriving (Eq, Ord)')
+
+
+def test_adt_operators():
+    parse('''
+    data Qual t = [Pred] :=> t
+                  deriving Eq
+    ''')

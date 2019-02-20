@@ -1391,6 +1391,14 @@ def p_bare_data_cons(prod):
     prod[0] = (prod[1], prod[2])
 
 
+def p_bare_data_cons_operator(prod):
+    '''_data_cons : cons_arg OPERATOR cons_arg _cons_args'''
+    cons = prod[2]
+    args = prod[4]
+    args[0:0] = [prod[1], prod[3]]
+    prod[0] = (cons, args)
+
+
 def p_data_cons_args(prod):
     '''_cons_args : SPACE cons_arg _cons_args
     '''
