@@ -55,6 +55,14 @@ not True  = False
 not False = True
 
 
+all :: [Bool] -> Bool
+all = foldr and True
+
+
+any :: [Bool] -> Bool
+any = foldr or False
+
+
 (+) :: Number -> Number -> Number
 (-) :: Number -> Number -> Number
 (*) :: Number -> Number -> Number
