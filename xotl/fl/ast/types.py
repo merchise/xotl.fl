@@ -242,6 +242,12 @@ class TypeScheme(Type):
         return cls.from_typeexpr(type_, generics=generics)
 
 
+# This should not be confounded with the Constrained Type Scheme of
+# [Jones1994].  Instead this is the Type Scheme with a qualified type given
+# by the `constraints`.
+#
+# We remove some of the complexity by disallowing unused constraints (e.g
+# you can't express 'forall a. Eq b => a -> a'.)
 class ConstrainedType(TypeScheme):
     def __init__(self, generics: Sequence[str], t: Type,
                  constraints: Sequence[TypeConstraint]) -> None:
