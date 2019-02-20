@@ -96,7 +96,7 @@ class _Lambda:
         return f'Lambda({self.varname!r}, {self.body!r})'
 
     def __str__(self):
-        return f'\{self.varname!s} -> {self.body!s}'
+        return f'\\{self.varname!s} -> {self.body!s}'
 
     def __eq__(self, other):
         if isinstance(other, _Lambda):
@@ -401,7 +401,7 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[Symboli
 
 def replace_free_occurrences(self: AST,
                              substitutions: Mapping[Symbolic, str]) -> AST:
-    '''Create a new expression replacing free occurrences of variables.
+    r'''Create a new expression replacing free occurrences of variables.
 
     You are responsible to avoid the name capture problem::
 
