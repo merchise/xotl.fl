@@ -194,18 +194,19 @@ Rule 188   _data_rhs -> data_cons _data_conses
 Rule 189   _data_conses -> _maybe_padding PIPE data_cons _data_conses
 Rule 190   _data_conses -> empty
 Rule 191   _data_conses -> _maybe_padding KEYWORD_DERIVING LPAREN _derivations_list RPAREN
-Rule 192   data_cons -> _data_cons
-Rule 193   _data_cons -> UPPER_IDENTIFIER _cons_args
-Rule 194   _cons_args -> SPACE cons_arg _cons_args
-Rule 195   _cons_args -> empty
-Rule 196   cons_arg -> type_variable
-Rule 197   cons_arg -> type_cons
-Rule 198   cons_arg -> _cons_arg_factor
-Rule 199   _cons_arg_factor -> LPAREN type_expr RPAREN
-Rule 200   _cons_arg_factor -> LBRACKET type_expr RBRACKET
-Rule 201   _derivations_list -> UPPER_IDENTIFIER _derivations_list_trail
-Rule 202   _derivations_list_trail -> COMMA UPPER_IDENTIFIER _derivations_list_trail
-Rule 203   _derivations_list_trail -> empty
+Rule 192   _data_conses -> _maybe_padding KEYWORD_DERIVING UPPER_IDENTIFIER
+Rule 193   data_cons -> _data_cons
+Rule 194   _data_cons -> UPPER_IDENTIFIER _cons_args
+Rule 195   _cons_args -> SPACE cons_arg _cons_args
+Rule 196   _cons_args -> empty
+Rule 197   cons_arg -> type_variable
+Rule 198   cons_arg -> type_cons
+Rule 199   cons_arg -> _cons_arg_factor
+Rule 200   _cons_arg_factor -> LPAREN type_expr RPAREN
+Rule 201   _cons_arg_factor -> LBRACKET type_expr RBRACKET
+Rule 202   _derivations_list -> UPPER_IDENTIFIER _derivations_list_trail
+Rule 203   _derivations_list_trail -> COMMA UPPER_IDENTIFIER _derivations_list_trail
+Rule 204   _derivations_list_trail -> empty
 
 Terminals, with rules where they appear
 
@@ -219,7 +220,7 @@ BASE2_INTEGER        : 76
 BASE8_INTEGER        : 75
 CHAR                 : 44
 COLON                : 62 96 97
-COMMA                : 37 72 110 111 112 113 144 145 179 202
+COMMA                : 37 72 110 111 112 113 144 145 179 203
 DATE                 : 40
 DATETIME             : 41
 DATETIME_INTERVAL    : 43
@@ -232,15 +233,15 @@ FATARROW             : 150 176
 FLOAT                : 77
 KEYWORD_CLASS        : 174
 KEYWORD_DATA         : 185
-KEYWORD_DERIVING     : 191
+KEYWORD_DERIVING     : 191 192
 KEYWORD_FORALL       : 127
 KEYWORD_IN           : 121
 KEYWORD_INSTANCE     : 153
 KEYWORD_LET          : 121
 KEYWORD_WHERE        : 122 123 153 174
-LBRACKET             : 35 101 148 200
+LBRACKET             : 35 101 148 201
 LOWER_IDENTIFIER     : 49 90 93 138 186
-LPAREN               : 34 50 54 98 99 100 102 103 142 143 147 183 191 199
+LPAREN               : 34 50 54 98 99 100 102 103 142 143 147 183 191 200
 MINUS                : 61
 NEWLINE              : 159 162
 OPERATOR             : 63
@@ -248,32 +249,32 @@ PADDING              : 119 123 153 155 172 174
 PERCENT              : 59
 PIPE                 : 189
 PLUS                 : 60
-RBRACKET             : 35 101 148 200
-RPAREN               : 34 50 54 98 99 100 102 103 142 143 147 183 191 199
+RBRACKET             : 35 101 148 201
+RPAREN               : 34 50 54 98 99 100 102 103 142 143 147 183 191 200
 SLASH                : 57
-SPACE                : 1 98 108 109 121 121 122 127 128 135 136 177 185 186 194
+SPACE                : 1 98 108 109 121 121 122 127 128 135 136 177 185 186 195
 STAR                 : 56
 STRING               : 45
 TICK_OPERATOR        : 66
 UNDER_IDENTIFIER     : 47 91
-UPPER_IDENTIFIER     : 48 95 139 177 185 193 201 202
+UPPER_IDENTIFIER     : 48 95 139 177 185 192 194 202 203
 error                : 
 
 Nonterminals, with rules where they appear
 
 _app_args            : 135 136
 _app_args_non_empty  : 134
-_cons_arg_factor     : 198
-_cons_args           : 193 194
+_cons_arg_factor     : 199
+_cons_args           : 194 195
 _cons_params         : 185 186
 _constrained_type_expr_bare : 149 152
-_data_cons           : 192
+_data_cons           : 193
 _data_conses         : 188 189
 _data_rhs            : 184
 _datatype_lhs        : 184
 _definition_set      : 160 161
 _derivations_list    : 191
-_derivations_list_trail : 201 202
+_derivations_list_trail : 202 203
 _enclosed_operator   : 53 117
 _equation_set        : 118 119
 _identifier          : 46 98 116 128 129 182
@@ -281,7 +282,7 @@ _list_items          : 34 35
 _list_items_cont     : 36 37
 _local_definition_set : 171 172
 _maybe_constrained_type_expr : 153
-_maybe_padding       : 130 142 142 147 147 148 148 189 191
+_maybe_padding       : 130 142 142 147 147 148 148 189 191 192
 _pattern_name        : 92
 _patterns            : 104 105 108 109 116 117
 _patterns_comma      : 106 107
@@ -295,7 +296,7 @@ _type_scheme_generics : 127 128
 _typeclass_def       : 174
 char                 : 29 79
 concrete_number      : 27
-cons_arg             : 194
+cons_arg             : 195
 cons_pattern         : 85
 constrained_type_expr : 25
 data_cons            : 188 189
@@ -306,7 +307,7 @@ datetime             : 31
 datetime_interval    : 33
 definition           : 160 161 172
 definitions          : 157
-empty                : 38 39 94 114 115 120 126 137 156 158 163 173 180 187 190 195 203
+empty                : 38 39 94 114 115 120 126 137 156 158 163 173 180 187 190 196 204
 empty_list_pattern   : 88
 empty_tuple_pattern  : 89
 enclosed_expr        : 18 51 52
@@ -352,14 +353,14 @@ st_type_expr         : 182 183
 string               : 28 78
 tuple_cons_pattern   : 87
 type_app_expression  : 132
-type_cons            : 141 197
+type_cons            : 141 198
 type_constraints     : 150
-type_expr            : 24 144 145 146 147 148 150 151 199 200
+type_expr            : 24 144 145 146 147 148 150 151 200 201
 type_factor          : 133 134 135 136
 type_function_expr   : 124 130
 type_scheme          : 124 125
 type_term            : 125 130 131
-type_variable        : 140 177 196
+type_variable        : 140 177 197
 typeclass            : 167
 valuedef             : 170
 where_expr           : 20
@@ -874,8 +875,8 @@ state 28
 
     (184) datatype_definition -> _datatype_lhs EQ . _data_rhs
     (188) _data_rhs -> . data_cons _data_conses
-    (192) data_cons -> . _data_cons
-    (193) _data_cons -> . UPPER_IDENTIFIER _cons_args
+    (193) data_cons -> . _data_cons
+    (194) _data_cons -> . UPPER_IDENTIFIER _cons_args
 
     UPPER_IDENTIFIER shift and go to state 71
 
@@ -1575,6 +1576,7 @@ state 69
     (189) _data_conses -> . _maybe_padding PIPE data_cons _data_conses
     (190) _data_conses -> . empty
     (191) _data_conses -> . _maybe_padding KEYWORD_DERIVING LPAREN _derivations_list RPAREN
+    (192) _data_conses -> . _maybe_padding KEYWORD_DERIVING UPPER_IDENTIFIER
     (155) _maybe_padding -> . PADDING
     (156) _maybe_padding -> . empty
     (81) empty -> .
@@ -1595,21 +1597,21 @@ state 69
 
 state 70
 
-    (192) data_cons -> _data_cons .
+    (193) data_cons -> _data_cons .
 
-    PADDING         reduce using rule 192 (data_cons -> _data_cons .)
-    PIPE            reduce using rule 192 (data_cons -> _data_cons .)
-    KEYWORD_DERIVING reduce using rule 192 (data_cons -> _data_cons .)
-    NEWLINE         reduce using rule 192 (data_cons -> _data_cons .)
-    $end            reduce using rule 192 (data_cons -> _data_cons .)
-    KEYWORD_IN      reduce using rule 192 (data_cons -> _data_cons .)
+    PADDING         reduce using rule 193 (data_cons -> _data_cons .)
+    PIPE            reduce using rule 193 (data_cons -> _data_cons .)
+    KEYWORD_DERIVING reduce using rule 193 (data_cons -> _data_cons .)
+    NEWLINE         reduce using rule 193 (data_cons -> _data_cons .)
+    $end            reduce using rule 193 (data_cons -> _data_cons .)
+    KEYWORD_IN      reduce using rule 193 (data_cons -> _data_cons .)
 
 
 state 71
 
-    (193) _data_cons -> UPPER_IDENTIFIER . _cons_args
-    (194) _cons_args -> . SPACE cons_arg _cons_args
-    (195) _cons_args -> . empty
+    (194) _data_cons -> UPPER_IDENTIFIER . _cons_args
+    (195) _cons_args -> . SPACE cons_arg _cons_args
+    (196) _cons_args -> . empty
     (81) empty -> .
 
     SPACE           shift and go to state 141
@@ -3234,6 +3236,7 @@ state 137
 
     (189) _data_conses -> _maybe_padding . PIPE data_cons _data_conses
     (191) _data_conses -> _maybe_padding . KEYWORD_DERIVING LPAREN _derivations_list RPAREN
+    (192) _data_conses -> _maybe_padding . KEYWORD_DERIVING UPPER_IDENTIFIER
 
     PIPE            shift and go to state 204
     KEYWORD_DERIVING shift and go to state 205
@@ -3269,26 +3272,26 @@ state 139
 
 state 140
 
-    (193) _data_cons -> UPPER_IDENTIFIER _cons_args .
+    (194) _data_cons -> UPPER_IDENTIFIER _cons_args .
 
-    PADDING         reduce using rule 193 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
-    PIPE            reduce using rule 193 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
-    KEYWORD_DERIVING reduce using rule 193 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
-    NEWLINE         reduce using rule 193 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
-    $end            reduce using rule 193 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
-    KEYWORD_IN      reduce using rule 193 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
+    PADDING         reduce using rule 194 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
+    PIPE            reduce using rule 194 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
+    KEYWORD_DERIVING reduce using rule 194 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
+    NEWLINE         reduce using rule 194 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
+    $end            reduce using rule 194 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
+    KEYWORD_IN      reduce using rule 194 (_data_cons -> UPPER_IDENTIFIER _cons_args .)
 
 
 state 141
 
-    (194) _cons_args -> SPACE . cons_arg _cons_args
-    (196) cons_arg -> . type_variable
-    (197) cons_arg -> . type_cons
-    (198) cons_arg -> . _cons_arg_factor
+    (195) _cons_args -> SPACE . cons_arg _cons_args
+    (197) cons_arg -> . type_variable
+    (198) cons_arg -> . type_cons
+    (199) cons_arg -> . _cons_arg_factor
     (138) type_variable -> . LOWER_IDENTIFIER
     (139) type_cons -> . UPPER_IDENTIFIER
-    (199) _cons_arg_factor -> . LPAREN type_expr RPAREN
-    (200) _cons_arg_factor -> . LBRACKET type_expr RBRACKET
+    (200) _cons_arg_factor -> . LPAREN type_expr RPAREN
+    (201) _cons_arg_factor -> . LBRACKET type_expr RBRACKET
 
     LOWER_IDENTIFIER shift and go to state 88
     UPPER_IDENTIFIER shift and go to state 89
@@ -3302,14 +3305,14 @@ state 141
 
 state 142
 
-    (195) _cons_args -> empty .
+    (196) _cons_args -> empty .
 
-    PADDING         reduce using rule 195 (_cons_args -> empty .)
-    PIPE            reduce using rule 195 (_cons_args -> empty .)
-    KEYWORD_DERIVING reduce using rule 195 (_cons_args -> empty .)
-    NEWLINE         reduce using rule 195 (_cons_args -> empty .)
-    $end            reduce using rule 195 (_cons_args -> empty .)
-    KEYWORD_IN      reduce using rule 195 (_cons_args -> empty .)
+    PADDING         reduce using rule 196 (_cons_args -> empty .)
+    PIPE            reduce using rule 196 (_cons_args -> empty .)
+    KEYWORD_DERIVING reduce using rule 196 (_cons_args -> empty .)
+    NEWLINE         reduce using rule 196 (_cons_args -> empty .)
+    $end            reduce using rule 196 (_cons_args -> empty .)
+    KEYWORD_IN      reduce using rule 196 (_cons_args -> empty .)
 
 
 state 143
@@ -5096,8 +5099,8 @@ state 203
 state 204
 
     (189) _data_conses -> _maybe_padding PIPE . data_cons _data_conses
-    (192) data_cons -> . _data_cons
-    (193) _data_cons -> . UPPER_IDENTIFIER _cons_args
+    (193) data_cons -> . _data_cons
+    (194) _data_cons -> . UPPER_IDENTIFIER _cons_args
 
     UPPER_IDENTIFIER shift and go to state 71
 
@@ -5107,15 +5110,17 @@ state 204
 state 205
 
     (191) _data_conses -> _maybe_padding KEYWORD_DERIVING . LPAREN _derivations_list RPAREN
+    (192) _data_conses -> _maybe_padding KEYWORD_DERIVING . UPPER_IDENTIFIER
 
     LPAREN          shift and go to state 262
+    UPPER_IDENTIFIER shift and go to state 263
 
 
 state 206
 
-    (194) _cons_args -> SPACE cons_arg . _cons_args
-    (194) _cons_args -> . SPACE cons_arg _cons_args
-    (195) _cons_args -> . empty
+    (195) _cons_args -> SPACE cons_arg . _cons_args
+    (195) _cons_args -> . SPACE cons_arg _cons_args
+    (196) _cons_args -> . empty
     (81) empty -> .
 
     SPACE           shift and go to state 141
@@ -5126,70 +5131,51 @@ state 206
     $end            reduce using rule 81 (empty -> .)
     KEYWORD_IN      reduce using rule 81 (empty -> .)
 
-    _cons_args                     shift and go to state 263
+    _cons_args                     shift and go to state 264
     empty                          shift and go to state 142
 
 state 207
 
-    (196) cons_arg -> type_variable .
+    (197) cons_arg -> type_variable .
 
-    SPACE           reduce using rule 196 (cons_arg -> type_variable .)
-    PADDING         reduce using rule 196 (cons_arg -> type_variable .)
-    PIPE            reduce using rule 196 (cons_arg -> type_variable .)
-    KEYWORD_DERIVING reduce using rule 196 (cons_arg -> type_variable .)
-    NEWLINE         reduce using rule 196 (cons_arg -> type_variable .)
-    $end            reduce using rule 196 (cons_arg -> type_variable .)
-    KEYWORD_IN      reduce using rule 196 (cons_arg -> type_variable .)
+    SPACE           reduce using rule 197 (cons_arg -> type_variable .)
+    PADDING         reduce using rule 197 (cons_arg -> type_variable .)
+    PIPE            reduce using rule 197 (cons_arg -> type_variable .)
+    KEYWORD_DERIVING reduce using rule 197 (cons_arg -> type_variable .)
+    NEWLINE         reduce using rule 197 (cons_arg -> type_variable .)
+    $end            reduce using rule 197 (cons_arg -> type_variable .)
+    KEYWORD_IN      reduce using rule 197 (cons_arg -> type_variable .)
 
 
 state 208
 
-    (197) cons_arg -> type_cons .
+    (198) cons_arg -> type_cons .
 
-    SPACE           reduce using rule 197 (cons_arg -> type_cons .)
-    PADDING         reduce using rule 197 (cons_arg -> type_cons .)
-    PIPE            reduce using rule 197 (cons_arg -> type_cons .)
-    KEYWORD_DERIVING reduce using rule 197 (cons_arg -> type_cons .)
-    NEWLINE         reduce using rule 197 (cons_arg -> type_cons .)
-    $end            reduce using rule 197 (cons_arg -> type_cons .)
-    KEYWORD_IN      reduce using rule 197 (cons_arg -> type_cons .)
+    SPACE           reduce using rule 198 (cons_arg -> type_cons .)
+    PADDING         reduce using rule 198 (cons_arg -> type_cons .)
+    PIPE            reduce using rule 198 (cons_arg -> type_cons .)
+    KEYWORD_DERIVING reduce using rule 198 (cons_arg -> type_cons .)
+    NEWLINE         reduce using rule 198 (cons_arg -> type_cons .)
+    $end            reduce using rule 198 (cons_arg -> type_cons .)
+    KEYWORD_IN      reduce using rule 198 (cons_arg -> type_cons .)
 
 
 state 209
 
-    (198) cons_arg -> _cons_arg_factor .
+    (199) cons_arg -> _cons_arg_factor .
 
-    SPACE           reduce using rule 198 (cons_arg -> _cons_arg_factor .)
-    PADDING         reduce using rule 198 (cons_arg -> _cons_arg_factor .)
-    PIPE            reduce using rule 198 (cons_arg -> _cons_arg_factor .)
-    KEYWORD_DERIVING reduce using rule 198 (cons_arg -> _cons_arg_factor .)
-    NEWLINE         reduce using rule 198 (cons_arg -> _cons_arg_factor .)
-    $end            reduce using rule 198 (cons_arg -> _cons_arg_factor .)
-    KEYWORD_IN      reduce using rule 198 (cons_arg -> _cons_arg_factor .)
+    SPACE           reduce using rule 199 (cons_arg -> _cons_arg_factor .)
+    PADDING         reduce using rule 199 (cons_arg -> _cons_arg_factor .)
+    PIPE            reduce using rule 199 (cons_arg -> _cons_arg_factor .)
+    KEYWORD_DERIVING reduce using rule 199 (cons_arg -> _cons_arg_factor .)
+    NEWLINE         reduce using rule 199 (cons_arg -> _cons_arg_factor .)
+    $end            reduce using rule 199 (cons_arg -> _cons_arg_factor .)
+    KEYWORD_IN      reduce using rule 199 (cons_arg -> _cons_arg_factor .)
 
 
 state 210
 
-    (199) _cons_arg_factor -> LPAREN . type_expr RPAREN
-    (124) type_expr -> . type_scheme type_function_expr
-    (125) type_expr -> . type_scheme type_term
-    (126) type_scheme -> . empty
-    (127) type_scheme -> . KEYWORD_FORALL SPACE _type_scheme_generics
-    (81) empty -> .
-
-    KEYWORD_FORALL  shift and go to state 39
-    LPAREN          reduce using rule 81 (empty -> .)
-    LBRACKET        reduce using rule 81 (empty -> .)
-    LOWER_IDENTIFIER reduce using rule 81 (empty -> .)
-    UPPER_IDENTIFIER reduce using rule 81 (empty -> .)
-
-    type_expr                      shift and go to state 264
-    type_scheme                    shift and go to state 36
-    empty                          shift and go to state 38
-
-state 211
-
-    (200) _cons_arg_factor -> LBRACKET . type_expr RBRACKET
+    (200) _cons_arg_factor -> LPAREN . type_expr RPAREN
     (124) type_expr -> . type_scheme type_function_expr
     (125) type_expr -> . type_scheme type_term
     (126) type_scheme -> . empty
@@ -5203,6 +5189,25 @@ state 211
     UPPER_IDENTIFIER reduce using rule 81 (empty -> .)
 
     type_expr                      shift and go to state 265
+    type_scheme                    shift and go to state 36
+    empty                          shift and go to state 38
+
+state 211
+
+    (201) _cons_arg_factor -> LBRACKET . type_expr RBRACKET
+    (124) type_expr -> . type_scheme type_function_expr
+    (125) type_expr -> . type_scheme type_term
+    (126) type_scheme -> . empty
+    (127) type_scheme -> . KEYWORD_FORALL SPACE _type_scheme_generics
+    (81) empty -> .
+
+    KEYWORD_FORALL  shift and go to state 39
+    LPAREN          reduce using rule 81 (empty -> .)
+    LBRACKET        reduce using rule 81 (empty -> .)
+    LOWER_IDENTIFIER reduce using rule 81 (empty -> .)
+    UPPER_IDENTIFIER reduce using rule 81 (empty -> .)
+
+    type_expr                      shift and go to state 266
     type_scheme                    shift and go to state 36
     empty                          shift and go to state 38
 
@@ -5224,15 +5229,15 @@ state 213
     (81) empty -> .
 
   ! shift/reduce conflict for PADDING resolved as shift
-    PADDING         shift and go to state 267
+    PADDING         shift and go to state 268
     NEWLINE         reduce using rule 81 (empty -> .)
     $end            reduce using rule 81 (empty -> .)
     KEYWORD_IN      reduce using rule 81 (empty -> .)
 
   ! PADDING         [ reduce using rule 81 (empty -> .) ]
 
-    _local_definition_set          shift and go to state 266
-    empty                          shift and go to state 268
+    _local_definition_set          shift and go to state 267
+    empty                          shift and go to state 269
 
 state 214
 
@@ -5273,8 +5278,8 @@ state 216
     LOWER_IDENTIFIER shift and go to state 88
     UPPER_IDENTIFIER shift and go to state 89
 
-    type_term                      shift and go to state 269
-    type_function_expr             shift and go to state 270
+    type_term                      shift and go to state 270
+    type_function_expr             shift and go to state 271
     type_app_expression            shift and go to state 82
     type_factor                    shift and go to state 83
     type_variable                  shift and go to state 84
@@ -5287,7 +5292,7 @@ state 217
     (137) _app_args -> . empty
     (81) empty -> .
 
-    SPACE           shift and go to state 271
+    SPACE           shift and go to state 272
     ARROW           reduce using rule 81 (empty -> .)
     COMMA           reduce using rule 81 (empty -> .)
     KEYWORD_WHERE   reduce using rule 81 (empty -> .)
@@ -5299,8 +5304,8 @@ state 217
     RPAREN          reduce using rule 81 (empty -> .)
     RBRACKET        reduce using rule 81 (empty -> .)
 
-    _app_args                      shift and go to state 272
-    empty                          shift and go to state 273
+    _app_args                      shift and go to state 273
+    empty                          shift and go to state 274
 
 state 218
 
@@ -5312,7 +5317,7 @@ state 218
     PADDING         shift and go to state 139
     RPAREN          reduce using rule 81 (empty -> .)
 
-    _maybe_padding                 shift and go to state 274
+    _maybe_padding                 shift and go to state 275
     empty                          shift and go to state 155
 
 state 219
@@ -5323,11 +5328,11 @@ state 219
     (156) _maybe_padding -> . empty
     (81) empty -> .
 
-    COMMA           shift and go to state 276
+    COMMA           shift and go to state 277
     PADDING         shift and go to state 139
     RPAREN          reduce using rule 81 (empty -> .)
 
-    _maybe_padding                 shift and go to state 275
+    _maybe_padding                 shift and go to state 276
     empty                          shift and go to state 155
 
 state 220
@@ -5340,7 +5345,7 @@ state 220
     PADDING         shift and go to state 139
     RBRACKET        reduce using rule 81 (empty -> .)
 
-    _maybe_padding                 shift and go to state 277
+    _maybe_padding                 shift and go to state 278
     empty                          shift and go to state 155
 
 state 221
@@ -5357,7 +5362,7 @@ state 221
     LOWER_IDENTIFIER shift and go to state 19
 
     _identifier                    shift and go to state 159
-    _type_scheme_generics          shift and go to state 278
+    _type_scheme_generics          shift and go to state 279
 
 state 222
 
@@ -5451,8 +5456,8 @@ state 223
     UPPER_IDENTIFIER shift and go to state 17
     LOWER_IDENTIFIER shift and go to state 19
 
-    expr                           shift and go to state 279
-    expr_term0                     shift and go to state 280
+    expr                           shift and go to state 280
+    expr_term0                     shift and go to state 281
     expr_term1                     shift and go to state 163
     expr_term2                     shift and go to state 164
     expr_term6                     shift and go to state 165
@@ -5483,8 +5488,8 @@ state 224
     (122) where_expr -> expr KEYWORD_WHERE . SPACE equations
     (123) where_expr -> expr KEYWORD_WHERE . PADDING equations
 
-    SPACE           shift and go to state 281
-    PADDING         shift and go to state 282
+    SPACE           shift and go to state 282
+    PADDING         shift and go to state 283
 
 
 state 225
@@ -5594,7 +5599,7 @@ state 226
     LOWER_IDENTIFIER shift and go to state 19
 
     expr_term2                     shift and go to state 164
-    expr_term1                     shift and go to state 283
+    expr_term1                     shift and go to state 284
     expr_term6                     shift and go to state 165
     expr_term7                     shift and go to state 166
     expr_term9                     shift and go to state 167
@@ -5703,7 +5708,7 @@ state 227
     LOWER_IDENTIFIER shift and go to state 19
 
     expr_term2                     shift and go to state 164
-    expr_term6                     shift and go to state 284
+    expr_term6                     shift and go to state 285
     expr_term7                     shift and go to state 166
     expr_term9                     shift and go to state 167
     expr_factor                    shift and go to state 168
@@ -5812,7 +5817,7 @@ state 228
     LOWER_IDENTIFIER shift and go to state 19
 
     expr_term6                     shift and go to state 165
-    expr_term7                     shift and go to state 285
+    expr_term7                     shift and go to state 286
     expr_term9                     shift and go to state 167
     expr_factor                    shift and go to state 168
     literal                        shift and go to state 169
@@ -5921,7 +5926,7 @@ state 229
     LOWER_IDENTIFIER shift and go to state 19
 
     expr_term7                     shift and go to state 166
-    expr_term9                     shift and go to state 286
+    expr_term9                     shift and go to state 287
     expr_factor                    shift and go to state 168
     literal                        shift and go to state 169
     identifier                     shift and go to state 170
@@ -6030,7 +6035,7 @@ state 230
     LOWER_IDENTIFIER shift and go to state 19
 
     expr_factor                    shift and go to state 168
-    expr_term9                     shift and go to state 287
+    expr_term9                     shift and go to state 288
     literal                        shift and go to state 169
     identifier                     shift and go to state 170
     enclosed_expr                  shift and go to state 171
@@ -6138,7 +6143,7 @@ state 231
     UPPER_IDENTIFIER shift and go to state 17
     LOWER_IDENTIFIER shift and go to state 19
 
-    expr_factor                    shift and go to state 288
+    expr_factor                    shift and go to state 289
     literal                        shift and go to state 169
     identifier                     shift and go to state 170
     enclosed_expr                  shift and go to state 171
@@ -6305,7 +6310,7 @@ state 233
     UPPER_IDENTIFIER shift and go to state 17
     LOWER_IDENTIFIER shift and go to state 19
 
-    expr                           shift and go to state 289
+    expr                           shift and go to state 290
     _st_operator                   shift and go to state 238
     expr_term0                     shift and go to state 162
     infixl_operator_2              shift and go to state 46
@@ -6433,29 +6438,29 @@ state 236
     (81) empty -> .
 
   ! shift/reduce conflict for RPAREN resolved as shift
-    RPAREN          shift and go to state 290
+    RPAREN          shift and go to state 291
     KEYWORD_WHERE   shift and go to state 224
-    COMMA           shift and go to state 292
+    COMMA           shift and go to state 293
     TICK_OPERATOR   shift and go to state 225
 
   ! RPAREN          [ reduce using rule 81 (empty -> .) ]
 
-    _list_items_cont               shift and go to state 291
+    _list_items_cont               shift and go to state 292
     infixl_operator_0              shift and go to state 223
-    empty                          shift and go to state 293
+    empty                          shift and go to state 294
 
 state 237
 
     (34) simple_tuple_expr -> LPAREN _list_items . RPAREN
 
-    RPAREN          shift and go to state 294
+    RPAREN          shift and go to state 295
 
 
 state 238
 
     (54) _enclosed_operator -> LPAREN _st_operator . RPAREN
 
-    RPAREN          shift and go to state 295
+    RPAREN          shift and go to state 296
 
 
 state 239
@@ -6487,7 +6492,7 @@ state 240
     UPPER_IDENTIFIER shift and go to state 17
     LOWER_IDENTIFIER shift and go to state 19
 
-    local_definitions              shift and go to state 296
+    local_definitions              shift and go to state 297
     local_definition               shift and go to state 213
     nametype_decl                  shift and go to state 8
     valuedef                       shift and go to state 9
@@ -6499,7 +6504,7 @@ state 241
 
     (82) lambda_expr -> BACKSLASH patterns . ARROW expr
 
-    ARROW           shift and go to state 297
+    ARROW           shift and go to state 298
 
 
 state 242
@@ -6516,7 +6521,7 @@ state 242
     ARROW           reduce using rule 81 (empty -> .)
     RPAREN          reduce using rule 81 (empty -> .)
 
-    _patterns                      shift and go to state 298
+    _patterns                      shift and go to state 299
     empty                          shift and go to state 44
 
 state 243
@@ -6533,14 +6538,14 @@ state 243
     ARROW           reduce using rule 81 (empty -> .)
     RPAREN          reduce using rule 81 (empty -> .)
 
-    _patterns                      shift and go to state 299
+    _patterns                      shift and go to state 300
     empty                          shift and go to state 44
 
 state 244
 
     (35) simple_list_expr -> LBRACKET _list_items . RBRACKET
 
-    RBRACKET        shift and go to state 300
+    RBRACKET        shift and go to state 301
 
 
 state 245
@@ -6555,13 +6560,13 @@ state 245
     (81) empty -> .
 
     KEYWORD_WHERE   shift and go to state 224
-    COMMA           shift and go to state 292
+    COMMA           shift and go to state 293
     TICK_OPERATOR   shift and go to state 225
     RBRACKET        reduce using rule 81 (empty -> .)
 
-    _list_items_cont               shift and go to state 291
+    _list_items_cont               shift and go to state 292
     infixl_operator_0              shift and go to state 223
-    empty                          shift and go to state 293
+    empty                          shift and go to state 294
 
 state 246
 
@@ -6716,8 +6721,8 @@ state 251
   ! DATE_INTERVAL   [ reduce using rule 81 (empty -> .) ]
   ! DATETIME_INTERVAL [ reduce using rule 81 (empty -> .) ]
 
-    pattern                        shift and go to state 301
-    simple_pattern                 shift and go to state 302
+    pattern                        shift and go to state 302
+    simple_pattern                 shift and go to state 303
     possibly_named_pattern         shift and go to state 99
     literal                        shift and go to state 100
     cons_pattern                   shift and go to state 101
@@ -6855,7 +6860,7 @@ state 254
   ! DATE_INTERVAL   [ reduce using rule 81 (empty -> .) ]
   ! DATETIME_INTERVAL [ reduce using rule 81 (empty -> .) ]
 
-    patterns                       shift and go to state 303
+    patterns                       shift and go to state 304
     pattern                        shift and go to state 242
     simple_pattern                 shift and go to state 243
     possibly_named_pattern         shift and go to state 99
@@ -6995,7 +7000,7 @@ state 260
     SPACE           shift and go to state 200
     EQ              reduce using rule 81 (empty -> .)
 
-    _cons_params                   shift and go to state 304
+    _cons_params                   shift and go to state 305
     empty                          shift and go to state 202
 
 state 261
@@ -7004,6 +7009,7 @@ state 261
     (189) _data_conses -> . _maybe_padding PIPE data_cons _data_conses
     (190) _data_conses -> . empty
     (191) _data_conses -> . _maybe_padding KEYWORD_DERIVING LPAREN _derivations_list RPAREN
+    (192) _data_conses -> . _maybe_padding KEYWORD_DERIVING UPPER_IDENTIFIER
     (155) _maybe_padding -> . PADDING
     (156) _maybe_padding -> . empty
     (81) empty -> .
@@ -7019,45 +7025,55 @@ state 261
   ! PADDING         [ reduce using rule 81 (empty -> .) ]
 
     _maybe_padding                 shift and go to state 137
-    _data_conses                   shift and go to state 305
+    _data_conses                   shift and go to state 306
     empty                          shift and go to state 138
 
 state 262
 
     (191) _data_conses -> _maybe_padding KEYWORD_DERIVING LPAREN . _derivations_list RPAREN
-    (201) _derivations_list -> . UPPER_IDENTIFIER _derivations_list_trail
+    (202) _derivations_list -> . UPPER_IDENTIFIER _derivations_list_trail
 
-    UPPER_IDENTIFIER shift and go to state 307
+    UPPER_IDENTIFIER shift and go to state 308
 
-    _derivations_list              shift and go to state 306
+    _derivations_list              shift and go to state 307
 
 state 263
 
-    (194) _cons_args -> SPACE cons_arg _cons_args .
+    (192) _data_conses -> _maybe_padding KEYWORD_DERIVING UPPER_IDENTIFIER .
 
-    PADDING         reduce using rule 194 (_cons_args -> SPACE cons_arg _cons_args .)
-    PIPE            reduce using rule 194 (_cons_args -> SPACE cons_arg _cons_args .)
-    KEYWORD_DERIVING reduce using rule 194 (_cons_args -> SPACE cons_arg _cons_args .)
-    NEWLINE         reduce using rule 194 (_cons_args -> SPACE cons_arg _cons_args .)
-    $end            reduce using rule 194 (_cons_args -> SPACE cons_arg _cons_args .)
-    KEYWORD_IN      reduce using rule 194 (_cons_args -> SPACE cons_arg _cons_args .)
+    NEWLINE         reduce using rule 192 (_data_conses -> _maybe_padding KEYWORD_DERIVING UPPER_IDENTIFIER .)
+    $end            reduce using rule 192 (_data_conses -> _maybe_padding KEYWORD_DERIVING UPPER_IDENTIFIER .)
+    PADDING         reduce using rule 192 (_data_conses -> _maybe_padding KEYWORD_DERIVING UPPER_IDENTIFIER .)
+    KEYWORD_IN      reduce using rule 192 (_data_conses -> _maybe_padding KEYWORD_DERIVING UPPER_IDENTIFIER .)
 
 
 state 264
 
-    (199) _cons_arg_factor -> LPAREN type_expr . RPAREN
+    (195) _cons_args -> SPACE cons_arg _cons_args .
 
-    RPAREN          shift and go to state 308
+    PADDING         reduce using rule 195 (_cons_args -> SPACE cons_arg _cons_args .)
+    PIPE            reduce using rule 195 (_cons_args -> SPACE cons_arg _cons_args .)
+    KEYWORD_DERIVING reduce using rule 195 (_cons_args -> SPACE cons_arg _cons_args .)
+    NEWLINE         reduce using rule 195 (_cons_args -> SPACE cons_arg _cons_args .)
+    $end            reduce using rule 195 (_cons_args -> SPACE cons_arg _cons_args .)
+    KEYWORD_IN      reduce using rule 195 (_cons_args -> SPACE cons_arg _cons_args .)
 
 
 state 265
 
-    (200) _cons_arg_factor -> LBRACKET type_expr . RBRACKET
+    (200) _cons_arg_factor -> LPAREN type_expr . RPAREN
 
-    RBRACKET        shift and go to state 309
+    RPAREN          shift and go to state 309
 
 
 state 266
+
+    (201) _cons_arg_factor -> LBRACKET type_expr . RBRACKET
+
+    RBRACKET        shift and go to state 310
+
+
+state 267
 
     (171) local_definitions -> local_definition _local_definition_set .
 
@@ -7067,7 +7083,7 @@ state 266
     KEYWORD_IN      reduce using rule 171 (local_definitions -> local_definition _local_definition_set .)
 
 
-state 267
+state 268
 
     (172) _local_definition_set -> PADDING . definition _local_definition_set
     (165) definition -> . local_definition
@@ -7098,7 +7114,7 @@ state 267
     UPPER_IDENTIFIER shift and go to state 17
     LOWER_IDENTIFIER shift and go to state 19
 
-    definition                     shift and go to state 310
+    definition                     shift and go to state 311
     local_definition               shift and go to state 4
     datatype_definition            shift and go to state 5
     typeclass                      shift and go to state 6
@@ -7110,7 +7126,7 @@ state 267
     equation                       shift and go to state 15
     _enclosed_operator             shift and go to state 20
 
-state 268
+state 269
 
     (173) _local_definition_set -> empty .
 
@@ -7120,7 +7136,7 @@ state 268
     KEYWORD_IN      reduce using rule 173 (_local_definition_set -> empty .)
 
 
-state 269
+state 270
 
     (130) type_function_expr -> type_term . ARROW _maybe_padding type_function_expr
     (131) type_function_expr -> type_term .
@@ -7137,7 +7153,7 @@ state 269
     RBRACKET        reduce using rule 131 (type_function_expr -> type_term .)
 
 
-state 270
+state 271
 
     (130) type_function_expr -> type_term ARROW _maybe_padding type_function_expr .
 
@@ -7152,7 +7168,7 @@ state 270
     RBRACKET        reduce using rule 130 (type_function_expr -> type_term ARROW _maybe_padding type_function_expr .)
 
 
-state 271
+state 272
 
     (135) _app_args -> SPACE . type_factor _app_args
     (140) type_factor -> . type_variable
@@ -7169,11 +7185,11 @@ state 271
     LOWER_IDENTIFIER shift and go to state 88
     UPPER_IDENTIFIER shift and go to state 89
 
-    type_factor                    shift and go to state 311
+    type_factor                    shift and go to state 312
     type_variable                  shift and go to state 84
     type_cons                      shift and go to state 85
 
-state 272
+state 273
 
     (136) _app_args_non_empty -> SPACE type_factor _app_args .
 
@@ -7189,7 +7205,7 @@ state 272
     RBRACKET        reduce using rule 136 (_app_args_non_empty -> SPACE type_factor _app_args .)
 
 
-state 273
+state 274
 
     (137) _app_args -> empty .
 
@@ -7205,21 +7221,21 @@ state 273
     RBRACKET        reduce using rule 137 (_app_args -> empty .)
 
 
-state 274
-
-    (142) type_factor -> LPAREN _maybe_padding _type_expr_list _maybe_padding . RPAREN
-
-    RPAREN          shift and go to state 312
-
-
 state 275
 
-    (147) type_factor -> LPAREN _maybe_padding type_expr _maybe_padding . RPAREN
+    (142) type_factor -> LPAREN _maybe_padding _type_expr_list _maybe_padding . RPAREN
 
     RPAREN          shift and go to state 313
 
 
 state 276
+
+    (147) type_factor -> LPAREN _maybe_padding type_expr _maybe_padding . RPAREN
+
+    RPAREN          shift and go to state 314
+
+
+state 277
 
     (144) _type_expr_list -> type_expr COMMA . _type_expr_list_trail
     (145) _type_expr_list_trail -> . type_expr COMMA _type_expr_list_trail
@@ -7237,18 +7253,18 @@ state 276
     UPPER_IDENTIFIER reduce using rule 81 (empty -> .)
 
     type_expr                      shift and go to state 148
-    _type_expr_list_trail          shift and go to state 314
+    _type_expr_list_trail          shift and go to state 315
     type_scheme                    shift and go to state 36
     empty                          shift and go to state 38
 
-state 277
+state 278
 
     (148) type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding . RBRACKET
 
-    RBRACKET        shift and go to state 315
+    RBRACKET        shift and go to state 316
 
 
-state 278
+state 279
 
     (128) _type_scheme_generics -> _identifier SPACE _type_scheme_generics .
 
@@ -7258,7 +7274,7 @@ state 278
     UPPER_IDENTIFIER reduce using rule 128 (_type_scheme_generics -> _identifier SPACE _type_scheme_generics .)
 
 
-state 279
+state 280
 
     (12) expr_term0 -> expr . infixl_operator_0 expr_term0
     (122) where_expr -> expr . KEYWORD_WHERE SPACE equations
@@ -7270,7 +7286,7 @@ state 279
 
     infixl_operator_0              shift and go to state 223
 
-state 280
+state 281
 
     (12) expr_term0 -> expr infixl_operator_0 expr_term0 .
     (15) expr -> expr_term0 .
@@ -7304,7 +7320,7 @@ state 280
   ! TICK_OPERATOR   [ reduce using rule 15 (expr -> expr_term0 .) ]
 
 
-state 281
+state 282
 
     (122) where_expr -> expr KEYWORD_WHERE SPACE . equations
     (118) equations -> . equation _equation_set
@@ -7318,14 +7334,14 @@ state 281
     UNDER_IDENTIFIER shift and go to state 18
     UPPER_IDENTIFIER shift and go to state 17
     LOWER_IDENTIFIER shift and go to state 19
-    LPAREN          shift and go to state 319
+    LPAREN          shift and go to state 320
 
-    equations                      shift and go to state 316
-    equation                       shift and go to state 317
-    _identifier                    shift and go to state 318
+    equations                      shift and go to state 317
+    equation                       shift and go to state 318
+    _identifier                    shift and go to state 319
     _enclosed_operator             shift and go to state 20
 
-state 282
+state 283
 
     (123) where_expr -> expr KEYWORD_WHERE PADDING . equations
     (118) equations -> . equation _equation_set
@@ -7339,14 +7355,14 @@ state 282
     UNDER_IDENTIFIER shift and go to state 18
     UPPER_IDENTIFIER shift and go to state 17
     LOWER_IDENTIFIER shift and go to state 19
-    LPAREN          shift and go to state 319
+    LPAREN          shift and go to state 320
 
-    equations                      shift and go to state 320
-    equation                       shift and go to state 317
-    _identifier                    shift and go to state 318
+    equations                      shift and go to state 321
+    equation                       shift and go to state 318
+    _identifier                    shift and go to state 319
     _enclosed_operator             shift and go to state 20
 
-state 283
+state 284
 
     (10) expr_term1 -> expr_term2 infixr_operator_2 expr_term1 .
     (13) expr_term0 -> expr_term1 .
@@ -7380,7 +7396,7 @@ state 283
   ! TICK_OPERATOR   [ reduce using rule 13 (expr_term0 -> expr_term1 .) ]
 
 
-state 284
+state 285
 
     (8) expr_term2 -> expr_term2 infixl_operator_2 expr_term6 .
     (6) expr_term6 -> expr_term6 . infixl_operator_6 expr_term7
@@ -7430,7 +7446,7 @@ state 284
 
     infixl_operator_6              shift and go to state 228
 
-state 285
+state 286
 
     (6) expr_term6 -> expr_term6 infixl_operator_6 expr_term7 .
     (4) expr_term7 -> expr_term7 . infixl_operator_7 expr_term9
@@ -7490,7 +7506,7 @@ state 285
 
     infixl_operator_7              shift and go to state 229
 
-state 286
+state 287
 
     (4) expr_term7 -> expr_term7 infixl_operator_7 expr_term9 .
     (5) expr_term7 -> expr_term9 .
@@ -7544,7 +7560,7 @@ state 286
   ! TICK_OPERATOR   [ reduce using rule 5 (expr_term7 -> expr_term9 .) ]
 
 
-state 287
+state 288
 
     (2) expr_term9 -> expr_factor infixr_operator_9 expr_term9 .
     (5) expr_term7 -> expr_term9 .
@@ -7598,7 +7614,7 @@ state 287
   ! TICK_OPERATOR   [ reduce using rule 5 (expr_term7 -> expr_term9 .) ]
 
 
-state 288
+state 289
 
     (1) expr_factor -> expr_factor SPACE expr_factor .
     (1) expr_factor -> expr_factor . SPACE expr_factor
@@ -7665,7 +7681,7 @@ state 288
     infixr_operator_9              shift and go to state 230
     _enclosed_operator             shift and go to state 178
 
-state 289
+state 290
 
     (50) enclosed_expr -> LPAREN expr . RPAREN
     (12) expr_term0 -> expr . infixl_operator_0 expr_term0
@@ -7673,13 +7689,13 @@ state 289
     (123) where_expr -> expr . KEYWORD_WHERE PADDING equations
     (66) infixl_operator_0 -> . TICK_OPERATOR
 
-    RPAREN          shift and go to state 290
+    RPAREN          shift and go to state 291
     KEYWORD_WHERE   shift and go to state 224
     TICK_OPERATOR   shift and go to state 225
 
     infixl_operator_0              shift and go to state 223
 
-state 290
+state 291
 
     (50) enclosed_expr -> LPAREN expr RPAREN .
 
@@ -7724,7 +7740,7 @@ state 290
     RBRACKET        reduce using rule 50 (enclosed_expr -> LPAREN expr RPAREN .)
 
 
-state 291
+state 292
 
     (36) _list_items -> expr _list_items_cont .
 
@@ -7732,7 +7748,7 @@ state 291
     RBRACKET        reduce using rule 36 (_list_items -> expr _list_items_cont .)
 
 
-state 292
+state 293
 
     (37) _list_items_cont -> COMMA . expr _list_items_cont
     (15) expr -> . expr_term0
@@ -7814,7 +7830,7 @@ state 292
     UPPER_IDENTIFIER shift and go to state 17
     LOWER_IDENTIFIER shift and go to state 19
 
-    expr                           shift and go to state 321
+    expr                           shift and go to state 322
     expr_term0                     shift and go to state 162
     expr_term1                     shift and go to state 163
     expr_term2                     shift and go to state 164
@@ -7841,7 +7857,7 @@ state 292
     _identifier                    shift and go to state 160
     _enclosed_operator             shift and go to state 178
 
-state 293
+state 294
 
     (39) _list_items_cont -> empty .
 
@@ -7849,7 +7865,7 @@ state 293
     RBRACKET        reduce using rule 39 (_list_items_cont -> empty .)
 
 
-state 294
+state 295
 
     (34) simple_tuple_expr -> LPAREN _list_items RPAREN .
 
@@ -7877,7 +7893,7 @@ state 294
     RBRACKET        reduce using rule 34 (simple_tuple_expr -> LPAREN _list_items RPAREN .)
 
 
-state 295
+state 296
 
     (54) _enclosed_operator -> LPAREN _st_operator RPAREN .
 
@@ -7923,14 +7939,14 @@ state 295
     EQ              reduce using rule 54 (_enclosed_operator -> LPAREN _st_operator RPAREN .)
 
 
-state 296
+state 297
 
     (121) letexpr -> KEYWORD_LET SPACE local_definitions . KEYWORD_IN SPACE st_expr
 
-    KEYWORD_IN      shift and go to state 322
+    KEYWORD_IN      shift and go to state 323
 
 
-state 297
+state 298
 
     (82) lambda_expr -> BACKSLASH patterns ARROW . expr
     (15) expr -> . expr_term0
@@ -8012,7 +8028,7 @@ state 297
     UPPER_IDENTIFIER shift and go to state 17
     LOWER_IDENTIFIER shift and go to state 19
 
-    expr                           shift and go to state 323
+    expr                           shift and go to state 324
     expr_term0                     shift and go to state 162
     expr_term1                     shift and go to state 163
     expr_term2                     shift and go to state 164
@@ -8039,7 +8055,7 @@ state 297
     _identifier                    shift and go to state 160
     _enclosed_operator             shift and go to state 178
 
-state 298
+state 299
 
     (104) patterns -> pattern _patterns .
 
@@ -8047,7 +8063,7 @@ state 298
     RPAREN          reduce using rule 104 (patterns -> pattern _patterns .)
 
 
-state 299
+state 300
 
     (105) patterns -> simple_pattern _patterns .
 
@@ -8055,7 +8071,7 @@ state 299
     RPAREN          reduce using rule 105 (patterns -> simple_pattern _patterns .)
 
 
-state 300
+state 301
 
     (35) simple_list_expr -> LBRACKET _list_items RBRACKET .
 
@@ -8083,7 +8099,7 @@ state 300
     RBRACKET        reduce using rule 35 (simple_list_expr -> LBRACKET _list_items RBRACKET .)
 
 
-state 301
+state 302
 
     (110) _patterns_comma -> COMMA pattern . _patterns_comma_trail
     (96) list_cons_pattern -> pattern . COLON pattern
@@ -8093,13 +8109,13 @@ state 301
     (81) empty -> .
 
     COLON           shift and go to state 183
-    COMMA           shift and go to state 324
+    COMMA           shift and go to state 325
     RPAREN          reduce using rule 81 (empty -> .)
 
-    _patterns_comma_trail          shift and go to state 325
-    empty                          shift and go to state 326
+    _patterns_comma_trail          shift and go to state 326
+    empty                          shift and go to state 327
 
-state 302
+state 303
 
     (111) _patterns_comma -> COMMA simple_pattern . _patterns_comma_trail
     (97) list_cons_pattern -> simple_pattern . COLON simple_pattern
@@ -8109,27 +8125,27 @@ state 302
     (81) empty -> .
 
     COLON           shift and go to state 185
-    COMMA           shift and go to state 324
+    COMMA           shift and go to state 325
     RPAREN          reduce using rule 81 (empty -> .)
 
-    _patterns_comma_trail          shift and go to state 327
-    empty                          shift and go to state 326
+    _patterns_comma_trail          shift and go to state 328
+    empty                          shift and go to state 327
 
-state 303
+state 304
 
     (98) cons_pattern -> LPAREN _identifier SPACE patterns . RPAREN
 
-    RPAREN          shift and go to state 328
+    RPAREN          shift and go to state 329
 
 
-state 304
+state 305
 
     (186) _cons_params -> SPACE LOWER_IDENTIFIER _cons_params .
 
     EQ              reduce using rule 186 (_cons_params -> SPACE LOWER_IDENTIFIER _cons_params .)
 
 
-state 305
+state 306
 
     (189) _data_conses -> _maybe_padding PIPE data_cons _data_conses .
 
@@ -8139,53 +8155,53 @@ state 305
     KEYWORD_IN      reduce using rule 189 (_data_conses -> _maybe_padding PIPE data_cons _data_conses .)
 
 
-state 306
+state 307
 
     (191) _data_conses -> _maybe_padding KEYWORD_DERIVING LPAREN _derivations_list . RPAREN
 
-    RPAREN          shift and go to state 329
+    RPAREN          shift and go to state 330
 
-
-state 307
-
-    (201) _derivations_list -> UPPER_IDENTIFIER . _derivations_list_trail
-    (202) _derivations_list_trail -> . COMMA UPPER_IDENTIFIER _derivations_list_trail
-    (203) _derivations_list_trail -> . empty
-    (81) empty -> .
-
-    COMMA           shift and go to state 331
-    RPAREN          reduce using rule 81 (empty -> .)
-
-    _derivations_list_trail        shift and go to state 330
-    empty                          shift and go to state 332
 
 state 308
 
-    (199) _cons_arg_factor -> LPAREN type_expr RPAREN .
+    (202) _derivations_list -> UPPER_IDENTIFIER . _derivations_list_trail
+    (203) _derivations_list_trail -> . COMMA UPPER_IDENTIFIER _derivations_list_trail
+    (204) _derivations_list_trail -> . empty
+    (81) empty -> .
 
-    SPACE           reduce using rule 199 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
-    PADDING         reduce using rule 199 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
-    PIPE            reduce using rule 199 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
-    KEYWORD_DERIVING reduce using rule 199 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
-    NEWLINE         reduce using rule 199 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
-    $end            reduce using rule 199 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
-    KEYWORD_IN      reduce using rule 199 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
+    COMMA           shift and go to state 332
+    RPAREN          reduce using rule 81 (empty -> .)
 
+    _derivations_list_trail        shift and go to state 331
+    empty                          shift and go to state 333
 
 state 309
 
-    (200) _cons_arg_factor -> LBRACKET type_expr RBRACKET .
+    (200) _cons_arg_factor -> LPAREN type_expr RPAREN .
 
-    SPACE           reduce using rule 200 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
-    PADDING         reduce using rule 200 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
-    PIPE            reduce using rule 200 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
-    KEYWORD_DERIVING reduce using rule 200 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
-    NEWLINE         reduce using rule 200 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
-    $end            reduce using rule 200 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
-    KEYWORD_IN      reduce using rule 200 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
+    SPACE           reduce using rule 200 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
+    PADDING         reduce using rule 200 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
+    PIPE            reduce using rule 200 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
+    KEYWORD_DERIVING reduce using rule 200 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
+    NEWLINE         reduce using rule 200 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
+    $end            reduce using rule 200 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
+    KEYWORD_IN      reduce using rule 200 (_cons_arg_factor -> LPAREN type_expr RPAREN .)
 
 
 state 310
+
+    (201) _cons_arg_factor -> LBRACKET type_expr RBRACKET .
+
+    SPACE           reduce using rule 201 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
+    PADDING         reduce using rule 201 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
+    PIPE            reduce using rule 201 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
+    KEYWORD_DERIVING reduce using rule 201 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
+    NEWLINE         reduce using rule 201 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
+    $end            reduce using rule 201 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
+    KEYWORD_IN      reduce using rule 201 (_cons_arg_factor -> LBRACKET type_expr RBRACKET .)
+
+
+state 311
 
     (172) _local_definition_set -> PADDING definition . _local_definition_set
     (172) _local_definition_set -> . PADDING definition _local_definition_set
@@ -8193,24 +8209,24 @@ state 310
     (81) empty -> .
 
   ! shift/reduce conflict for PADDING resolved as shift
-    PADDING         shift and go to state 267
+    PADDING         shift and go to state 268
     NEWLINE         reduce using rule 81 (empty -> .)
     $end            reduce using rule 81 (empty -> .)
     KEYWORD_IN      reduce using rule 81 (empty -> .)
 
   ! PADDING         [ reduce using rule 81 (empty -> .) ]
 
-    _local_definition_set          shift and go to state 333
-    empty                          shift and go to state 268
+    _local_definition_set          shift and go to state 334
+    empty                          shift and go to state 269
 
-state 311
+state 312
 
     (135) _app_args -> SPACE type_factor . _app_args
     (135) _app_args -> . SPACE type_factor _app_args
     (137) _app_args -> . empty
     (81) empty -> .
 
-    SPACE           shift and go to state 271
+    SPACE           shift and go to state 272
     ARROW           reduce using rule 81 (empty -> .)
     COMMA           reduce using rule 81 (empty -> .)
     KEYWORD_WHERE   reduce using rule 81 (empty -> .)
@@ -8222,10 +8238,10 @@ state 311
     RPAREN          reduce using rule 81 (empty -> .)
     RBRACKET        reduce using rule 81 (empty -> .)
 
-    _app_args                      shift and go to state 334
-    empty                          shift and go to state 273
+    _app_args                      shift and go to state 335
+    empty                          shift and go to state 274
 
-state 312
+state 313
 
     (142) type_factor -> LPAREN _maybe_padding _type_expr_list _maybe_padding RPAREN .
 
@@ -8242,7 +8258,7 @@ state 312
     RBRACKET        reduce using rule 142 (type_factor -> LPAREN _maybe_padding _type_expr_list _maybe_padding RPAREN .)
 
 
-state 313
+state 314
 
     (147) type_factor -> LPAREN _maybe_padding type_expr _maybe_padding RPAREN .
 
@@ -8259,7 +8275,7 @@ state 313
     RBRACKET        reduce using rule 147 (type_factor -> LPAREN _maybe_padding type_expr _maybe_padding RPAREN .)
 
 
-state 314
+state 315
 
     (144) _type_expr_list -> type_expr COMMA _type_expr_list_trail .
 
@@ -8267,7 +8283,7 @@ state 314
     RPAREN          reduce using rule 144 (_type_expr_list -> type_expr COMMA _type_expr_list_trail .)
 
 
-state 315
+state 316
 
     (148) type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET .
 
@@ -8284,7 +8300,7 @@ state 315
     RBRACKET        reduce using rule 148 (type_factor -> LBRACKET _maybe_padding type_expr _maybe_padding RBRACKET .)
 
 
-state 316
+state 317
 
     (122) where_expr -> expr KEYWORD_WHERE SPACE equations .
 
@@ -8312,7 +8328,7 @@ state 316
     RBRACKET        reduce using rule 122 (where_expr -> expr KEYWORD_WHERE SPACE equations .)
 
 
-state 317
+state 318
 
     (118) equations -> equation . _equation_set
     (119) _equation_set -> . PADDING equation _equation_set
@@ -8320,7 +8336,7 @@ state 317
     (81) empty -> .
 
   ! shift/reduce conflict for PADDING resolved as shift
-    PADDING         shift and go to state 336
+    PADDING         shift and go to state 337
     KEYWORD_WHERE   reduce using rule 81 (empty -> .)
     TICK_OPERATOR   reduce using rule 81 (empty -> .)
     NEWLINE         reduce using rule 81 (empty -> .)
@@ -8345,10 +8361,10 @@ state 317
 
   ! PADDING         [ reduce using rule 81 (empty -> .) ]
 
-    _equation_set                  shift and go to state 335
-    empty                          shift and go to state 337
+    _equation_set                  shift and go to state 336
+    empty                          shift and go to state 338
 
-state 318
+state 319
 
     (116) equation -> _identifier . _patterns EQ expr
     (108) _patterns -> . SPACE pattern _patterns
@@ -8362,7 +8378,7 @@ state 318
     _patterns                      shift and go to state 42
     empty                          shift and go to state 44
 
-state 319
+state 320
 
     (54) _enclosed_operator -> LPAREN . _st_operator RPAREN
     (67) _st_operator -> . infixl_operator_2
@@ -8403,7 +8419,7 @@ state 319
     infixl_operator_7              shift and go to state 49
     infixr_operator_9              shift and go to state 50
 
-state 320
+state 321
 
     (123) where_expr -> expr KEYWORD_WHERE PADDING equations .
 
@@ -8431,7 +8447,7 @@ state 320
     RBRACKET        reduce using rule 123 (where_expr -> expr KEYWORD_WHERE PADDING equations .)
 
 
-state 321
+state 322
 
     (37) _list_items_cont -> COMMA expr . _list_items_cont
     (12) expr_term0 -> expr . infixl_operator_0 expr_term0
@@ -8443,23 +8459,23 @@ state 321
     (81) empty -> .
 
     KEYWORD_WHERE   shift and go to state 224
-    COMMA           shift and go to state 292
+    COMMA           shift and go to state 293
     TICK_OPERATOR   shift and go to state 225
     RPAREN          reduce using rule 81 (empty -> .)
     RBRACKET        reduce using rule 81 (empty -> .)
 
-    _list_items_cont               shift and go to state 338
+    _list_items_cont               shift and go to state 339
     infixl_operator_0              shift and go to state 223
-    empty                          shift and go to state 293
+    empty                          shift and go to state 294
 
-state 322
+state 323
 
     (121) letexpr -> KEYWORD_LET SPACE local_definitions KEYWORD_IN . SPACE st_expr
 
-    SPACE           shift and go to state 339
+    SPACE           shift and go to state 340
 
 
-state 323
+state 324
 
     (82) lambda_expr -> BACKSLASH patterns ARROW expr .
     (12) expr_term0 -> expr . infixl_operator_0 expr_term0
@@ -8495,7 +8511,7 @@ state 323
 
     infixl_operator_0              shift and go to state 223
 
-state 324
+state 325
 
     (112) _patterns_comma_trail -> COMMA . pattern _patterns_comma_trail
     (113) _patterns_comma_trail -> COMMA . simple_pattern _patterns_comma_trail
@@ -8594,8 +8610,8 @@ state 324
   ! DATE_INTERVAL   [ reduce using rule 81 (empty -> .) ]
   ! DATETIME_INTERVAL [ reduce using rule 81 (empty -> .) ]
 
-    pattern                        shift and go to state 340
-    simple_pattern                 shift and go to state 341
+    pattern                        shift and go to state 341
+    simple_pattern                 shift and go to state 342
     possibly_named_pattern         shift and go to state 99
     literal                        shift and go to state 100
     cons_pattern                   shift and go to state 101
@@ -8614,28 +8630,28 @@ state 324
     datetime_interval              shift and go to state 118
     empty                          shift and go to state 120
 
-state 325
+state 326
 
     (110) _patterns_comma -> COMMA pattern _patterns_comma_trail .
 
     RPAREN          reduce using rule 110 (_patterns_comma -> COMMA pattern _patterns_comma_trail .)
 
 
-state 326
+state 327
 
     (115) _patterns_comma_trail -> empty .
 
     RPAREN          reduce using rule 115 (_patterns_comma_trail -> empty .)
 
 
-state 327
+state 328
 
     (111) _patterns_comma -> COMMA simple_pattern _patterns_comma_trail .
 
     RPAREN          reduce using rule 111 (_patterns_comma -> COMMA simple_pattern _patterns_comma_trail .)
 
 
-state 328
+state 329
 
     (98) cons_pattern -> LPAREN _identifier SPACE patterns RPAREN .
 
@@ -8647,7 +8663,7 @@ state 328
     COMMA           reduce using rule 98 (cons_pattern -> LPAREN _identifier SPACE patterns RPAREN .)
 
 
-state 329
+state 330
 
     (191) _data_conses -> _maybe_padding KEYWORD_DERIVING LPAREN _derivations_list RPAREN .
 
@@ -8657,28 +8673,28 @@ state 329
     KEYWORD_IN      reduce using rule 191 (_data_conses -> _maybe_padding KEYWORD_DERIVING LPAREN _derivations_list RPAREN .)
 
 
-state 330
-
-    (201) _derivations_list -> UPPER_IDENTIFIER _derivations_list_trail .
-
-    RPAREN          reduce using rule 201 (_derivations_list -> UPPER_IDENTIFIER _derivations_list_trail .)
-
-
 state 331
 
-    (202) _derivations_list_trail -> COMMA . UPPER_IDENTIFIER _derivations_list_trail
+    (202) _derivations_list -> UPPER_IDENTIFIER _derivations_list_trail .
 
-    UPPER_IDENTIFIER shift and go to state 342
+    RPAREN          reduce using rule 202 (_derivations_list -> UPPER_IDENTIFIER _derivations_list_trail .)
 
 
 state 332
 
-    (203) _derivations_list_trail -> empty .
+    (203) _derivations_list_trail -> COMMA . UPPER_IDENTIFIER _derivations_list_trail
 
-    RPAREN          reduce using rule 203 (_derivations_list_trail -> empty .)
+    UPPER_IDENTIFIER shift and go to state 343
 
 
 state 333
+
+    (204) _derivations_list_trail -> empty .
+
+    RPAREN          reduce using rule 204 (_derivations_list_trail -> empty .)
+
+
+state 334
 
     (172) _local_definition_set -> PADDING definition _local_definition_set .
 
@@ -8688,7 +8704,7 @@ state 333
     KEYWORD_IN      reduce using rule 172 (_local_definition_set -> PADDING definition _local_definition_set .)
 
 
-state 334
+state 335
 
     (135) _app_args -> SPACE type_factor _app_args .
 
@@ -8704,7 +8720,7 @@ state 334
     RBRACKET        reduce using rule 135 (_app_args -> SPACE type_factor _app_args .)
 
 
-state 335
+state 336
 
     (118) equations -> equation _equation_set .
 
@@ -8732,7 +8748,7 @@ state 335
     RBRACKET        reduce using rule 118 (equations -> equation _equation_set .)
 
 
-state 336
+state 337
 
     (119) _equation_set -> PADDING . equation _equation_set
     (116) equation -> . _identifier _patterns EQ expr
@@ -8745,13 +8761,13 @@ state 336
     UNDER_IDENTIFIER shift and go to state 18
     UPPER_IDENTIFIER shift and go to state 17
     LOWER_IDENTIFIER shift and go to state 19
-    LPAREN          shift and go to state 319
+    LPAREN          shift and go to state 320
 
-    equation                       shift and go to state 343
-    _identifier                    shift and go to state 318
+    equation                       shift and go to state 344
+    _identifier                    shift and go to state 319
     _enclosed_operator             shift and go to state 20
 
-state 337
+state 338
 
     (120) _equation_set -> empty .
 
@@ -8779,7 +8795,7 @@ state 337
     RBRACKET        reduce using rule 120 (_equation_set -> empty .)
 
 
-state 338
+state 339
 
     (37) _list_items_cont -> COMMA expr _list_items_cont .
 
@@ -8787,7 +8803,7 @@ state 338
     RBRACKET        reduce using rule 37 (_list_items_cont -> COMMA expr _list_items_cont .)
 
 
-state 339
+state 340
 
     (121) letexpr -> KEYWORD_LET SPACE local_definitions KEYWORD_IN SPACE . st_expr
     (14) st_expr -> . expr
@@ -8870,8 +8886,8 @@ state 339
     UPPER_IDENTIFIER shift and go to state 17
     LOWER_IDENTIFIER shift and go to state 19
 
-    st_expr                        shift and go to state 344
-    expr                           shift and go to state 345
+    st_expr                        shift and go to state 345
+    expr                           shift and go to state 346
     expr_term0                     shift and go to state 162
     expr_term1                     shift and go to state 163
     expr_term2                     shift and go to state 164
@@ -8898,7 +8914,7 @@ state 339
     _identifier                    shift and go to state 160
     _enclosed_operator             shift and go to state 178
 
-state 340
+state 341
 
     (112) _patterns_comma_trail -> COMMA pattern . _patterns_comma_trail
     (96) list_cons_pattern -> pattern . COLON pattern
@@ -8908,13 +8924,13 @@ state 340
     (81) empty -> .
 
     COLON           shift and go to state 183
-    COMMA           shift and go to state 324
+    COMMA           shift and go to state 325
     RPAREN          reduce using rule 81 (empty -> .)
 
-    _patterns_comma_trail          shift and go to state 346
-    empty                          shift and go to state 326
+    _patterns_comma_trail          shift and go to state 347
+    empty                          shift and go to state 327
 
-state 341
+state 342
 
     (113) _patterns_comma_trail -> COMMA simple_pattern . _patterns_comma_trail
     (97) list_cons_pattern -> simple_pattern . COLON simple_pattern
@@ -8924,26 +8940,26 @@ state 341
     (81) empty -> .
 
     COLON           shift and go to state 185
-    COMMA           shift and go to state 324
+    COMMA           shift and go to state 325
     RPAREN          reduce using rule 81 (empty -> .)
 
-    _patterns_comma_trail          shift and go to state 347
-    empty                          shift and go to state 326
-
-state 342
-
-    (202) _derivations_list_trail -> COMMA UPPER_IDENTIFIER . _derivations_list_trail
-    (202) _derivations_list_trail -> . COMMA UPPER_IDENTIFIER _derivations_list_trail
-    (203) _derivations_list_trail -> . empty
-    (81) empty -> .
-
-    COMMA           shift and go to state 331
-    RPAREN          reduce using rule 81 (empty -> .)
-
-    _derivations_list_trail        shift and go to state 348
-    empty                          shift and go to state 332
+    _patterns_comma_trail          shift and go to state 348
+    empty                          shift and go to state 327
 
 state 343
+
+    (203) _derivations_list_trail -> COMMA UPPER_IDENTIFIER . _derivations_list_trail
+    (203) _derivations_list_trail -> . COMMA UPPER_IDENTIFIER _derivations_list_trail
+    (204) _derivations_list_trail -> . empty
+    (81) empty -> .
+
+    COMMA           shift and go to state 332
+    RPAREN          reduce using rule 81 (empty -> .)
+
+    _derivations_list_trail        shift and go to state 349
+    empty                          shift and go to state 333
+
+state 344
 
     (119) _equation_set -> PADDING equation . _equation_set
     (119) _equation_set -> . PADDING equation _equation_set
@@ -8951,7 +8967,7 @@ state 343
     (81) empty -> .
 
   ! shift/reduce conflict for PADDING resolved as shift
-    PADDING         shift and go to state 336
+    PADDING         shift and go to state 337
     KEYWORD_WHERE   reduce using rule 81 (empty -> .)
     TICK_OPERATOR   reduce using rule 81 (empty -> .)
     NEWLINE         reduce using rule 81 (empty -> .)
@@ -8976,10 +8992,10 @@ state 343
 
   ! PADDING         [ reduce using rule 81 (empty -> .) ]
 
-    _equation_set                  shift and go to state 349
-    empty                          shift and go to state 337
+    _equation_set                  shift and go to state 350
+    empty                          shift and go to state 338
 
-state 344
+state 345
 
     (121) letexpr -> KEYWORD_LET SPACE local_definitions KEYWORD_IN SPACE st_expr .
 
@@ -9007,7 +9023,7 @@ state 344
     RBRACKET        reduce using rule 121 (letexpr -> KEYWORD_LET SPACE local_definitions KEYWORD_IN SPACE st_expr .)
 
 
-state 345
+state 346
 
     (14) st_expr -> expr .
     (12) expr_term0 -> expr . infixl_operator_0 expr_term0
@@ -9045,28 +9061,28 @@ state 345
 
     infixl_operator_0              shift and go to state 223
 
-state 346
+state 347
 
     (112) _patterns_comma_trail -> COMMA pattern _patterns_comma_trail .
 
     RPAREN          reduce using rule 112 (_patterns_comma_trail -> COMMA pattern _patterns_comma_trail .)
 
 
-state 347
+state 348
 
     (113) _patterns_comma_trail -> COMMA simple_pattern _patterns_comma_trail .
 
     RPAREN          reduce using rule 113 (_patterns_comma_trail -> COMMA simple_pattern _patterns_comma_trail .)
 
 
-state 348
-
-    (202) _derivations_list_trail -> COMMA UPPER_IDENTIFIER _derivations_list_trail .
-
-    RPAREN          reduce using rule 202 (_derivations_list_trail -> COMMA UPPER_IDENTIFIER _derivations_list_trail .)
-
-
 state 349
+
+    (203) _derivations_list_trail -> COMMA UPPER_IDENTIFIER _derivations_list_trail .
+
+    RPAREN          reduce using rule 203 (_derivations_list_trail -> COMMA UPPER_IDENTIFIER _derivations_list_trail .)
+
+
+state 350
 
     (119) _equation_set -> PADDING equation _equation_set .
 
@@ -9240,48 +9256,48 @@ WARNING: shift/reduce conflict for DATETIME in state 254 resolved as shift
 WARNING: shift/reduce conflict for DATE_INTERVAL in state 254 resolved as shift
 WARNING: shift/reduce conflict for DATETIME_INTERVAL in state 254 resolved as shift
 WARNING: shift/reduce conflict for PADDING in state 261 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 284 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 284 resolved as shift
-WARNING: shift/reduce conflict for STAR in state 285 resolved as shift
-WARNING: shift/reduce conflict for SLASH in state 285 resolved as shift
-WARNING: shift/reduce conflict for DOUBLESLASH in state 285 resolved as shift
-WARNING: shift/reduce conflict for PERCENT in state 285 resolved as shift
-WARNING: shift/reduce conflict for PADDING in state 310 resolved as shift
-WARNING: shift/reduce conflict for PADDING in state 317 resolved as shift
-WARNING: shift/reduce conflict for LOWER_IDENTIFIER in state 324 resolved as shift
-WARNING: shift/reduce conflict for UNDER_IDENTIFIER in state 324 resolved as shift
-WARNING: shift/reduce conflict for UPPER_IDENTIFIER in state 324 resolved as shift
-WARNING: shift/reduce conflict for LPAREN in state 324 resolved as shift
-WARNING: shift/reduce conflict for LBRACKET in state 324 resolved as shift
-WARNING: shift/reduce conflict for BASE10_INTEGER in state 324 resolved as shift
-WARNING: shift/reduce conflict for BASE16_INTEGER in state 324 resolved as shift
-WARNING: shift/reduce conflict for BASE8_INTEGER in state 324 resolved as shift
-WARNING: shift/reduce conflict for BASE2_INTEGER in state 324 resolved as shift
-WARNING: shift/reduce conflict for FLOAT in state 324 resolved as shift
-WARNING: shift/reduce conflict for STRING in state 324 resolved as shift
-WARNING: shift/reduce conflict for CHAR in state 324 resolved as shift
-WARNING: shift/reduce conflict for DATE in state 324 resolved as shift
-WARNING: shift/reduce conflict for DATETIME in state 324 resolved as shift
-WARNING: shift/reduce conflict for DATE_INTERVAL in state 324 resolved as shift
-WARNING: shift/reduce conflict for DATETIME_INTERVAL in state 324 resolved as shift
-WARNING: shift/reduce conflict for PADDING in state 343 resolved as shift
-WARNING: shift/reduce conflict for KEYWORD_WHERE in state 345 resolved as shift
-WARNING: shift/reduce conflict for TICK_OPERATOR in state 345 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 285 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 285 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 286 resolved as shift
+WARNING: shift/reduce conflict for SLASH in state 286 resolved as shift
+WARNING: shift/reduce conflict for DOUBLESLASH in state 286 resolved as shift
+WARNING: shift/reduce conflict for PERCENT in state 286 resolved as shift
+WARNING: shift/reduce conflict for PADDING in state 311 resolved as shift
+WARNING: shift/reduce conflict for PADDING in state 318 resolved as shift
+WARNING: shift/reduce conflict for LOWER_IDENTIFIER in state 325 resolved as shift
+WARNING: shift/reduce conflict for UNDER_IDENTIFIER in state 325 resolved as shift
+WARNING: shift/reduce conflict for UPPER_IDENTIFIER in state 325 resolved as shift
+WARNING: shift/reduce conflict for LPAREN in state 325 resolved as shift
+WARNING: shift/reduce conflict for LBRACKET in state 325 resolved as shift
+WARNING: shift/reduce conflict for BASE10_INTEGER in state 325 resolved as shift
+WARNING: shift/reduce conflict for BASE16_INTEGER in state 325 resolved as shift
+WARNING: shift/reduce conflict for BASE8_INTEGER in state 325 resolved as shift
+WARNING: shift/reduce conflict for BASE2_INTEGER in state 325 resolved as shift
+WARNING: shift/reduce conflict for FLOAT in state 325 resolved as shift
+WARNING: shift/reduce conflict for STRING in state 325 resolved as shift
+WARNING: shift/reduce conflict for CHAR in state 325 resolved as shift
+WARNING: shift/reduce conflict for DATE in state 325 resolved as shift
+WARNING: shift/reduce conflict for DATETIME in state 325 resolved as shift
+WARNING: shift/reduce conflict for DATE_INTERVAL in state 325 resolved as shift
+WARNING: shift/reduce conflict for DATETIME_INTERVAL in state 325 resolved as shift
+WARNING: shift/reduce conflict for PADDING in state 344 resolved as shift
+WARNING: shift/reduce conflict for KEYWORD_WHERE in state 346 resolved as shift
+WARNING: shift/reduce conflict for TICK_OPERATOR in state 346 resolved as shift
 WARNING: reduce/reduce conflict in state 81 resolved using rule (type_expr -> type_scheme type_term)
 WARNING: rejected rule (type_function_expr -> type_term) in state 81
 WARNING: reduce/reduce conflict in state 234 resolved using rule (expr_term9 -> expr_factor)
 WARNING: rejected rule (expr_factor -> enclosed_expr expr_factor) in state 234
-WARNING: reduce/reduce conflict in state 280 resolved using rule (expr_term0 -> expr infixl_operator_0 expr_term0)
-WARNING: rejected rule (expr -> expr_term0) in state 280
-WARNING: reduce/reduce conflict in state 283 resolved using rule (expr_term1 -> expr_term2 infixr_operator_2 expr_term1)
-WARNING: rejected rule (expr_term0 -> expr_term1) in state 283
-WARNING: reduce/reduce conflict in state 284 resolved using rule (expr_term2 -> expr_term2 infixl_operator_2 expr_term6)
-WARNING: rejected rule (expr_term2 -> expr_term6) in state 284
-WARNING: reduce/reduce conflict in state 285 resolved using rule (expr_term6 -> expr_term6 infixl_operator_6 expr_term7)
-WARNING: rejected rule (expr_term6 -> expr_term7) in state 285
-WARNING: reduce/reduce conflict in state 286 resolved using rule (expr_term7 -> expr_term7 infixl_operator_7 expr_term9)
-WARNING: rejected rule (expr_term7 -> expr_term9) in state 286
-WARNING: reduce/reduce conflict in state 287 resolved using rule (expr_term9 -> expr_factor infixr_operator_9 expr_term9)
+WARNING: reduce/reduce conflict in state 281 resolved using rule (expr_term0 -> expr infixl_operator_0 expr_term0)
+WARNING: rejected rule (expr -> expr_term0) in state 281
+WARNING: reduce/reduce conflict in state 284 resolved using rule (expr_term1 -> expr_term2 infixr_operator_2 expr_term1)
+WARNING: rejected rule (expr_term0 -> expr_term1) in state 284
+WARNING: reduce/reduce conflict in state 285 resolved using rule (expr_term2 -> expr_term2 infixl_operator_2 expr_term6)
+WARNING: rejected rule (expr_term2 -> expr_term6) in state 285
+WARNING: reduce/reduce conflict in state 286 resolved using rule (expr_term6 -> expr_term6 infixl_operator_6 expr_term7)
+WARNING: rejected rule (expr_term6 -> expr_term7) in state 286
+WARNING: reduce/reduce conflict in state 287 resolved using rule (expr_term7 -> expr_term7 infixl_operator_7 expr_term9)
 WARNING: rejected rule (expr_term7 -> expr_term9) in state 287
-WARNING: reduce/reduce conflict in state 288 resolved using rule (expr_factor -> expr_factor SPACE expr_factor)
-WARNING: rejected rule (expr_term9 -> expr_factor) in state 288
+WARNING: reduce/reduce conflict in state 288 resolved using rule (expr_term9 -> expr_factor infixr_operator_9 expr_term9)
+WARNING: rejected rule (expr_term7 -> expr_term9) in state 288
+WARNING: reduce/reduce conflict in state 289 resolved using rule (expr_factor -> expr_factor SPACE expr_factor)
+WARNING: rejected rule (expr_term9 -> expr_factor) in state 289

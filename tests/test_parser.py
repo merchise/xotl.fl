@@ -203,3 +203,11 @@ def test_instance_basic_type():
            (==) = _eq_number
 
     ''')
+
+
+def test_parse_deriving_single_typeclass():
+    parse('data Bool = True | False deriving Eq')
+
+
+def test_parse_deriving_several_typeclasses():
+    parse('data Bool = True | False deriving (Eq, Ord)')

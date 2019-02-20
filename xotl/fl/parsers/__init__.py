@@ -1375,6 +1375,11 @@ def p_datatype_derivations(prod):
     prod[0] = [prod[4]]
 
 
+def p_datatype_single_derivation(prod):
+    '''_data_conses : _maybe_padding KEYWORD_DERIVING UPPER_IDENTIFIER'''
+    prod[0] = [[prod[3]]]
+
+
 def p_data_cons(prod):
     '''data_cons : _data_cons'''
     name, args = prod[1]
