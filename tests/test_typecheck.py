@@ -339,13 +339,29 @@ def test_regression_typing_if():
     typecheck(expr, builtins_env)
 
 
+#
+# The following examples are extracted from [Mycroft1984].
+#
+# The problem we currently (2019-06-06) face is that `map` is not generalized;
+# the HM system assigns a new type variable to 'map' when it's found in the
+# letrec (it's a letrec because we use map in the RHS of other definitions),
+# but the first usage of it inside 'squarelist' unifies that variable with
+# usage in '\x -> x * x'; and that forces it to become too specific.
+#
+# As shown below we can easily rewrite that let into a form similar to
+# test_resolved_uses_of_non_generalized_map, by doing dependency analysis.
+#
+# See also the section 6.2.8 of [PeytonJones1987].
+#
+
+
 @pytest.mark.xfail(reason="We don't perform dependency analysis")
 def test_conflicting_uses_of_non_generalized_map():
     expr = parse_expression(
         r"""
         let map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
-           squarelist xs = map (\x -> x * x) xs
-           conflict   xs = map (\x -> "" ++ x) xs
+            squarelist xs = map (\x -> x * x) xs
+            conflict   xs = map (\x -> "" ++ x) xs
         in conflict
         """
     )
