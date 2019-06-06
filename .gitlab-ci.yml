@@ -10,8 +10,9 @@ stages:
 check code smells:
   image: python:3.6-alpine
   script:
-    - pip install merchise.lint==0.11
-    - merchise_lint3
+    - apk add g++ make
+    - pip install tox
+    - tox -e system-lint
   stage: pre-check
   allow_failure: true
   only:
