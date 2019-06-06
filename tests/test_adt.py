@@ -12,14 +12,14 @@ from xotl.fl import parse
 
 def test_non_existential_variables():
     with pytest.raises(TypeError):
-        parse('data T = A a')
+        parse("data T = A a")
 
 
 def test_non_unused_variables():
     with pytest.raises(TypeError):
-        parse('data T a = A')
+        parse("data T a = A")
 
 
 def test_non_repeated_datacons():
     with pytest.raises(TypeError):
-        parse('data B = T | T')
+        parse("data B = T | T")

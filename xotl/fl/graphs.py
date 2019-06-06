@@ -6,9 +6,9 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''Implements algorithms for Direct Graphs.
+"""Implements algorithms for Direct Graphs.
 
-'''
+"""
 from collections import deque
 
 
@@ -28,29 +28,29 @@ class Graph:
         links |= to_
 
     def get_topological_order(self):
-        '''Find a topological sort of the nodes.
+        """Find a topological sort of the nodes.
 
         If the graph contains cycles, raise a RuntimeError.
 
-        '''
+        """
+
         def raise_on_cycle(func):
-            '''Make `func` to raise on the first recursive call with the same
+            """Make `func` to raise on the first recursive call with the same
             argument.
 
-            '''
+            """
             stack = deque([])
 
             def inner(node):
                 if node in stack:
-                    raise NonDAGError(
-                        'Cycle detected: %r' % (list(stack) + [node])
-                    )
+                    raise NonDAGError("Cycle detected: %r" % (list(stack) + [node]))
                 else:
                     stack.append(node)
                     try:
                         return func(node)
                     finally:
                         stack.pop()
+
             return inner
 
         @raise_on_cycle
@@ -64,11 +64,12 @@ class Graph:
         return list(sorted(self.nodes.keys(), key=score))
 
     def get_sccs(self):
-        '''Find the Strongly Connected Components.
+        """Find the Strongly Connected Components.
 
         This is an implementation of Tarjan's Algorithm [Tarjan1972]_.
 
-        '''
+        """
+
         def _find_scc(node):
             nonlocal index
             indexed[node] = index

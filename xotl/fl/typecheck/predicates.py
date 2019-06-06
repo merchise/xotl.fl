@@ -12,7 +12,7 @@ from xotl.fl.ast.types import Type, TypeVariable
 
 @dataclass
 class Eq:
-    'States t1 unifies to t2 '
+    "States t1 unifies to t2 "
     t1: Type
     t2: Type
 
@@ -22,7 +22,7 @@ class Eq:
 
 @dataclass
 class Inst:
-    'States the `tvar` is an instance of type class `typeclass`'
+    "States the `tvar` is an instance of type class `typeclass`"
     tvar: TypeVariable
     typeclass: str
 

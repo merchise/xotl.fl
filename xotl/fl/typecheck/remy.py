@@ -6,7 +6,7 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''The HM(X) type checker.
+"""The HM(X) type checker.
 
 Instead of using substitutions like the one in :mod:`xotl.fl.typecheck`, this
 algorithm uses constraints solving.
@@ -15,7 +15,7 @@ The algorithm is described in Pottier and Rémy’s chapter "The Essence of ML
 Type Inference" in *Advanced Topics in Types and Programming Languages*
 Pierce, Benjamin C. ed.
 
-'''
+"""
 # We don't currently have the notion of Constructor and Destructor; as defined
 # in Rémy and Pottier's chapter: Constructors create values, while destructors
 # *operate* on values (to produce another, but that's only after execution).

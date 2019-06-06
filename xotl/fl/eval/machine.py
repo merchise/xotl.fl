@@ -6,4 +6,4 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''Execute the program with an internal evaluation machinery.'''
+"""Execute the program with an internal evaluation machinery."""

@@ -6,9 +6,9 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''Pattern Matching.
+"""Pattern Matching.
 
-'''
+"""
 from xoutil.objects import memoized_property
 
 from typing import (
@@ -25,13 +25,7 @@ from dataclasses import dataclass
 
 from xotl.fl.ast.base import AST, ILC
 from xotl.fl.ast.types import TypeEnvironment
-from xotl.fl.ast.expressions import (
-    Literal,
-    _LetExpr,
-    Let,
-    Letrec,
-    find_free_names,
-)
+from xotl.fl.ast.expressions import Literal, _LetExpr, Let, Letrec, find_free_names
 from xotl.fl.ast.adt import DataCons
 
 
@@ -57,25 +51,25 @@ from xotl.fl.ast.adt import DataCons
 # object for each line of the definition.
 
 
-UnnamedPattern = Union[str, Literal, 'ConsPattern']
-Pattern = Union[str, Literal, 'ConsPattern', 'NamedPattern']
+UnnamedPattern = Union[str, Literal, "ConsPattern"]
+Pattern = Union[str, Literal, "ConsPattern", "NamedPattern"]
 
 
 class ConsPattern(AST):
-    '''The syntactical notion of a pattern.
+    """The syntactical notion of a pattern.
 
-    '''
+    """
 
-    def __init__(self, cons: str, params: Sequence[Pattern]=None) -> None:
+    def __init__(self, cons: str, params: Sequence[Pattern] = None) -> None:
         self.cons: str = cons
         self.params: Tuple[Pattern, ...] = tuple(params or [])
 
     def __repr__(self):
-        return f'<pattern {self.cons!r} {self.params!r}>'
+        return f"<pattern {self.cons!r} {self.params!r}>"
 
     def __str__(self):
         if self.params:
-            return f'{self.cons} {self._parameters}'
+            return f"{self.cons} {self._parameters}"
         else:
             return self.cons
 
@@ -85,11 +79,11 @@ class ConsPattern(AST):
             if isinstance(x, str):
                 return x
             elif isinstance(x, ConsPattern):
-                return f'({x})'
+                return f"({x})"
             else:
                 return repr(x)
 
-        return ' '.join(map(_str, self.params))
+        return " ".join(map(_str, self.params))
 
     def __eq__(self, other):
         if isinstance(other, ConsPattern):
@@ -103,7 +97,7 @@ class ConsPattern(AST):
     @property
     def bindings(self) -> Iterator[str]:
         for param in self.params:
-            if isinstance(param, str) and param != '_':
+            if isinstance(param, str) and param != "_":
                 yield param
             elif isinstance(param, ConsPattern):
                 yield from param.bindings
@@ -123,7 +117,7 @@ class NamedPattern(AST):
     def bindings(self) -> Iterator[str]:
         yield self.name
         pattern = self.pattern
-        if isinstance(pattern, str) and pattern != '_':
+        if isinstance(pattern, str) and pattern != "_":
             yield pattern
         elif isinstance(pattern, ConsPattern):
             yield from pattern.bindings
@@ -132,9 +126,10 @@ class NamedPattern(AST):
 
 
 class Equation(AST):
-    '''The syntactical notion of an equation.
+    """The syntactical notion of an equation.
 
-    '''
+    """
+
     def __init__(self, name: str, patterns: Sequence[Pattern], body: AST) -> None:
         self.name = name
         self.patterns: Tuple[Pattern, ...] = tuple(patterns or [])
@@ -149,22 +144,24 @@ class Equation(AST):
     def __repr__(self):
         def _str(x):
             result = str(x)
-            if ' ' in result:
-                return f'({result})'
+            if " " in result:
+                return f"({result})"
             else:
                 return result
 
         if self.patterns:
-            args = ' '.join(map(_str, self.patterns))
-            return f'<equation {self.name!s} {args} = {self.body!r}>'
+            args = " ".join(map(_str, self.patterns))
+            return f"<equation {self.name!s} {args} = {self.body!r}>"
         else:
-            return f'<equation {self.name!s} = {self.body!r}>'
+            return f"<equation {self.name!s} = {self.body!r}>"
 
     def __eq__(self, other):
         if isinstance(other, Equation):
-            return (self.name == other.name and
-                    self.patterns == other.patterns and
-                    self.body == other.body)
+            return (
+                self.name == other.name
+                and self.patterns == other.patterns
+                and self.body == other.body
+            )
         else:
             return NotImplemented
 
@@ -173,9 +170,9 @@ class Equation(AST):
 
     @property
     def bindings(self) -> Iterator[str]:
-        '''The names bound in the arguments'''
+        """The names bound in the arguments"""
         for pattern in self.patterns:
-            if isinstance(pattern, str) and pattern != '_':
+            if isinstance(pattern, str) and pattern != "_":
                 yield pattern
             elif isinstance(pattern, ConsPattern):
                 yield from pattern.bindings
@@ -187,9 +184,10 @@ ValueDefinitions = Mapping[str, List[Equation]]
 
 @dataclass
 class ConcreteLet(AST):
-    '''The concrete representation of a let/where expression.
+    """The concrete representation of a let/where expression.
 
-    '''
+    """
+
     definitions: List[LocalDefinition]  # noqa
     body: AST
 
@@ -199,7 +197,7 @@ class ConcreteLet(AST):
 
     @memoized_property
     def value_definitions(self) -> ValueDefinitions:
-        '''The function definitions.'''
+        """The function definitions."""
         result, _ = self._definitions
         return result
 
@@ -211,7 +209,7 @@ class ConcreteLet(AST):
     @memoized_property
     def _definitions(self) -> Tuple[ValueDefinitions, TypeEnvironment]:
         localenv: TypeEnvironment = {}
-        defs: MutableMapping[str, List[Equation]] = {}   # noqa
+        defs: MutableMapping[str, List[Equation]] = {}  # noqa
         for dfn in self.definitions:
             if isinstance(dfn, Equation):
                 equations = defs.setdefault(dfn.name, [])
@@ -219,11 +217,11 @@ class ConcreteLet(AST):
             elif isinstance(dfn, dict):
                 localenv.update(dfn)  # type: ignore
             else:
-                assert False, f'Unknown definition type {dfn!r}'
+                assert False, f"Unknown definition type {dfn!r}"
         return defs, localenv
 
     def compile(self) -> _LetExpr:
-        r'''Build a Let/Letrec from a set of equations and a body.
+        r"""Build a Let/Letrec from a set of equations and a body.
 
         We need to decide if we issue a Let or a Letrec: if any of declared
         names appear in the any of the bodies we must issue a Letrec, otherwise
@@ -237,8 +235,9 @@ class ConcreteLet(AST):
 
            led id = \x -> ...
 
-        '''
+        """
         from xotl.fl.match import FunctionDefinition
+
         defs = {
             name: FunctionDefinition(equations)
             for name, equations in self.value_definitions.items()
@@ -253,14 +252,14 @@ class ConcreteLet(AST):
 
 
 class Case(ILC):
-    '''The case expression.
+    """The case expression.
 
     Part of the intermediate language.  ConcreteLet, if using pattern matching
     may get translated to case expressions.
 
-    '''
-    def __init__(self, expr: ILC,
-                 branches: Sequence[Tuple['CaseBranch', ILC]]) -> None:
+    """
+
+    def __init__(self, expr: ILC, branches: Sequence[Tuple["CaseBranch", ILC]]) -> None:
         pass
 
 
@@ -283,6 +282,7 @@ class ConstructorBranch(CaseBranch):
     @property
     def params(self):
         from xotl.fl.utils import namesupply
+
         return list(namesupply(limit=len(self.datacons.args)))
 
     @property
@@ -291,7 +291,7 @@ class ConstructorBranch(CaseBranch):
 
     def __repr__(self):
         if self.params:
-            params = ' '.join(map(str, self.params))
-            return f'{{{self.cons} {params}}}'
+            params = " ".join(map(str, self.params))
+            return f"{{{self.cons} {params}}}"
         else:
-            return f'{{{self.cons}}}'
+            return f"{{{self.cons}}}"

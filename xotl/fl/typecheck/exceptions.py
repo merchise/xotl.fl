@@ -9,7 +9,7 @@
 
 
 class NormalizationError(TypeError):
-    'Indicates the failure to normalize a constraint'
+    "Indicates the failure to normalize a constraint"
 
 
 class UnificationError(NormalizationError):

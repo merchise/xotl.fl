@@ -6,21 +6,22 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''The language AST.'''
+"""The language AST."""
 
 
 class ILC:
-    '''The intermediate language nodes.
+    """The intermediate language nodes.
 
     They are subject to type-checking and compilation.
 
-    '''
+    """
 
 
 class AST:
-    '''A AST node in the language.
+    """A AST node in the language.
 
-    '''
+    """
+
     def translate(self) -> ILC:  # pragma: no cover
         ...
 

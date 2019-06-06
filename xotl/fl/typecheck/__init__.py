@@ -6,16 +6,10 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''Implements a type checker (Damas-Hindley-Milner) with extensions.
+"""Implements a type checker (Damas-Hindley-Milner) with extensions.
 
-'''
-from typing import (
-    Iterable,
-    List,
-    Mapping,
-    Tuple,
-    Sequence,
-)
+"""
+from typing import Iterable, List, Mapping, Tuple, Sequence
 from collections import ChainMap
 from dataclasses import dataclass
 
@@ -40,13 +34,7 @@ from xotl.fl.ast.typeclasses import TypeClass, Instance
 from xotl.fl.ast.pattern import ConcreteLet
 from xotl.fl.utils import TVarSupply
 
-from .subst import (
-    sidentity,
-    scompose,
-    subscheme,
-    subtype,
-    Substitution,
-)
+from .subst import sidentity, scompose, subscheme, subtype, Substitution
 from .unification import unify, unify_exprs
 from .exceptions import UnificationError
 
@@ -63,16 +51,17 @@ EMPTY_TYPE_ENV: TypeEnvironment = {}
 
 
 def get_typeenv_unknowns(te: TypeEnvironment) -> List[str]:
-    '''Return all the non-generic variables in the environment.'''
+    """Return all the non-generic variables in the environment."""
     return sum((t.nongenerics for _, t in te.items()), [])
 
 
 class sub_typeenv(TypeEnvironment):
-    '''Create a sub-type environment.
+    """Create a sub-type environment.
 
     Read the warning in `subscheme`:func:.
 
-    '''
+    """
+
     def __init__(self, phi: Substitution, env: TypeEnvironment) -> None:
         self.phi = phi
         self.env = env
@@ -91,7 +80,7 @@ TCResult = Tuple[Substitution, Type]
 
 
 def typecheck(exp: AST, env: TypeEnvironment = None, ns: TVarSupply = None) -> TCResult:
-    '''Check the type of `exp` in a given type environment `env`.
+    """Check the type of `exp` in a given type environment `env`.
 
     The type environment `env` is a mapping from program identifiers to type
     schemes.  If `env` is None, we use the a `basic type environment
@@ -103,13 +92,15 @@ def typecheck(exp: AST, env: TypeEnvironment = None, ns: TVarSupply = None) -> T
     <xotl.fl.utils.tvarsupply>`:class: with prefix set to '.t' (it will create
     '.t0', '.t1', ...).
 
-    '''
+    """
     if env is None:
         from xotl.fl.builtins import BuiltinEnvDict
+
         env = BuiltinEnvDict()
     if ns is None:
         from xotl.fl.utils import tvarsupply
-        ns = tvarsupply('.t')
+
+        ns = tvarsupply(".t")
     if isinstance(exp, Identifier):
         return typecheck_var(env, ns, exp)
     elif isinstance(exp, Literal):
@@ -126,19 +117,19 @@ def typecheck(exp: AST, env: TypeEnvironment = None, ns: TVarSupply = None) -> T
         # TODO: Remove this
         return typecheck(exp.ast, env, ns)
     else:
-        assert False, f'Unknown AST node {exp!r}'
+        assert False, f"Unknown AST node {exp!r}"
 
 
 TCLResult = Tuple[Substitution, List[Type]]
 
 
 def tcl(env: TypeEnvironment, ns: TVarSupply, exprs: Iterable[AST]) -> TCLResult:
-    '''Type check several expressions in the context of `env`.
+    """Type check several expressions in the context of `env`.
 
     The name supply `ns` is shared across all other functions to ensure no
     names are repeated.
 
-    '''
+    """
     if not exprs:
         return sidentity, []
     else:
@@ -151,18 +142,18 @@ def tcl(env: TypeEnvironment, ns: TVarSupply, exprs: Iterable[AST]) -> TCLResult
 
 
 def newinstance(ns: TVarSupply, ts: TypeScheme) -> Type:
-    '''Create an instance of `ts` drawing names from the supply `ns`.
+    """Create an instance of `ts` drawing names from the supply `ns`.
 
     Each generic variable in `ts` gets a new name from the supply.
 
-    '''
+    """
     newvars: List[Tuple[str, TypeVariable]] = list(zip(ts.generics, ns))
     phi: Substitution = build_substitution(newvars)
     return subtype(phi, ts.type_)
 
 
 def build_substitution(alist: Sequence[Tuple[str, Type]]) -> Substitution:
-    '''Build a substitution from an association list.
+    """Build a substitution from an association list.
 
     This is the standard *interpretation* of a mapping from names to types.
     The substitution, when called upon, will look the list from beginning to
@@ -173,7 +164,7 @@ def build_substitution(alist: Sequence[Tuple[str, Type]]) -> Substitution:
     We keep an internal copy of the `alist`.  So, it's safe to change the
     argument afterwards.
 
-    '''
+    """
     lst = list(alist)
 
     def result(name: str) -> Type:
@@ -189,6 +180,7 @@ def build_substitution(alist: Sequence[Tuple[str, Type]]) -> Substitution:
             return TypeVariable(name, check=False)
         else:
             return restype
+
     return result
 
 
@@ -199,7 +191,7 @@ def typecheck_literal(env: TypeEnvironment, ns, exp: Literal) -> TCResult:
 
 
 def typecheck_var(env: TypeEnvironment, ns, exp: Identifier) -> TCResult:
-    '''Type check a single identifier.
+    """Type check a single identifier.
 
     The identifier's name must be in the type environment `env`.  If the
     identifier is a generic of the associated type scheme, a new name is
@@ -207,7 +199,7 @@ def typecheck_var(env: TypeEnvironment, ns, exp: Identifier) -> TCResult:
 
     This is a combination of the TAUT and INST rules in [Damas1982]_.
 
-    '''
+    """
     name = exp.name
     return sidentity, newinstance(ns, env[name])
 
@@ -219,9 +211,7 @@ def typecheck_app(env: TypeEnvironment, ns, exp: Application) -> TCResult:
     try:
         result = unify(t1, FuncCons(t2, t), phi=phi)
     except UnificationError:
-        raise UnificationError(
-            f'Cannot type-check {exp!s} :: {t1!s} ~ {t2!s} -> {t!s}'
-        )
+        raise UnificationError(f"Cannot type-check {exp!s} :: {t1!s} ~ {t2!s} -> {t!s}")
     return result, result(t.name)
 
 
@@ -232,11 +222,7 @@ def typecheck_lambda(env: TypeEnvironment, ns, exp: Lambda) -> TCResult:
     # this new environment.
     newvar = next(ns)
     argtype = TypeScheme.from_typeexpr(newvar, generics=[])
-    phi, type_ = typecheck(
-        exp.body,
-        ChainMap({exp.varname: argtype}, env),
-        ns,
-    )
+    phi, type_ = typecheck(exp.body, ChainMap({exp.varname: argtype}, env), ns)
     return phi, FuncCons(phi(newvar.name), type_)
 
 
@@ -265,20 +251,18 @@ def typecheck_let(env: TypeEnvironment, ns, exp: Let) -> TCResult:
         )
     else:
         decls = _add_decls(sub_typeenv(phi, env), ns, names, types)
-    psi, t = typecheck(
-        exp.body,
-        decls,
-        ns
-    )
+    psi, t = typecheck(exp.body, decls, ns)
     return scompose(psi, phi), t
 
 
-def _add_decls(env: TypeEnvironment,
-               ns: TVarSupply,
-               names: Iterable[Symbolic],
-               types: Iterable[Type],
-               _generalize_over=None) -> TypeEnvironment:
-    '''Extend the type environment with new schemes for `names`.
+def _add_decls(
+    env: TypeEnvironment,
+    ns: TVarSupply,
+    names: Iterable[Symbolic],
+    types: Iterable[Type],
+    _generalize_over=None,
+) -> TypeEnvironment:
+    """Extend the type environment with new schemes for `names`.
 
     This function is used for generalization in the context of type-checking
     let and letrec.
@@ -288,18 +272,16 @@ def _add_decls(env: TypeEnvironment,
     nothing is generalized.  If some names are given, only those are
     generalized in the result.
 
-    '''
+    """
     names = list(names)
     types = list(types)
     assert len(names) == len(types)
 
     def genbar(unknowns, names, type_, name):
         if not _generalize_over or name in _generalize_over:
-            schvars = list({
-                tv.name
-                for tv in find_tvars(type_)
-                if tv.name not in unknowns
-            })
+            schvars = list(
+                {tv.name for tv in find_tvars(type_) if tv.name not in unknowns}
+            )
             alist: List[Tuple[str, TypeVariable]] = list(zip(schvars, ns))
             restype = subtype(build_substitution(alist), type_)
             return TypeScheme([v.name for _, v in alist], restype)
@@ -314,8 +296,7 @@ def _add_decls(env: TypeEnvironment,
     return ChainMap(dict(zip(names, schemes)), env)
 
 
-def typecheck_letrec(env: TypeEnvironment,
-                     ns, exp: Letrec) -> TCResult:
+def typecheck_letrec(env: TypeEnvironment, ns, exp: Letrec) -> TCResult:
     # This algorithm is quite elaborate.
     #
     # We expected that at least one of exprs is defined in terms of a name.
@@ -333,8 +314,7 @@ def typecheck_letrec(env: TypeEnvironment,
     exprs: Sequence[AST] = tuple(exp.values())
     names: Sequence[Symbolic] = tuple(exp.keys())
     nbvs = {
-        name: TypeScheme.from_typeexpr(var, generics=[])
-        for name, var in zip(names, ns)
+        name: TypeScheme.from_typeexpr(var, generics=[]) for name, var in zip(names, ns)
     }
     phi, ts = tcl(ChainMap(nbvs, env), ns, exprs)
 
@@ -370,7 +350,9 @@ def typecheck_letrec(env: TypeEnvironment,
     ts = [sch.type_ for _, sch in nbvs1.items()]
     psi1, t = typecheck(
         exp.body,
-        _add_decls(sub_typeenv(psi, gamma), ns, names, ts, _generalize_over=local.keys()),
-        ns
+        _add_decls(
+            sub_typeenv(psi, gamma), ns, names, ts, _generalize_over=local.keys()
+        ),
+        ns,
     )
     return scompose(psi1, psi), t

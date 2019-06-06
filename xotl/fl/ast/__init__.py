@@ -35,4 +35,4 @@ def pretty_str(expr: AST) -> str:
       True
 
     '''
-    return ''
+    return ""

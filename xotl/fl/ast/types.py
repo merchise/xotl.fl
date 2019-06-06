@@ -6,7 +6,7 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''A very simple type-expression language.
+"""A very simple type-expression language.
 
 This (at the moment) just to implement the type-checker of chapter 9 of 'The
 Implementation of Functional Programming Languages'.
@@ -14,17 +14,9 @@ Implementation of Functional Programming Languages'.
 .. note:: We should see if the types in stdlib's typing module are
           appropriate.
 
-'''
+"""
 from collections import deque
-from typing import (
-    Iterable,
-    Sequence,
-    List,
-    Mapping,
-    Deque,
-    Set,
-    Union,
-)
+from typing import Iterable, Sequence, List, Mapping, Deque, Set, Union
 from typing import Optional  # noqa
 from itertools import zip_longest
 from dataclasses import dataclass
@@ -36,45 +28,44 @@ from xotl.fl.ast.base import Dual
 
 class Type(Dual):
     @classmethod
-    def from_str(cls, source: str) -> 'Type':
-        '''Parse a single type expression.
+    def from_str(cls, source: str) -> "Type":
+        """Parse a single type expression.
 
         Example:
 
             >>> Type.from_str('a -> b -> a')
             TypeCons('->', (TypeVariable('a'), TypeCons('->', (...))))
 
-        '''
+        """
         from xotl.fl.parsers.types import parse
+
         return parse(source)
 
     def __rshift__(self, other):
-        '''Return the function type 'self -> other'.'''
+        """Return the function type 'self -> other'."""
         if isinstance(other, Type):
             return FunctionTypeCons(self, other)
         else:  # pragma: no cover
             t1 = type(self).__name__
             t2 = type(other).__name__
-            raise TypeError(
-                f"unsupported operand type(s) for >>: '{t1}' and '{t2}'"
-            )
+            raise TypeError(f"unsupported operand type(s) for >>: '{t1}' and '{t2}'")
 
     def __mod__(self, other):
         if isinstance(other, Type):
             from xotl.fl.typecheck import unify
+
             return unify(self, other)
         else:  # pragma: no cover
             t1 = type(self).__name__
             t2 = type(other).__name__
-            raise TypeError(
-                f"unsupported operand type(s) for %: '{t1}' and '{t2}'"
-            )
+            raise TypeError(f"unsupported operand type(s) for %: '{t1}' and '{t2}'")
 
 
 class TypeVariable(Type):
-    '''A type variable, which may stand for any type.
+    """A type variable, which may stand for any type.
 
-    '''
+    """
+
     def __init__(self, name: str, *, check=True) -> None:
         # `check` is only here to avoid the check when generating internal
         # names (which start with a dot)
@@ -82,10 +73,10 @@ class TypeVariable(Type):
         assert not check or name.isidentifier()
 
     def __str__(self):
-        return f'{self.name}'
+        return f"{self.name}"
 
     def __repr__(self):
-        return f'TypeVariable({self.name!r})'
+        return f"TypeVariable({self.name!r})"
 
     def __eq__(self, other):
         if isinstance(other, TypeVariable):
@@ -97,20 +88,23 @@ class TypeVariable(Type):
         return hash((TypeVariable, self.name))
 
     def __len__(self):
-        return 0   # So that 'Int' has a bigger size than 'a'.
+        return 0  # So that 'Int' has a bigger size than 'a'.
 
     def __bool__(self):
-        return True   # pragma: no cover; needed because __len__ is 0.
+        return True  # pragma: no cover; needed because __len__ is 0.
 
 
 class TypeCons(Type):
-    '''The syntax for a type constructor expression.
+    """The syntax for a type constructor expression.
 
-    '''
-    def __init__(self, constructor: str, subtypes: Iterable[Type] = None,
-                 *, binary=False) -> None:
-        assert not subtypes or all(isinstance(t, Type) for t in subtypes), \
-            f'Invalid subtypes: {subtypes!r}'
+    """
+
+    def __init__(
+        self, constructor: str, subtypes: Iterable[Type] = None, *, binary=False
+    ) -> None:
+        assert not subtypes or all(
+            isinstance(t, Type) for t in subtypes
+        ), f"Invalid subtypes: {subtypes!r}"
         self.cons = constructor
         self.subtypes: Sequence[Type] = tuple(subtypes or [])
         self.binary = binary
@@ -118,23 +112,22 @@ class TypeCons(Type):
     def __str__(self):
         def wrap(s):
             s = str(s)
-            return f'({s})' if ' ' in s else s
+            return f"({s})" if " " in s else s
 
         if self.binary:
-            return f'{wrap(self.subtypes[0])} {self.cons} {wrap(self.subtypes[1])}'
+            return f"{wrap(self.subtypes[0])} {self.cons} {wrap(self.subtypes[1])}"
         elif self.subtypes:
             return f'{self.cons} {" ".join(wrap(s) for s in self.subtypes)}'
         else:
             return self.cons
 
     def __repr__(self):
-        return f'TypeCons({self.cons!r}, {self.subtypes!r})'
+        return f"TypeCons({self.cons!r}, {self.subtypes!r})"
 
     def __eq__(self, other):
         if isinstance(other, TypeCons):
             return self.cons == other.cons and all(
-                t1 == t2
-                for t1, t2 in zip_longest(self.subtypes, other.subtypes)
+                t1 == t2 for t1, t2 in zip_longest(self.subtypes, other.subtypes)
             )
         else:
             return NotImplemented
@@ -148,15 +141,15 @@ class TypeCons(Type):
 
 @dataclass
 class TypeConstraint:
-    name: str   # This is the name of the constraint, e.g 'Eq'
+    name: str  # This is the name of the constraint, e.g 'Eq'
     type_: TypeVariable
 
     def __str__(self):
-        return f'{self.name} {self.type_!s}'
+        return f"{self.name} {self.type_!s}"
 
 
 class TypeScheme(Type):
-    '''A type scheme with generic (schematics) type variables.
+    """A type scheme with generic (schematics) type variables.
 
     Example:
 
@@ -167,7 +160,8 @@ class TypeScheme(Type):
       >>> map_type
       <TypeScheme: forall a b. (a -> b) -> ((List a) -> (List b))>
 
-    '''
+    """
+
     # I choose the word 'generic' instead of schematic (and thus non-generic
     # instead of unknown), because that's probably more widespread.
     def __init__(self, generics: Sequence[str], t: Type) -> None:
@@ -177,9 +171,7 @@ class TypeScheme(Type):
     @property
     def nongenerics(self) -> List[str]:
         return [
-            tv.name
-            for tv in find_tvars(self.type_)
-            if tv.name not in self.generics
+            tv.name for tv in find_tvars(self.type_) if tv.name not in self.generics
         ]
 
     def __eq__(self, other):
@@ -193,21 +185,22 @@ class TypeScheme(Type):
 
     @property
     def names(self):
-        return ' '.join(self.generics)
+        return " ".join(self.generics)
 
     def __str__(self):
         if self.generics:
-            return f'forall {self.names!s}. {self.type_!s}'
+            return f"forall {self.names!s}. {self.type_!s}"
         else:
             return str(self.type_)
 
     def __repr__(self):
-        return f'<TypeScheme: {self!s}>'
+        return f"<TypeScheme: {self!s}>"
 
     @classmethod
-    def from_typeexpr(cls, type_: Type, *,
-                      generics: Sequence[str] = None) -> 'TypeScheme':
-        '''Create a type scheme from a type expression assuming all type
+    def from_typeexpr(
+        cls, type_: Type, *, generics: Sequence[str] = None
+    ) -> "TypeScheme":
+        """Create a type scheme from a type expression assuming all type
         variables are generic.
 
         If `type_` is already a TypeScheme, return it unchanged.
@@ -216,7 +209,7 @@ class TypeScheme(Type):
         <find_tvars>`:func: the free variables.  You may pass the empty list
         or tuple, to create a TypeScheme without any generic variables.
 
-        '''
+        """
         if isinstance(type_, TypeScheme):
             return type_
         if generics is None:
@@ -226,9 +219,8 @@ class TypeScheme(Type):
         return cls(generics, type_)
 
     @classmethod
-    def from_str(cls, source: str, *, generics:
-                 Sequence[str] = None) -> 'TypeScheme':
-        '''Create a type scheme from a type expression assuming all type variables are
+    def from_str(cls, source: str, *, generics: Sequence[str] = None) -> "TypeScheme":
+        """Create a type scheme from a type expression assuming all type variables are
         generic.
 
         Example:
@@ -236,8 +228,9 @@ class TypeScheme(Type):
            >>> TypeScheme.from_str('a -> b -> a')
            <TypeScheme: forall a b. a -> (b -> a)>
 
-        '''
+        """
         from xotl.fl.parsers.types import parse
+
         type_ = parse(source)
         return cls.from_typeexpr(type_, generics=generics)
 
@@ -249,31 +242,31 @@ class TypeScheme(Type):
 # We remove some of the complexity by disallowing unused constraints (e.g
 # you can't express 'forall a. Eq b => a -> a'.)
 class ConstrainedType(TypeScheme):
-    def __init__(self, generics: Sequence[str], t: Type,
-                 constraints: Sequence[TypeConstraint]) -> None:
+    def __init__(
+        self, generics: Sequence[str], t: Type, constraints: Sequence[TypeConstraint]
+    ) -> None:
         constraints = tuple(constraints or [])
         assert all(isinstance(c.type_, TypeVariable) for c in constraints)
         constrained = {
-            c.type_.name
-            for c in constraints
-            if isinstance(c.type_, TypeVariable)
+            c.type_.name for c in constraints if isinstance(c.type_, TypeVariable)
         }
         names = set(tv.name for tv in find_tvars(t))
         if constrained - names:
-            raise TypeError(
-                f'Constraint not applied: {constrained - names} in {t}'
-            )
+            raise TypeError(f"Constraint not applied: {constrained - names} in {t}")
         self.constraints = constraints
         super().__init__(generics, t)
 
     def __str__(self):
-        constraints = ', '.join(map(str, self.constraints))
+        constraints = ", ".join(map(str, self.constraints))
         scheme = super().__str__()
-        return f'{constraints} => {scheme}'
+        return f"{constraints} => {scheme}"
 
     @classmethod
-    def from_typeexpr(cls, t: Type,                             # type: ignore
-                      constraints: Sequence[TypeConstraint]) -> 'ConstrainedType':
+    def from_typeexpr(
+        cls,
+        t: Type,  # type: ignore
+        constraints: Sequence[TypeConstraint],
+    ) -> "ConstrainedType":
         if isinstance(t, ConstrainedType):
             return t
         else:
@@ -285,7 +278,7 @@ class ConstrainedType(TypeScheme):
 
 
 #: Shortcut to create function types
-FunctionTypeCons = lambda a, b: TypeCons('->', [a, b], binary=True)
+FunctionTypeCons = lambda a, b: TypeCons("->", [a, b], binary=True)
 
 
 #: Shortcut to create a tuple type from types `ts`.  The Unit type can be
@@ -293,37 +286,37 @@ FunctionTypeCons = lambda a, b: TypeCons('->', [a, b], binary=True)
 class TupleTypeCons(TypeCons):
     def __init__(self, *ts: Type) -> None:
         if not ts:
-            name = 'Unit'
+            name = "Unit"
         else:
             if len(ts) == 1:
-                name = 'Singleton'
+                name = "Singleton"
             else:
-                name = ',' * (len(ts) - 1)
+                name = "," * (len(ts) - 1)
         super().__init__(name, ts)
 
     def __str__(self):
         ts = self.subtypes
         if not ts:
-            return '()'
+            return "()"
         else:
             if len(ts) == 1:
-                return f'({ts[0]!s}, )'
+                return f"({ts[0]!s}, )"
             else:
-                types = ', '.join(map(str, ts))
-                return f'({types})'
+                types = ", ".join(map(str, ts))
+                return f"({types})"
 
 
 class ListTypeCons(TypeCons):
     def __init__(self, t: Type) -> None:
-        super().__init__('[]', [t])
+        super().__init__("[]", [t])
 
     def __str__(self):
         t = self.subtypes[0]
-        return f'[{t!s}]'
+        return f"[{t!s}]"
 
 
 def find_tvars(t: Type) -> List[TypeVariable]:
-    '''Get all type variables (possibly repeated) in type `t`.
+    """Get all type variables (possibly repeated) in type `t`.
 
     Example:
 
@@ -340,7 +333,7 @@ def find_tvars(t: Type) -> List[TypeVariable]:
        >>> find_tvars_names(Type.from_str('[forall a. a] -> b -> a'))
        ['a', 'b']
 
-    '''
+    """
     result: Deque[TypeVariable] = deque([])
     queue: Deque[Type] = deque([t])
     generics: Deque[Set[str]] = deque([])
@@ -367,7 +360,7 @@ def find_tvars(t: Type) -> List[TypeVariable]:
 
 
 def find_tvars_names(t: Type) -> List[str]:
-    'Get all type variables names in `t`.'
+    "Get all type variables names in `t`."
     return [tv.name for tv in find_tvars(t)]
 
 
@@ -375,7 +368,7 @@ SimpleType = Union[TypeVariable, TypeCons]
 
 
 def is_simple_type(t: Type) -> bool:
-    'Return True iff `t` is only composed of variables and type constructors.'
+    "Return True iff `t` is only composed of variables and type constructors."
     if isinstance(t, TypeVariable):
         return True
     elif isinstance(t, TypeCons):
