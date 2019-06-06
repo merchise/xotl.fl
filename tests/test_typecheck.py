@@ -189,7 +189,7 @@ def test_typecheck_recursion():
                               (then 0) \
                               (else let ts = tail xs in 1 + (count ts))
             in count
-        """
+            """
         ),
         env,
     )
@@ -205,7 +205,7 @@ def test_local_type_annotation_let():
     phi, t = typecheck(
         parse_expression(
             """let g = [1, 2, 3]
-                            in reverse g"""
+               in reverse g"""
         ),
         BuiltinEnvDict(
             {
@@ -219,8 +219,8 @@ def test_local_type_annotation_let():
     phi, t = typecheck(
         parse_expression(
             """let g :: [Number]
-                                g = []
-                            in reverse g"""
+                   g = []
+               in reverse g"""
         ),
         BuiltinEnvDict(
             {
@@ -234,8 +234,8 @@ def test_local_type_annotation_let():
     phi, t = typecheck(
         parse_expression(
             """let g :: [a]
-                                g = [1, 2, 3]
-                            in reverse g"""
+                   g = [1, 2, 3]
+                in reverse g"""
         ),
         BuiltinEnvDict(
             {
@@ -250,8 +250,8 @@ def test_local_type_annotation_let():
         typecheck(
             parse_expression(
                 """let g :: [Char]
-                                    g = [1, 2, 3]
-                                in reverse g"""
+                       g = [1, 2, 3]
+                   in reverse g"""
             ),
             BuiltinEnvDict(
                 {
@@ -266,11 +266,11 @@ def test_local_type_annotation_letrec():
     phi, t = typecheck(
         parse_expression(
             """let count :: Number -> [Number]
-                                count x = x:count (x + 1)
-                                g :: [a]
-                                g = count 1
-                                g2 = reverse g
-                            in g2"""
+                   count x = x:count (x + 1)
+                   g :: [a]
+                   g = count 1
+                   g2 = reverse g
+                in g2"""
         ),
         BuiltinEnvDict(
             {
@@ -286,10 +286,10 @@ def test_local_type_annotation_letrec():
         typecheck(
             parse_expression(
                 """let count :: Number -> [Number]
-                                    count x = x:count (x + 1)
-                                    g :: [Char]
-                                    g = count 1
-                                in reverse g"""
+                       count x = x:count (x + 1)
+                       g :: [Char]
+                       g = count 1
+                    in reverse g"""
             ),
             BuiltinEnvDict(
                 {
@@ -306,8 +306,8 @@ def test_ill_typed_match():
         typecheck(
             parse_expression(
                 """let g x = "a"
-                                    g x = 1
-                                in g"""
+                       g x = 1
+                   in g"""
             )
         )
 
@@ -318,8 +318,8 @@ def test_ill_count1():
         typecheck(
             parse_expression(
                 """let count [] = 0
-                                    count 2  = 1
-                                in count"""
+                       count 2  = 1
+                   in count"""
             )
         )
 
@@ -332,9 +332,9 @@ def test_regression_missing_dynamic_builtins():
 def test_regression_typing_if():
     expr = parse_expression(
         r"""
-       let map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
-       in map
-    """
+        let map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
+        in map
+        """
     )
     typecheck(expr, builtins_env)
 
@@ -343,11 +343,11 @@ def test_regression_typing_if():
 def test_conflicting_uses_of_non_generalized_map():
     expr = parse_expression(
         r"""
-       let map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
+        let map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
            squarelist xs = map (\x -> x * x) xs
            conflict   xs = map (\x -> "" ++ x) xs
-       in conflict
-    """
+        in conflict
+        """
     )
     typecheck(expr, builtins_env)
 
@@ -356,12 +356,12 @@ def test_conflicting_uses_of_non_generalized_map():
 def test_annotated_uses_of_non_generalized_map():
     expr = parse_expression(
         r"""
-       let map :: (a -> b) -> [a] -> [b]
-           map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
-           squarelist xs = map (\x -> x * x) xs
-           conflict   xs = map (\x -> "" ++ x) xs
-       in conflict
-    """
+        let map :: (a -> b) -> [a] -> [b]
+            map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
+            squarelist xs = map (\x -> x * x) xs
+            conflict   xs = map (\x -> "" ++ x) xs
+        in conflict
+        """
     )
     typecheck(expr, builtins_env)
 
@@ -371,10 +371,10 @@ def test_resolved_uses_of_non_generalized_map():
     # But we have extracted map so that it can become generalized.
     expr = parse_expression(
         r"""
-       let map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
-       in let squarelist xs = map (\x -> x * x) xs
-              conflict   xs = map (\x -> "" ++ x) xs
-       in conflict
-    """
+        let map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
+        in let squarelist xs = map (\x -> x * x) xs
+               conflict   xs = map (\x -> "" ++ x) xs
+           in conflict
+        """
     )
     typecheck(expr, builtins_env)

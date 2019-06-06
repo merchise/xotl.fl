@@ -8,11 +8,10 @@
 #
 import pytest
 from xotl.fl import parse
+from xotl.fl.ast.adt import DataCons, DataType
+from xotl.fl.ast.expressions import Identifier, Let, build_application, build_lambda
+from xotl.fl.ast.pattern import ConsPattern, Equation
 from xotl.fl.ast.types import Type, TypeScheme
-from xotl.fl.ast.expressions import Identifier, Let
-from xotl.fl.ast.adt import DataType, DataCons
-from xotl.fl.ast.pattern import Equation, ConsPattern
-from xotl.fl.ast.expressions import build_application, build_lambda
 from xotl.fl.parsers.expressions import parse as parse_expression
 
 
@@ -23,11 +22,11 @@ def test_simple_one_definition():
 def test_simple_functions_definition():
     assert parse(
         """
-       id x = x
+        id x = x
 
-       const :: a -> b -> a
-       const a x = a
-    """
+        const :: a -> b -> a
+        const a x = a
+        """
     )
 
 
@@ -35,9 +34,9 @@ def test_typedecls():
     assert (
         parse(
             """
-       id :: a -> a
-       const :: a -> b -> a
-    """
+            id :: a -> a
+            const :: a -> b -> a
+            """
         )
         == [
             {"id": TypeScheme.from_str("a -> a")},
@@ -71,9 +70,9 @@ def test_datatype_simple2():
     assert (
         parse(
             """
-       data Then a = Then a
-       data Else a = Else a
-    """
+            data Then a = Then a
+            data Else a = Else a
+            """
         )
         == [
             DataType(
@@ -96,7 +95,7 @@ def test_simple_if_program():
         if :: Bool -> a -> a -> a
         if True x _  = x
         if False _ x = x
-    """,
+        """,
         debug=True,
     ) == [
         {"id": TypeScheme.from_str("Bool -> a -> a -> a")},
@@ -123,7 +122,7 @@ def test_if_program():
         if True (Then x) _  = x
         if False _ (Else x) = x
 
-    """,
+        """,
         debug=True,
     )
 
@@ -133,9 +132,9 @@ def test_large_definitions():
     assert (
         parse(
             """
-       name =
-          let id x = x in id
-    """,
+            name =
+               let id x = x in id
+            """,
             debug=True,
         )
         == parse("name = let id x = x in id")
@@ -145,37 +144,37 @@ def test_large_definitions():
 def test_defs_operators():
     assert parse(
         """
-       (.) :: (b -> c) -> (a -> b) -> a -> c
-       (.) f g x = f (g x)
-    """
+        (.) :: (b -> c) -> (a -> b) -> a -> c
+        (.) f g x = f (g x)
+        """
     )
 
 
 def test_matching_lists():
     assert parse(
         """
-      head x : _ = x
+        head x : _ = x
 
-      tail _:xs = xs
+        tail _:xs = xs
 
-      second _ : x : _ = x
-      third  _:_:x:_ = x
+        second _ : x : _ = x
+        third  _:_:x:_ = x
 
-      insert x [] = x:[]
-      insert x y:xs = x:y:xs
+        insert x [] = x:[]
+        insert x y:xs = x:y:xs
 
-    """
+        """
     )
 
     assert parse(
         """
-       reverse [] = []
+        reverse [] = []
 
-       -- The ((x:xs)) is just the same as x:xs but with
-       -- redundant enclosing parenthesis
+        -- The ((x:xs)) is just the same as x:xs but with
+        -- redundant enclosing parenthesis
 
-       reverse (x:xs) = (reverse xs):x:[]
-    """
+        reverse (x:xs) = (reverse xs):x:[]
+        """
     )
 
     assert parse("second f:s:xs = s") == [
@@ -194,11 +193,11 @@ def test_local_definitions():
     assert (
         parse(
             """
-    foo :: ([Bool], [Char])
-    foo = let f :: (forall a. [a] -> [a]) -> ([Bool], [Char])
-              f x = (x [True, False], x ['a', 'b'])
-          in f reverse
-    """
+            foo :: ([Bool], [Char])
+            foo = let f :: (forall a. [a] -> [a]) -> ([Bool], [Char])
+                      f x = (x [True, False], x ['a', 'b'])
+            in f reverse
+            """
         )
         == [
             {"foo": TypeScheme.from_str("([Bool], [Char])")},
@@ -238,7 +237,7 @@ def test_valid_instance():
            (==) (Left a) (Left b)   = a == b
            (==) (Right a) (Right b) = a == b
            (==) _         _         = False
-    """
+        """
     )
 
 
@@ -248,7 +247,7 @@ def test_instance_basic_type():
         instance Eq Number where
            (==) = _eq_number
 
-    """
+        """
     )
 
 
@@ -263,7 +262,7 @@ def test_parse_deriving_several_typeclasses():
 def test_adt_operators():
     parse(
         """
-    data Qual t = [Pred] :=> t
-                  deriving Eq
-    """
+        data Qual t = [Pred] :=> t
+             deriving Eq
+        """
     )

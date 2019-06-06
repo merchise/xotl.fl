@@ -242,13 +242,13 @@ def test_nested_let():
         parse(code)
         == parse(
             """
-    let f1 = x1 x2 x3
-        f2 = (let g1 = y1 in f1 g1)
-        f3 = (let g2 = y2
-                  g3 = g2 y3
-              in f2 g3)
-    in f3
-    """
+            let f1 = x1 x2 x3
+                f2 = (let g1 = y1 in f1 g1)
+                f3 = (let g2 = y2
+                          g3 = g2 y3
+                      in f2 g3)
+            in f3
+            """
         )
         == ConcreteLet(
             [
@@ -270,10 +270,10 @@ def test_find_free_names():
     result = find_free_names(
         parse(
             """
-        let tail  x:xs = xs
-            tail2 y:ys = tail xs
-        in (tail, tail2, y)
-    """
+            let tail  x:xs = xs
+                tail2 y:ys = tail xs
+            in (tail, tail2, y)
+            """
         )
     )
     assert set(result) == {",,", "y", "xs"}
@@ -283,52 +283,52 @@ def test_where_expr():
     assert (
         parse(
             """
-    let unify phi tvn t = unify phi phitvn phit
-                          where
-                             phitvn = phi tvn
-                             phit   = sub_type phi t
-    in unify
-    """
-        )
-        == parse(
-            """
-    let unify phi tvn t = (unify phi phitvn phit
-                           where
-                             phitvn = phi tvn
-                             phit   = sub_type phi t)
-    in unify
-    """
-        )
-        == parse(
-            """
-    let unify phi tvn t = let phitvn = phi tvn
-                              phit   = sub_type phi t
-                          in unify phi phitvn phit
-    in unify
-    """
-        )
-        == parse(
-            """
-    unify where unify phi tvn t = let phitvn = phi tvn
-                                      phit   = sub_type phi t
-                                  in unify phi phitvn phit
-    """
-        )
-        == parse(
-            """
-    unify where unify phi tvn t = unify phi phitvn phit
+            let unify phi tvn t = unify phi phitvn phit
                                   where
                                      phitvn = phi tvn
                                      phit   = sub_type phi t
-    """
+            in unify
+            """
         )
         == parse(
             """
-    unify where unify phi tvn t = (unify phi phitvn phit
+            let unify phi tvn t = (unify phi phitvn phit
                                    where
                                      phitvn = phi tvn
                                      phit   = sub_type phi t)
-    """
+            in unify
+            """
+        )
+        == parse(
+            """
+            let unify phi tvn t = let phitvn = phi tvn
+                                      phit   = sub_type phi t
+                                  in unify phi phitvn phit
+            in unify
+            """
+        )
+        == parse(
+            """
+            unify where unify phi tvn t = let phitvn = phi tvn
+                                              phit   = sub_type phi t
+                                          in unify phi phitvn phit
+            """
+        )
+        == parse(
+            """
+            unify where unify phi tvn t = unify phi phitvn phit
+                                          where
+                                             phitvn = phi tvn
+                                             phit   = sub_type phi t
+            """
+        )
+        == parse(
+            """
+            unify where unify phi tvn t = (unify phi phitvn phit
+                                           where
+                                             phitvn = phi tvn
+                                             phit   = sub_type phi t)
+            """
         )
     )
 
@@ -492,13 +492,13 @@ def test_regression_ambigous_tuple_pattern():
             """let count [] = 0
                  count (x:xs) = 1 + (count xs)
              in count
-    """
+            """
         )
         == parse(
             """let count [] = 0
                  count x:xs = 1 + (count xs)
              in count
-    """
+            """
         )
     )
 
