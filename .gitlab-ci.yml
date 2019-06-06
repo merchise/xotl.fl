@@ -78,6 +78,7 @@ run coverage tests:
   image: python:3.6-alpine
   stage: test
   script:
+    - apk add g++
     - pip install tox
     - tox -e 3.6-coverage
   allow_failure: true
