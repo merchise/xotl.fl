@@ -34,16 +34,20 @@ data Bool = True | False
 -- second argument; this means that the second argument (if evalutated) may
 -- fail to terminate, but the function may succeed.  The implementation of
 -- `xor` must evaluate both arguments.
+--
+-- Notice that in the case of `and` and `or` the second argument evaluation
+-- totally avoided or postponed in the second equation.  Only when 'x' needs
+-- to be matched it will be computed.
 
 and :: Bool -> Bool -> Bool
 and False _   = False
-and True True = True
-and _ _       = False
+and True x    = x
+
 
 or :: Bool -> Bool -> Bool
 or True _      = True
-or False True  = True
-or False False = False
+or False x     = x
+
 
 xor :: Bool -> Bool -> Bool
 xor True False = True
