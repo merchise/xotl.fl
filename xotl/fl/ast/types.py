@@ -17,7 +17,6 @@ Implementation of Functional Programming Languages'.
 """
 from collections import deque
 from typing import Iterable, Sequence, List, Mapping, Deque, Set, Union
-from typing import Optional  # noqa
 from itertools import zip_longest
 from dataclasses import dataclass
 
@@ -262,10 +261,8 @@ class ConstrainedType(TypeScheme):
         return f"{constraints} => {scheme}"
 
     @classmethod
-    def from_typeexpr(
-        cls,
-        t: Type,  # type: ignore
-        constraints: Sequence[TypeConstraint],
+    def from_typeexpr(  # type: ignore
+        cls, t: Type, constraints: Sequence[TypeConstraint]
     ) -> "ConstrainedType":
         if isinstance(t, ConstrainedType):
             return t
