@@ -91,7 +91,7 @@ instance Eq a => Eq [a] where
   (==) _  _          = False
 
 
--- I cannot declare the each instance Eq of every possible tuple; they are Eq
+-- I cannot declare each instance of Eq for every possible tuple; they are Eq
 -- a, Eq b => Eq (a, b); Eq a, Eq b, Eq c => Eq (a, b, c), etc.  The instances
 -- are generated as demanded.
 
@@ -208,12 +208,9 @@ append :: a -> [a] -> [a]
 append x ls = ls ++ [x]
 
 length :: [a] -> Number
-length = _length 0
-
--- Tail recursive implementation of length
-_length :: Number -> [a] -> Number
-_length r []   = r
-_length r x:xs = _length (r + 1) xs
+length = _length 0 where
+                   _length r []   = r
+                   _length r x:xs = _length (r + 1) xs
 
 
 -- The count produces an infinite stream of numbers starting at `x`.
