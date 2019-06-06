@@ -8,7 +8,7 @@
 #
 import pytest
 from functools import partial
-from xoutil.fp.tools import compose
+from xotl.tools.fp.tools import compose
 
 from xotl.fl.ast.types import TypeVariable as T, TypeCons as C
 from xotl.fl.typecheck.subst import scompose, subtype, delta

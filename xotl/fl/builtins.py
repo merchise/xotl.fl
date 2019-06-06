@@ -10,7 +10,7 @@
 
 """
 import re
-from xoutil.modules import moduleproperty
+from xotl.tools.modules import moduleproperty
 
 from xotl.fl.ast.types import (
     Type,
@@ -25,7 +25,7 @@ from xotl.fl.ast.types import (
 
 # This is the type of all numbers in our language.  The expression language
 # will assign this type to every literal that matches a number; we don't
-# really distinguish between floats and ints.  Even xoutil's concrete
+# really distinguish between floats and ints.  Even xotl.tools's concrete
 # numbers will have this type.
 NumberType = TypeCons("Number", [])
 

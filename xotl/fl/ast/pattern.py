@@ -9,8 +9,6 @@
 """Pattern Matching.
 
 """
-from xoutil.objects import memoized_property
-
 from typing import (
     Iterator,
     List,
@@ -22,6 +20,8 @@ from typing import (
     Type as Class,
 )
 from dataclasses import dataclass
+
+from xotl.tools.objects import memoized_property
 
 from xotl.fl.ast.base import AST, ILC
 from xotl.fl.ast.types import TypeEnvironment

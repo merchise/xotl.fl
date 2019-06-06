@@ -9,10 +9,9 @@
 """Algebraic Data Types."""
 from typing import Sequence, Iterator, Tuple
 from collections import ChainMap
-from xoutil.objects import memoized_property
 
+from xotl.tools.objects import memoized_property
 from xotl.fl.meta import Symbolic
-
 from xotl.fl.ast.types import Type, TypeCons, TypeEnvironment, TypeScheme
 
 

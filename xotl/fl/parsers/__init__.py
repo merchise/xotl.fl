@@ -9,8 +9,8 @@
 import re
 from typing import List
 
-from xoutil.objects import setdefaultattr
-from xoutil.future.datetime import TimeSpan
+from xotl.tools.objects import setdefaultattr
+from xotl.tools.future.datetime import TimeSpan
 
 from ply import lex, yacc
 

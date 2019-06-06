@@ -21,8 +21,8 @@ from typing import (
 )
 from collections import deque
 
-from xoutil.objects import validate_attrs
-from xoutil.fp.tools import fst
+from xotl.tools.objects import validate_attrs
+from xotl.tools.fp.tools import fst
 
 from xotl.fl.meta import Symbolic
 from xotl.fl.ast.base import AST, ILC, Dual
