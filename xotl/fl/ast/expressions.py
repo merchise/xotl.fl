@@ -322,7 +322,7 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[Symboli
     '''
     from xotl.fl.match import MATCH_OPERATOR, NO_MATCH_ERROR
     from xotl.fl.match import Match, Extract, MatchLiteral
-    from xotl.fl.ast.pattern import ConcreteLet
+    from xotl.fl.ast.pattern import ConcreteLet, Equation
 
     POPFRAME = None  # remove a binding from the 'stack'
     result: List[Symbolic] = []
@@ -368,7 +368,7 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[Symboli
             nodes.extend(node.values())
             nodes.append(node.body)
         elif isinstance(node, ConcreteLet):
-            # This is much like the _LetExpr below; but patterns may bind more
+            # This is much like the _LetExpr above; but patterns may bind more
             # names; but for a single equation.
             #
             # In the following (ill-programmed) expression the 'xs' is bound
@@ -379,12 +379,9 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[Symboli
             #        tail2 y:ys = tail xs
             #    in (tail, tail2, y)
             #
-            # We must collect all the names to look in all equations and the
-            # body; but must collect the bindings in patterns but for the
-            # single span of the right-hand side of the equation.
-            #
-            # So we cannot accumulate the nodes as in the rest of the
-            # algorithm and we chose a recursive one:
+            # The patterns of each equation only bind variables in the RHS of
+            # the same equation.  So we cannot accumulate the nodes as in the
+            # rest of the algorithm and we chose a recursive one:
             names = node.value_definitions.keys()
             for equations in node.value_definitions.values():
                 for equation in equations:
@@ -400,6 +397,15 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[Symboli
             bindings.extend(names)
             nodes.extend(POPFRAME for _ in names)
             nodes.append(node.body)
+        elif isinstance(node, Equation):
+            # We don't normally enter this case but while doing dependency
+            # analysis of the equations; we need to know the free variables of
+            # each equation separately.
+            args = tuple(node.bindings)
+            fnames = find_free_names(node.body, exclude=exclude)
+            result.extend(
+                name for name in fnames if name not in args if name not in bindings
+            )
         else:
             assert False, f"Unknown AST node: {node!r}"
     return result

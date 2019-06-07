@@ -24,7 +24,7 @@ graph.add_many(8, {5, 7, 8})
 
 def test_scc():
     # The Graph shown the Wikipedia page
-    # (https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm)
+    # https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
     sccs = graph.get_sccs()
     assert len(sccs) == 4
     assert {1, 2, 3} in sccs

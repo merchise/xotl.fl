@@ -355,7 +355,6 @@ def test_regression_typing_if():
 #
 
 
-@pytest.mark.xfail(reason="We don't perform dependency analysis")
 def test_conflicting_uses_of_non_generalized_map():
     expr = parse_expression(
         r"""
@@ -368,7 +367,6 @@ def test_conflicting_uses_of_non_generalized_map():
     typecheck(expr, builtins_env)
 
 
-@pytest.mark.xfail(reason="We don't perform dependency analysis")
 def test_annotated_uses_of_non_generalized_map():
     expr = parse_expression(
         r"""
@@ -394,3 +392,25 @@ def test_resolved_uses_of_non_generalized_map():
         """
     )
     typecheck(expr, builtins_env)
+
+
+def test_parse_with_dependency_analysis_generlizes_map():
+    explicit = parse_expression(
+        r"""
+        let map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
+        in let squarelist xs = map (\x -> x * x) xs
+               conflict   xs = map (\x -> "" ++ x) xs
+           in conflict
+        """
+    )
+    explicit_ast = explicit.ast
+    implicit = parse_expression(
+        r"""
+        let map = \f xs -> if (is_null xs) (then xs) (else (f (head xs):map f (tail xs)))
+            squarelist xs = map (\x -> x * x) xs
+            conflict   xs = map (\x -> "" ++ x) xs
+        in conflict
+        """
+    )
+    implicit_ast = implicit.ast
+    assert explicit_ast == implicit_ast

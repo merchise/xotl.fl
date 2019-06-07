@@ -10,6 +10,7 @@
 
 """
 from collections import deque
+from xotl.tools.fp.tools import snd
 
 
 class Graph:
@@ -19,6 +20,12 @@ class Graph:
     def __getitem__(self, node):
         return self.nodes.get(node, set())
 
+    def __iter__(self):
+        return iter(self.nodes.keys())
+
+    def add_node(self, node):
+        self.nodes.setdefault(node, set())
+
     def add_edge(self, from_, to_):
         links = self.nodes.setdefault(from_, set())
         links.add(to_)
@@ -27,7 +34,7 @@ class Graph:
         links = self.nodes.setdefault(from_, set())
         links |= to_
 
-    def get_topological_order(self):
+    def get_topological_order(self, reverse=False, with_score=False):
         """Find a topological sort of the nodes.
 
         If the graph contains cycles, raise a RuntimeError.
@@ -61,7 +68,16 @@ class Graph:
             else:
                 return 0
 
-        return list(sorted(self.nodes.keys(), key=score))
+        if not with_score:
+            return list(sorted(self.nodes.keys(), key=score, reverse=reverse))
+        else:
+            return list(
+                sorted(
+                    ((node, score(node)) for node in self.nodes),
+                    key=snd,
+                    reverse=reverse,
+                )
+            )
 
     def get_sccs(self):
         """Find the Strongly Connected Components.

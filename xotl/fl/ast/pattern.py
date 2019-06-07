@@ -20,8 +20,10 @@ from typing import (
     Type as Class,
 )
 from dataclasses import dataclass
+from itertools import groupby
 
 from xotl.tools.objects import memoized_property
+from xotl.tools.fp.tools import fst, snd
 
 from xotl.fl.ast.base import AST, ILC
 from xotl.fl.ast.types import TypeEnvironment
@@ -182,14 +184,18 @@ LocalDefinition = Union[Equation, TypeEnvironment]
 ValueDefinitions = Mapping[str, List[Equation]]
 
 
-@dataclass
+@dataclass(init=False, unsafe_hash=True)
 class ConcreteLet(AST):
     """The concrete representation of a let/where expression.
 
     """
 
-    definitions: List[LocalDefinition]  # noqa
+    definitions: Tuple[LocalDefinition, ...]  # noqa
     body: AST
+
+    def __init__(self, definitions: Sequence[LocalDefinition], body: AST) -> None:
+        self.definitions = tuple(definitions)
+        self.body = body
 
     @memoized_property
     def ast(self) -> _LetExpr:
@@ -198,13 +204,11 @@ class ConcreteLet(AST):
     @memoized_property
     def value_definitions(self) -> ValueDefinitions:
         """The function definitions."""
-        result, _ = self._definitions
-        return result
+        return fst(self._definitions)
 
     @memoized_property
     def local_environment(self) -> TypeEnvironment:
-        _, result = self._definitions
-        return result
+        return snd(self._definitions)
 
     @memoized_property
     def _definitions(self) -> Tuple[ValueDefinitions, TypeEnvironment]:
@@ -224,8 +228,8 @@ class ConcreteLet(AST):
         r"""Build a Let/Letrec from a set of equations and a body.
 
         We need to decide if we issue a Let or a Letrec: if any of declared
-        names appear in the any of the bodies we must issue a Letrec, otherwise
-        issue a Let.
+        names appear in the any of the bodies we must issue a Letrec,
+        otherwise issue a Let.
 
         Also we need to convert function-patterns into Lambda abstractions::
 
@@ -236,19 +240,144 @@ class ConcreteLet(AST):
            led id = \x -> ...
 
         """
+        from xotl.fl.graphs import Graph
         from xotl.fl.match import FunctionDefinition
 
-        defs = {
-            name: FunctionDefinition(equations)
-            for name, equations in self.value_definitions.items()
-        }
-        names = set(defs)
-        compiled = {name: dfn.compile() for name, dfn in defs.items()}
-        if any(set(find_free_names(fn)) & names for fn in compiled.values()):
-            klass: Class[_LetExpr] = Letrec
+        # Type checking letrecs don't generalize definitions, we could end up
+        # in a situation like the one described in [Mycroft1984] -- see the
+        # test `test_conflicting_uses_of_non_generalized_map`.
+        #
+        # The solution is to first do a dependency analysis of the symbols in
+        # the ContreteLet definition and rewrite the definition into several
+        # nested Let/Letrec.
+        #
+        # We create a graph where nodes are (essentially) the names defined in
+        # the ConcreteLet and there's an edge from name A to name B, if B is
+        # used free in the RHS of A.
+        #
+        nodes = {}
+        for name, equations in self.value_definitions.items():
+            nodes[name] = _LetGraphNode(name, tuple(equations))
+        graph: Graph[_LetGraphNode] = Graph()
+        for node in nodes.values():
+            graph.add_node(node)
+            for dependency in node.dependencies:
+                if dependency in nodes:
+                    graph.add_edge(node, nodes[dependency])
+        #
+        # After the graph is created; we compute the Strongly Connected
+        # Components (SCC).  Each SCC will be a bundle of mutually-recursive
+        # nodes.
+        #
+        components = []
+        components_index = {}
+        for scc in graph.get_sccs():
+            component = _ComponentNode(tuple(scc))
+            for name in component.names:
+                components_index[name] = component
+            components.append(component)
+        del nodes, graph
+        #
+        # Each SCC has the names that must be kept together.  But a node may
+        # depend on another one in a different SCC, so there's still some
+        # order we need to respect: Construct another graph, where the nodes
+        # are the SCCs and there's an edge from a node C to D if any of names
+        # in C depends on any of the names in D (this graph is guaranteed to
+        # have no cycles, aka a DAG).
+        #
+        dag: Graph[_ComponentNode] = Graph()
+        for component in components:
+            dag.add_node(component)
+            for dep in component.other_dependencies:
+                if dep in components_index:
+                    dag.add_edge(component, components_index[dep])
+        #
+        # Construct several nested Let/Letrec nodes following the reversed
+        # topological sort of the DAG.  But we collapse the components with
+        # the same score: those has no mutual dependencies between them and
+        # thus introduce no generalization problem.
+        #
+        body: _LetExpr = self.body  # type: ignore
+        for score, collapsable in groupby(
+            dag.get_topological_order(reverse=True, with_score=True), key=snd
+        ):
+            component = _ComponentNode.union(*(comp for comp, _ in collapsable))
+            defs = {
+                node.name: FunctionDefinition(node.equations)
+                for node in component.nodes
+            }
+            compiled = {name: dfn.compile() for name, dfn in defs.items()}
+            if component.recursive:
+                klass: Class[_LetExpr] = Letrec
+            else:
+                klass = Let
+            body = klass(
+                compiled,
+                body,
+                {
+                    k: v
+                    for k, v in self.local_environment.items()
+                    if k in component.names
+                },
+            )
+        return body
+
+
+@dataclass(unsafe_hash=True)
+class _LetGraphNode:
+    name: str
+    equations: Sequence[Equation]
+
+    @property
+    def dependencies(self):
+        from operator import or_
+        from functools import reduce
+
+        return reduce(or_, (set(find_free_names(eq)) for eq in self.equations), set())
+
+
+@dataclass(unsafe_hash=True)
+class _ComponentNode:
+    nodes: Sequence[_LetGraphNode]
+
+    @property
+    def names(self):
+        return {node.name for node in self.nodes}
+
+    @property
+    def dependencies(self):
+        from operator import or_
+        from functools import reduce
+
+        return reduce(or_, (node.dependencies for node in self.nodes), set())
+
+    @property
+    def other_dependencies(self):
+        names = self.names
+        return {dep for dep in self.dependencies if dep not in names}
+
+    @property
+    def recursive(self):
+        deps = self.dependencies
+        return any(name in deps for name in self.names)
+
+    def __eq__(self, other):
+        if isinstance(other, _ComponentNode):
+            return self.names == other.names
         else:
-            klass = Let
-        return klass(compiled, self.body, self.local_environment)
+            return NotImplemented
+
+    def __or__(self, other):
+        if isinstance(other, _ComponentNode):
+            return _ComponentNode(tuple(self.nodes) + tuple(other.nodes))
+        else:
+            return NotImplemented
+
+    def union(self, *others) -> "_ComponentNode":
+        from operator import or_
+        from functools import reduce
+
+        return reduce(or_, others, self)
 
 
 class Case(ILC):
