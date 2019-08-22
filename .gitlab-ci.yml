@@ -2,41 +2,46 @@
 stages:
   - pre-check
   - test doc
-  - unit-test
+  - test
   - check
   - build
   - publish
 
 check code smells:
-  script: merchise_lint3
+  image: python:3.6-alpine
+  script:
+    - apk add g++ make
+    - pip install tox
+    - tox -e system-lint
   stage: pre-check
   allow_failure: true
-  tags:
-    - merchise-lint
   only:
-    - branches
+    - master
+    - merge_requests
 
 .run_tox_tests: &run_tox_tests
-  stage: unit-test
+  image: python:$PYTHON-alpine
+  stage: test
   script:
-    - tox -e $PYTHON-unit
-  tags:
-    - tox
+    - apk add g++ make
+    - pip install tox
+    - tox -e system-unit
 
 .run_tox_staticcheck: &run_tox_staticcheck
+  image: python:3.6-alpine
   stage: pre-check
-  allow_failure: true
   script:
+    - apk add g++ make
+    - pip install tox
     - tox -e 3.6-staticcheck
-  tags:
-    - tox
 
 .run_tox_doctest: &run_tox_doctest
-  stage: test doc
+  image: python:3.6-alpine
+  stage: test
   script:
+    - apk add make g++
+    - pip install tox
     - tox -e 3.6-doctest
-  tags:
-    - virtualenv
 
 
 run tests with Python 3.6:
@@ -44,46 +49,60 @@ run tests with Python 3.6:
   variables:
     PYTHON: "3.6"
   only:
-    - branches
+    - master
+    - merge_requests
 
 run tests with Python 3.7:
   <<: *run_tox_tests
   variables:
     PYTHON: "3.7"
-  allow_failure: true
   only:
-    - branches
-
+    - master
+    - merge_requests
 
 run static checks:
   <<: *run_tox_staticcheck
   only:
-    - branches
+    - master
+    - merge_requests
 
 run doctests:
   <<: *run_tox_doctest
   only:
-    - branches
+    - master
+    - merge_requests
   allow_failure: true
 
 
+run coverage tests:
+  image: python:3.6-alpine
+  stage: test
+  script:
+    - apk add g++
+    - pip install tox
+    - tox -e 3.6-coverage
+  allow_failure: true
+  only:
+    - master
+    - merge_requests
+
+
 check signature of tag:
+  image: alpine
   stage: check
   script:
+    - apk add git gnupg
+    - gpg --recv-key $GNUPG_KEY
     - git verify-tag $CI_COMMIT_REF_NAME
-  tags:
-    - git
-    - gpg
   only:
     - tags
 
 build source distribution:
+  image: python:3.6-alpine
   stage: build
   script:
     - rm -f dist/*
     - python setup.py sdist
-  tags:
-    - python
   artifacts:
     paths:
       - dist/
@@ -91,12 +110,11 @@ build source distribution:
     - tags
 
 build binary distribution:
+  image: python:3.6-alpine
   stage: build
   script:
-    - rm -f dist/*
+    - pip install wheel
     - python setup.py bdist_wheel
-  tags:
-    - wheel
   artifacts:
     paths:
       - dist/
@@ -122,11 +140,11 @@ publish_locally:
 
 
 publish_pypi:
+  image: python:3.6-alpine
   stage: publish
   script:
-    - twine upload dist/*
-  tags:
-    - twine
+    - pip install twine
+    - twine upload -u "$PYPI_USERNAME" -p "$PYPI_PASSWORD" dist/*
   only:
     - tags
   dependencies:
@@ -139,13 +157,13 @@ publish_pypi:
 
 
 build documentation:
+  image: python:3.6-alpine
   stage: build
   script:
-    - rm -rf `pipenv --venv`
-    - pipenv install --dev --skip-lock
+    - apk add g++ make
+    - pip install pipenv
+    - pipenv install --dev
     - source `pipenv --venv`/bin/activate
-    - pip install sphinx sphinx-rtd-theme
-    - pip install -e .
     - make -C docs/ html
     - cd docs/build/html
     - tar -cjf ../../../$CI_PROJECT_NAME-$CI_COMMIT_SHA.tar.bz2 ./
@@ -153,8 +171,6 @@ build documentation:
     paths:
       - $CI_PROJECT_NAME-$CI_COMMIT_SHA.tar.bz2
     expire_in: 4 days
-  tags:
-    - pipenv
   only:
     - tags
     - /^releases-/

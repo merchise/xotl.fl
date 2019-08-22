@@ -6,10 +6,11 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''Implements algorithms for Direct Graphs.
+"""Implements algorithms for Direct Graphs.
 
-'''
+"""
 from collections import deque
+from xotl.tools.fp.tools import snd
 
 
 class Graph:
@@ -19,6 +20,12 @@ class Graph:
     def __getitem__(self, node):
         return self.nodes.get(node, set())
 
+    def __iter__(self):
+        return iter(self.nodes.keys())
+
+    def add_node(self, node):
+        self.nodes.setdefault(node, set())
+
     def add_edge(self, from_, to_):
         links = self.nodes.setdefault(from_, set())
         links.add(to_)
@@ -27,30 +34,30 @@ class Graph:
         links = self.nodes.setdefault(from_, set())
         links |= to_
 
-    def get_topological_order(self):
-        '''Find a topological sort of the nodes.
+    def get_topological_order(self, reverse=False, with_score=False):
+        """Find a topological sort of the nodes.
 
         If the graph contains cycles, raise a RuntimeError.
 
-        '''
+        """
+
         def raise_on_cycle(func):
-            '''Make `func` to raise on the first recursive call with the same
+            """Make `func` to raise on the first recursive call with the same
             argument.
 
-            '''
+            """
             stack = deque([])
 
             def inner(node):
                 if node in stack:
-                    raise NonDAGError(
-                        'Cycle detected: %r' % (list(stack) + [node])
-                    )
+                    raise NonDAGError("Cycle detected: %r" % (list(stack) + [node]))
                 else:
                     stack.append(node)
                     try:
                         return func(node)
                     finally:
                         stack.pop()
+
             return inner
 
         @raise_on_cycle
@@ -61,14 +68,24 @@ class Graph:
             else:
                 return 0
 
-        return list(sorted(self.nodes.keys(), key=score))
+        if not with_score:
+            return list(sorted(self.nodes.keys(), key=score, reverse=reverse))
+        else:
+            return list(
+                sorted(
+                    ((node, score(node)) for node in self.nodes),
+                    key=snd,
+                    reverse=reverse,
+                )
+            )
 
     def get_sccs(self):
-        '''Find the Strongly Connected Components.
+        """Find the Strongly Connected Components.
 
         This is an implementation of Tarjan's Algorithm [Tarjan1972]_.
 
-        '''
+        """
+
         def _find_scc(node):
             nonlocal index
             indexed[node] = index

@@ -34,16 +34,20 @@ data Bool = True | False
 -- second argument; this means that the second argument (if evalutated) may
 -- fail to terminate, but the function may succeed.  The implementation of
 -- `xor` must evaluate both arguments.
+--
+-- Notice that in the case of `and` and `or` the second argument evaluation
+-- totally avoided or postponed in the second equation.  Only when 'x' needs
+-- to be matched it will be computed.
 
 and :: Bool -> Bool -> Bool
 and False _   = False
-and True True = True
-and _ _       = False
+and True x    = x
+
 
 or :: Bool -> Bool -> Bool
 or True _      = True
-or False True  = True
-or False False = False
+or False x     = x
+
 
 xor :: Bool -> Bool -> Bool
 xor True False = True
@@ -53,6 +57,14 @@ xor _ _        = False
 not :: Bool -> Bool
 not True  = False
 not False = True
+
+
+all :: [Bool] -> Bool
+all = foldr and True
+
+
+any :: [Bool] -> Bool
+any = foldr or False
 
 
 (+) :: Number -> Number -> Number
@@ -79,7 +91,7 @@ instance Eq a => Eq [a] where
   (==) _  _          = False
 
 
--- I cannot declare the each instance Eq of every possible tuple; they are Eq
+-- I cannot declare each instance of Eq for every possible tuple; they are Eq
 -- a, Eq b => Eq (a, b); Eq a, Eq b, Eq c => Eq (a, b, c), etc.  The instances
 -- are generated as demanded.
 
@@ -196,12 +208,9 @@ append :: a -> [a] -> [a]
 append x ls = ls ++ [x]
 
 length :: [a] -> Number
-length = _length 0
-
--- Tail recursive implementation of length
-_length :: Number -> [a] -> Number
-_length r []   = r
-_length r x:xs = _length (r + 1) xs
+length = _length 0 where
+                   _length r []   = r
+                   _length r x:xs = _length (r + 1) xs
 
 
 -- The count produces an infinite stream of numbers starting at `x`.

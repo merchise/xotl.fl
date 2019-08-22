@@ -24,7 +24,7 @@ graph.add_many(8, {5, 7, 8})
 
 def test_scc():
     # The Graph shown the Wikipedia page
-    # (https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm)
+    # https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
     sccs = graph.get_sccs()
     assert len(sccs) == 4
     assert {1, 2, 3} in sccs
@@ -35,15 +35,8 @@ def test_scc():
 
 def test_topo_dag():
     # Take the min node to be the *name* of each SCC
-    sccs = {
-        min(scc): tuple(scc)
-        for scc in graph.get_sccs()
-    }
-    index = {
-        node: name
-        for name, scc in sccs.items()
-        for node in scc
-    }
+    sccs = {min(scc): tuple(scc) for scc in graph.get_sccs()}
+    index = {node: name for name, scc in sccs.items() for node in scc}
     # A DAG implied the SCC; we create the DAG of the *names* in sccs.
     newgraph = Graph()
     for name, scc in sccs.items():

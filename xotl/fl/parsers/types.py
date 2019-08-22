@@ -6,12 +6,12 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''Parse type expressions.'''
+"""Parse type expressions."""
 from xotl.fl.ast.types import Type
 
 
 def parse(code: str, debug=False, tracking=False) -> Type:
-    '''Parse a single type expression `code`.
+    """Parse a single type expression `code`.
 
     Return a `type expression AST <xotl.fl.ast.types>`:mod:.
 
@@ -20,6 +20,7 @@ def parse(code: str, debug=False, tracking=False) -> Type:
        >>> parse('a -> b')
        TypeCons('->', (TypeVariable('a'), TypeVariable('b')))
 
-    '''
+    """
     from xotl.fl.parsers import type_parser, lexer
+
     return type_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)

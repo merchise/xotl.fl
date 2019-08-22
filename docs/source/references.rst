@@ -9,6 +9,9 @@
 .. [Damas1984] Damas, Luis. *Type Assignment in Programming
    Languages*. PhD. Thesis. University of Edinburgh. 1984.
 
+.. [Jones1994] Jones, Mark P. *Qualified Types: Theory and Practice*. PhD
+   thesis.  Cambridge University Press.
+
 .. [Jones] Jones, Mark P. *Typing Haskell in Haskell*. Nov 2000. Online
    article and code: https://gist.github.com/chrisdone/0075a16b32bfd4f62b7b
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ---------------------------------------------------------------------
 # Copyright (c) Merchise Autrement [~º/~] and Contributors
@@ -6,4 +6,11 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-"""Execute the program with an internal evaluation machinery."""
+
+
+class NormalizationError(TypeError):
+    "Indicates the failure to normalize a constraint"
+
+
+class UnificationError(NormalizationError):
+    'Failure to unify two types; i.e. normalize the constraint "t1 ~ t2"'

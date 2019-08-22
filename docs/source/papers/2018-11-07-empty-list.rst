@@ -6,7 +6,7 @@
 
 Our parser recognizes the empty list '[]' as an identifier::
 
-  >>> from xotl.fl import expr_parse
+  >>> from xotl.fl.parsers.expressions import parse as expr_parse
   >>> expr_parse('[]')
   Identifier('[]')
 

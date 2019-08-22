@@ -6,6 +6,6 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''Evaluation of an expression.
+"""Evaluation of an expression.
 
-'''
+"""

@@ -8,39 +8,36 @@
 #
 import pytest
 from functools import partial
-from xoutil.fp.tools import compose
+from xotl.tools.fp.tools import compose
 
-from xotl.fl.ast.types import (
-    TypeVariable as T,
-    TypeCons as C,
-)
-from xotl.fl.typecheck import scompose, subtype, delta
-from xotl.fl.typecheck import unify, UnificationError
+from xotl.fl.ast.types import TypeVariable as T, TypeCons as C
+from xotl.fl.typecheck.subst import scompose, subtype, delta
+from xotl.fl.typecheck.unification import unify, UnificationError
 
 from xotl.fl.parsers.types import parse
 
 
-I = parse('a -> a')
+I = parse("a -> a")
 # The K combinator: a -> b -> a
-K = parse('a -> b -> a')
+K = parse("a -> b -> a")
 # The S combinator: Lx Ly Lz. x z (y z)
-S = parse('(a -> b -> c) -> (a -> b) -> a -> c')
+S = parse("(a -> b -> c) -> (a -> b) -> a -> c")
 
 
 def test_scompose_property():
     # subtype (scompose f g) = (subtype f) . (subtype g)
-    f = delta('a', T('id'))
-    g = delta('b', T('bb'))
+    f = delta("a", T("id"))
+    g = delta("b", T("bb"))
     fog1 = partial(subtype, scompose(f, g))
     fog2 = compose(partial(subtype, f), partial(subtype, g))
-    assert fog1(I) == fog2(I), f'{fog1(I)} != {fog2(I)}'
-    assert fog1(K) == fog2(K), f'{fog1(K)} != {fog2(K)}'
-    assert fog1(S) == fog2(S), f'{fog1(S)} != {fog2(S)}'
+    assert fog1(I) == fog2(I), f"{fog1(I)} != {fog2(I)}"
+    assert fog1(K) == fog2(K), f"{fog1(K)} != {fog2(K)}"
+    assert fog1(S) == fog2(S), f"{fog1(S)} != {fog2(S)}"
 
 
 def test_unify_basic_vars():
-    t1 = T('a')
-    t2 = T('b')
+    t1 = T("a")
+    t2 = T("b")
     unification = unify(t1, t2)
     assert subtype(unification, t1) == subtype(unification, t2)
 
@@ -52,8 +49,8 @@ def test_unify_basic_vars():
 
 
 def test_unify_vars_with_cons():
-    t1 = T('a')
-    t2 = parse('x -> y')
+    t1 = T("a")
+    t2 = parse("x -> y")
     unification = unify(t1, t2)
     assert subtype(unification, t1) == subtype(unification, t2)
     unification = unify(t2, t1)
@@ -61,17 +58,17 @@ def test_unify_vars_with_cons():
 
 
 def test_unify_cons():
-    t1 = parse('a -> b -> c')
-    t2 = parse('x -> y')
+    t1 = parse("a -> b -> c")
+    t2 = parse("x -> y")
     unification = unify(t1, t2)
     assert subtype(unification, t1) == subtype(unification, t2)
     # TODO: dig in the result, 'unification' must make a = x, and (b -> c) = y
     with pytest.raises(UnificationError):
-        unify(C('Int'), C('Num'))
+        unify(C("Int"), C("Num"))
 
     aa = I
-    ab = parse('a -> b')
-    ba = parse('b -> a')
+    ab = parse("a -> b")
+    ba = parse("b -> a")
     # 'b -> a' and 'a -> b' unify because we can do a = b.  Also 'a -> a' and
     # 'b -> a' for the same reason; notice that 'b -> a' does not imply
     # they must be different.
@@ -84,6 +81,6 @@ def test_unify_cons():
     # We can't unify 'Int -> b' with 'b -> Num', because b can't be both Int
     # and Num...
     with pytest.raises(UnificationError):
-        unify(parse('Int -> b'), parse('b -> Num'))
+        unify(parse("Int -> b"), parse("b -> Num"))
     # But we can unify 'Int -> b' with 'b -> a'...
-    unify(parse('Int -> b'), ba)
+    unify(parse("Int -> b"), ba)

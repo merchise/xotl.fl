@@ -15,7 +15,7 @@ TVarSupply = Iterator[TypeVariable]
 
 
 class namesupply:
-    '''A names supply.
+    """A names supply.
 
     Each name has the format '{prefix}{index}'; where the index starts at 0
     and increases by one at each new name.  You can put some invalid char in
@@ -27,9 +27,11 @@ class namesupply:
        >>> list(namesupply(limit=2))
        ['a0', 'a1']
 
-    '''
-    def __init__(self, prefix='a', exclude: Sequence[str] = None,
-                 *, limit: int = None) -> None:
+    """
+
+    def __init__(
+        self, prefix="a", exclude: Sequence[str] = None, *, limit: int = None
+    ) -> None:
         self.prefix = prefix
         self.exclude = exclude
         self.limit = limit
@@ -40,13 +42,14 @@ class namesupply:
         return self
 
     def __next__(self) -> str:
-        assert self.count < 20000, \
-            'No expression should be so complex to require 20 000 new type variables'
+        assert (
+            self.count < 20000
+        ), "No expression should be so complex to require 20 000 new type variables"
 
         if self.limit is None or self.count < self.limit:
             result = None
             while not result:
-                name = f'{self.prefix}{self.current_index}'
+                name = f"{self.prefix}{self.current_index}"
                 if not self.exclude or name not in self.exclude:
                     result = name
                 self.current_index += 1
@@ -57,14 +60,16 @@ class namesupply:
 
 
 class tvarsupply:
-    '''A supply of TypeVariables.
+    """A supply of TypeVariables.
 
     Works the same as `namesupply`:class: but instead of producing strings,
     produces TypeVariables.
 
-    '''
-    def __init__(self, prefix='a', exclude: Sequence[str] = None,
-                 *, limit: int = None) -> None:
+    """
+
+    def __init__(
+        self, prefix="a", exclude: Sequence[str] = None, *, limit: int = None
+    ) -> None:
         self.ns = iter(namesupply(prefix, exclude, limit=limit))
 
     def __iter__(self):

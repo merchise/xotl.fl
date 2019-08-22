@@ -33,23 +33,23 @@ class TypeClass(AST):
     newclass: TypeConstraint
     definitions: Definitions  # noqa
 
-    def __init__(self, superclasses: Sequence[TypeConstraint],
-                 newclass: TypeConstraint,
-                 definitions: Definitions) -> None:
-
+    def __init__(
+        self,
+        superclasses: Sequence[TypeConstraint],
+        newclass: TypeConstraint,
+        definitions: Definitions,
+    ) -> None:
         def _constrain_scheme(scheme: TypeScheme) -> TypeScheme:
             # makes 'forall a. ...' be 'forall a. Constrain ...'
-            return ConstrainedType(scheme.generics, scheme.type_, (newclass, ))
+            return ConstrainedType(scheme.generics, scheme.type_, (newclass,))
 
         def _constrain_definition(d: Definition) -> Definition:
             if isinstance(d, Equation):
                 return d
             else:
                 assert isinstance(d, dict)
-                return {
-                    name: _constrain_scheme(scheme)
-                    for name, scheme in d.items()
-                }
+                return {name: _constrain_scheme(scheme) for name, scheme in d.items()}
+
         self._check_qual(superclasses, newclass)
         self.superclasses = tuple(superclasses or [])
         self.newclass = newclass
@@ -67,22 +67,20 @@ class TypeClass(AST):
         }
 
     @classmethod
-    def _check_qual(cls, constraints: Sequence[TypeConstraint],
-                    newclass: TypeConstraint) -> None:
-        '''Check that all type variables in constraints match the class_'s.'''
+    def _check_qual(
+        cls, constraints: Sequence[TypeConstraint], newclass: TypeConstraint
+    ) -> None:
+        """Check that all type variables in constraints match the class_'s."""
         if constraints:
             # TypeConstraint admits only one variable, so all constraints must
             # share the same one.  That's why we can use set's intersection
             # operator.
             tvars = set.intersection(
-                {newclass.type_},
-                *({tc.type_} for tc in constraints)
+                {newclass.type_}, *({tc.type_} for tc in constraints)
             )
             if not tvars:
                 tcs = ", ".join(map(str, constraints))
-                raise TypeError(
-                    f"Constraints don't match: {tcs} => {newclass}"
-                )
+                raise TypeError(f"Constraints don't match: {tcs} => {newclass}")
 
 
 @dataclass
@@ -92,10 +90,13 @@ class Instance(AST):
     type_: SimpleType
     definitions: Sequence[Definition]  # noqa
 
-    def __init__(self, constraints: Sequence[TypeConstraint],
-                 typeclass_name: str,
-                 type_: SimpleType,
-                 definitions: Definitions) -> None:
+    def __init__(
+        self,
+        constraints: Sequence[TypeConstraint],
+        typeclass_name: str,
+        type_: SimpleType,
+        definitions: Definitions,
+    ) -> None:
         self._check_qual(constraints, typeclass_name, type_)
         self.constraints = tuple(constraints or [])
         self.typeclass_name = typeclass_name
@@ -121,9 +122,10 @@ class Instance(AST):
         self.definitions = list(definitions)
 
     @classmethod
-    def _check_qual(cls, constraints: Sequence[TypeConstraint],
-                    class_: str, type_: SimpleType) -> None:
-        '''Check that instances type variables are not partially applied'''
+    def _check_qual(
+        cls, constraints: Sequence[TypeConstraint], class_: str, type_: SimpleType
+    ) -> None:
+        """Check that instances type variables are not partially applied"""
         tvars = set(find_tvars(type_))
         cvars = {tc.type_ for tc in constraints}
         if tvars != cvars:
@@ -135,6 +137,5 @@ class Instance(AST):
                 )
             else:
                 raise TypeError(
-                    "Unconstrained instance type variables: "
-                    f"{class_} {type_}"
+                    "Unconstrained instance type variables: " f"{class_} {type_}"
                 )

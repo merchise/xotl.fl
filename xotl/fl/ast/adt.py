@@ -6,25 +6,20 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-'''Algebraic Data Types.'''
+"""Algebraic Data Types."""
 from typing import Sequence, Iterator, Tuple
 from collections import ChainMap
-from xoutil.objects import memoized_property
 
+from xotl.tools.objects import memoized_property
 from xotl.fl.meta import Symbolic
-
-from xotl.fl.ast.types import (
-    Type,
-    TypeCons,
-    TypeEnvironment,
-    TypeScheme,
-)
+from xotl.fl.ast.types import Type, TypeCons, TypeEnvironment, TypeScheme
 
 
 class DataCons:
-    '''The syntactical notion a data constructor in the type language.
+    """The syntactical notion a data constructor in the type language.
 
-    '''
+    """
+
     def __init__(self, cons: str, args: Sequence[Type]) -> None:
         self.name = cons
         self.args: Sequence[Type] = tuple(args)
@@ -32,31 +27,26 @@ class DataCons:
     @property
     def free_type_variables(self):
         from xotl.fl.ast.types import find_tvars
+
         return {name for type_ in self.args for name in find_tvars(type_)}
 
     def __repr__(self):
         def _str(x):
             res = str(x)
-            if ' ' in res:
-                return f'({res})'
+            if " " in res:
+                return f"({res})"
             else:
                 return res
 
-        names = ' '.join(map(_str, self.args))
+        names = " ".join(map(_str, self.args))
         if names:
-            return f'<DataCons {self.name} {names}>'
+            return f"<DataCons {self.name} {names}>"
         else:
-            return f'<DataCons {self.name}>'
+            return f"<DataCons {self.name}>"
 
     def __eq__(self, other):
         if isinstance(other, DataCons):
             return self.name == other.name and self.args == other.args
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, DataCons):
-            return not (self == other)
         else:
             return NotImplemented
 
@@ -65,7 +55,7 @@ class DataCons:
 
 
 class DataType:
-    '''A data type definition.
+    """A data type definition.
 
     A data type defines both a type and several values of that type.
 
@@ -74,10 +64,15 @@ class DataType:
     the compiler (or interpreter) must produce those values and match the
     type.
 
-    '''
-    def __init__(self, name: str, type_: TypeCons,
-                 defs: Sequence[DataCons],
-                 derivations: Sequence[str] = None) -> None:
+    """
+
+    def __init__(
+        self,
+        name: str,
+        type_: TypeCons,
+        defs: Sequence[DataCons],
+        derivations: Sequence[str] = None,
+    ) -> None:
         assert name == type_.cons
         self.name = name
         self.type_ = type_
@@ -107,6 +102,7 @@ class DataType:
     @memoized_property
     def free_type_variables(self):
         from xotl.fl.ast.types import find_tvars
+
         return set(find_tvars(self.type_))
 
     @memoized_property
@@ -117,26 +113,22 @@ class DataType:
         return len(self.dataconses) == 1
 
     def __repr__(self):
-        defs = ' | '.join(map(str, self.dataconses))
+        defs = " | ".join(map(str, self.dataconses))
         if self.derivations:
-            derivations = ', '.join(map(str, self.derivations))
-            return f'<Data {self.type_} = {defs} deriving ({derivations})>'
+            derivations = ", ".join(map(str, self.derivations))
+            return f"<Data {self.type_} = {defs} deriving ({derivations})>"
         else:
-            return f'<Data {self.type_} = {defs}>'
+            return f"<Data {self.type_} = {defs}>"
 
     def __eq__(self, other):
         # Derivations are not part of the logical structure of the data type,
         # they might just as well be provided separately.
         if isinstance(other, DataType):
-            return (self.name == other.name and
-                    self.type_ == other.type_ and
-                    set(self.dataconses) == set(other.dataconses))
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, DataType):
-            return not (self == other)
+            return (
+                self.name == other.name
+                and self.type_ == other.type_
+                and set(self.dataconses) == set(other.dataconses)
+            )
         else:
             return NotImplemented
 
@@ -145,7 +137,7 @@ class DataType:
 
     @property
     def implied_env(self) -> TypeEnvironment:
-        '''The implied type environment by the data type.
+        """The implied type environment by the data type.
 
         Each data constructor is a function (or value) of type of the data
         type.
@@ -172,7 +164,7 @@ class DataType:
         Right takes any value of type `a` and returns a value of type `Either
         a b` (for any type `b`).
 
-        '''
+        """
         from xotl.fl.ast.types import FunctionTypeCons
 
         def _implied_type(dc: DataCons) -> Type:
@@ -188,7 +180,7 @@ class DataType:
 
     @property
     def pattern_matching_env(self) -> TypeEnvironment:
-        r'''The type environment needed to pattern-match the data constructors.
+        r"""The type environment needed to pattern-match the data constructors.
 
         A program like::
 
@@ -246,7 +238,7 @@ class DataType:
 
         .. note:: The names of those special functions are not strings.
 
-        '''
+        """
         from xotl.fl.match import Match, Extract
         from xotl.fl.ast.types import FunctionTypeCons as F
 
@@ -258,13 +250,9 @@ class DataType:
                 for i, type_ in enumerate(dc.args):
                     yield Extract(dc.name, i + 1), scheme(F(self.type_, type_))
 
-        return {
-            name: ts
-            for dc in self.dataconses
-            for name, ts in _implied_funs(dc)
-        }
+        return {name: ts for dc in self.dataconses for name, ts in _implied_funs(dc)}
 
     @property
     def full_typeenv(self) -> TypeEnvironment:
-        'Both `pattern_matching_env`:attr: and `implied_env`:attr: together.'
+        "Both `pattern_matching_env`:attr: and `implied_env`:attr: together."
         return ChainMap(self.pattern_matching_env, self.implied_env)
