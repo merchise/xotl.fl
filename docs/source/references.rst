@@ -9,6 +9,9 @@
 .. [Damas1984] Damas, Luis. *Type Assignment in Programming
    Languages*. PhD. Thesis. University of Edinburgh. 1984.
 
+.. [Eisenberg] Richard A. Eisenberg and Simon Peyton Jones. *Levity
+   Polymorphism*
+
 .. [Jones1994] Jones, Mark P. *Qualified Types: Theory and Practice*. PhD
    thesis.  Cambridge University Press.
 
