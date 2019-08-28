@@ -414,3 +414,34 @@ def test_parse_with_dependency_analysis_generlizes_map():
     )
     implicit_ast = implicit.ast
     assert explicit_ast == implicit_ast
+
+
+# This test shows that our type-inference algorithm is following HM system;
+# which make it put a single non-generalized unification var to the argument
+# 'get'; that's why it fails to infer a type for 'get'.  But when we type it
+# ourselves, it checks the type correctly.
+#
+# This test will fail when we move beyond HM.
+#
+# The road to type-systems was (according to
+# http://lhc-compiler.blogspot.com/2016/09/haskell-suite-type-inference.html):
+# first HM [Damas1982], then bidirectional type inference [Pierce2000],
+# followed by boxy types [Vytiniotis2006] and finalizing with OutsideIn(X)
+# [OutsideInX]
+#
+# I don't know yet which system is best to our needs; but I'm beginning to
+# believe it should support extensible type classes and/or records.
+def test_HM_does_monomorphic_arguments():
+    ast = parse_expression(r"let f get = (get [1,2], get ['a','b','c']) in f")
+    with pytest.raises(TypeError):
+        typecheck(ast, builtins_env)
+
+    ast = parse_expression(
+        r"""
+        let f :: (forall a. a -> a) -> (Num, Char)
+            f get = (get [1,2], get ['a','b','c'])
+          in f
+        """
+    )
+    with pytest.raises(TypeError):
+        typecheck(ast, builtins_env)
