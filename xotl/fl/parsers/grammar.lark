@@ -1,0 +1,153 @@
+// Basic tokens.
+//
+// Instead of using continuos priority numbers, I decided to use big jumps of
+// several priority numbers.  This allows easier accommodation of tokens.
+//
+// We group tokens logically; not by priority.
+//
+// Highest priority are those operators of composed of several maybe colliding
+// chars.  For instance we need that '<from ...' is always tried to match the
+// date-related tokens instead of the operator '<' followed by identifier
+// 'from'.
+
+COMMENT : /--[-]*[^\n]*/
+%ignore COMMENT
+
+
+// Even though *application* is an important syntactical concept in our
+// language, simple juxtaposition of terms is enough to express it.  So we can
+// ignore non-breaking spaces (padding).
+PADDING : " "+
+%ignore PADDING
+
+
+_indentation : /\n\s+/
+
+
+// *** Type language ***
+//
+// The type language allows to express type-related "expressions".  The
+// 'type_expr' non-terminal is the starting point of the type expressions
+// sub-language.
+type_expr : type_scheme? type_constraints? type_function_expr
+          | type_scheme? type_constraints? type_term
+
+type_scheme : KEYWORD_FORALL identifier identifier* "."
+type_function_expr : type_term (ARROW _indentation? _type_function_expr)+
+_type_function_expr : type_term (ARROW _indentation? _type_function_expr)*
+
+type_term : type_app_expression | type_factor
+type_app_expression : type_factor type_factor+
+
+type_variable : LOWER_IDENTIFIER
+type_cons : UPPER_IDENTIFIER
+
+type_factor : type_variable
+            | type_cons
+			| type_factor_tuple
+			| type_factor_list
+			| type_factor_enclosed_type_expr
+
+type_factor_enclosed_type_expr : LPAREN type_expr RPAREN
+
+type_factor_tuple : type_factor_unit_type | type_factor_nonunit_tuple
+type_factor_unit_type : LPAREN RPAREN
+type_factor_nonunit_tuple : LPAREN type_expr (COMMA type_expr)+ RPAREN
+                          | LPAREN type_expr COMMA RPAREN
+
+type_factor_list : LBRACKET type_expr RBRACKET
+
+type_constraints : type_constraints_list FATARROW
+                 | type_constraint FATARROW
+
+type_constraint : type_cons type_variable+
+type_constraints_list : type_constraint (COMMA type_constraint)+
+
+
+// *** Keywords ***
+KEYWORD_LET.130 : /\blet\b/
+KEYWORD_IN.130 : /\bin\b/
+KEYWORD_WHERE.130 : /\bwhere\b/
+KEYWORD_CLASS.130 : /\bclass\b/
+KEYWORD_INSTANCE.130 : /\binstance\b/
+KEYWORD_DATA.130 : /\bdata\b/
+KEYWORD_FORALL.130 : /\bforall\b/
+KEYWORD_DERIVING.130 : /\bderiving\b/
+KEYWORD_CASE.130 : /\bcase\b/
+
+
+// *** Operators ***
+
+TICK_OPERATOR : /`[A-Za-z]\w*`/
+DOT_OPERATOR : "."
+PLUS : "+"
+MINUS : "-"
+STAR : "*"
+SLASH : "/"
+BACKSLASH : "\\"
+PERCENT : "%"
+EQ : "="
+PIPE : "|"
+COMMA : ","
+ATSYM : "@"
+COLON : ":"
+
+
+// Avoid capturing operators formed by several symbols as several instances of
+// the operators above.
+DOUBLESLASH.20 : "//"
+ARROW.20 : "->"
+DOUBLECOLON.20 : "::"
+FATARROW.20 : "=>"
+OPERATOR.10 : /[\/\.\-\+\*<>\$%\^&!@\#=\\\|,:]+/
+
+
+// ** Values **
+
+// The numbers.  Since we have operators that start with '-' we must check for
+// this before operators and comments.
+
+BASE2_INTEGER.150 : /-?0[bB][01][01_]*/
+BASE8_INTEGER.150 : /-?0[oO][0-7][0-7_]*/
+BASE16_INTEGER.150 : /-?0[xX][0-9a-fA-F][0-9a-fA-F_]*/
+BASE10_INTEGER.150 : /-?[0-9][0-9_]*/
+
+FLOAT.190 : /-?([0-9_]*\.[0-9]+([eE][-+]\d+)?|[0-9][0-9_]*[eE][-+]\d+)/
+
+// Dates, datetimes and intervals.
+
+DATETIME.150 : /<\d{4,}-\d\d-\d\d[ T]\d\d:\d\d(:\d\d)?(\.\d+)?>/
+DATE.150 : /<\d{4,}-\d\d-\d\d>/
+DATETIME_INTERVAL.150 : /<from[ \t]+\d{4,}-\d\d-\d\d[ T]\d\d:\d\d(:\d\d)?(\.\d+)?[ \t]+to[ \t]+\d{4,}-\d\d-\d\d[ T]\d\d:\d\d(:\d\d)?(\.\d+)?>/
+DATE_INTERVAL.150 : /<from[ \t]+\d{4,}-\d\d-\d\d[ \t]+to[ \t]+\d{4,}-\d\d-\d\d>/
+
+
+// Strings and chars
+
+STRING.100 : /"[^\n"]|(?<=\\)")*"/
+CHAR.100 : /'(\\[ntr\\']|\\[xXuU][a-d\d]+|[^\n'])'/
+
+
+// Identifiers and grouping structures
+LOWER_IDENTIFIER.80 : /[a-z][\w_]*/
+UPPER_IDENTIFIER.80 : /[A-Z][\w_]*/
+UNDER_IDENTIFIER.80 : /_[\w_]*/
+
+identifier : UPPER_IDENTIFIER | LOWER_IDENTIFIER | UNDER_IDENTIFIER
+
+
+LPAREN : "("
+RPAREN : ")"
+
+LBRACKET : "["
+RBRACKET : "]"
+
+LBRACE : "{"
+RBRACE : "}"
+
+
+
+// Local Variables:
+// mode: bnf
+// comment-start: "//"
+// End:

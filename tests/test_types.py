@@ -7,6 +7,7 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
+
 from xotl.fl.ast.types import (
     TypeVariable as T,
     FunctionTypeCons as F,
@@ -15,10 +16,14 @@ from xotl.fl.ast.types import (
     ConstrainedType,
     TypeConstraint,
 )
-from xotl.fl.parsers.types import parse
+from xotl.fl.parsers.larkish import type_expr_parser
 from xotl.fl.parsers import ParserError
 
 from xotl.fl.utils import tvarsupply
+
+
+def parse(source):
+    return type_expr_parser.parse(source)
 
 
 # The id function type

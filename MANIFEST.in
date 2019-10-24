@@ -3,7 +3,7 @@ include *.ini
 include *.rst
 
 recursive-include docs *.rst *.txt Makefile *.py
-recursive-include xotl *.py *.rst *.pyi *.fl
+recursive-include xotl *.py *.rst *.pyi *.fl *.lark
 
 prune .tox
 prune docs/build
