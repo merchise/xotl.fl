@@ -11,7 +11,7 @@ from lark import Lark, Transformer
 
 type_expr_parser = Lark.open(
     os.path.join(os.path.dirname(__file__), "grammar.lark"),
-    parser="lalr",
+    lexer="standard",
     propagate_positions=True,
     start="type_expr",
     debug=True,
