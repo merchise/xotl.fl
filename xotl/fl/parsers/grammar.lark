@@ -29,10 +29,10 @@ _indentation : /\n\s+/
 // The type language allows to express type-related "expressions".  The
 // 'type_expr' non-terminal is the starting point of the type expressions
 // sub-language.
-type_expr : type_scheme? type_constraints? type_function_expr
-          | type_scheme? type_constraints? type_term
+type_expr : type_schema? type_constraints? _type_expr
+_type_expr : type_function_expr | type_term
 
-type_scheme : KEYWORD_FORALL identifier identifier* "."
+type_schema : KEYWORD_FORALL identifier identifier* "."
 type_function_expr : type_term (ARROW _indentation? _type_function_expr)+
 _type_function_expr : type_term (ARROW _indentation? _type_function_expr)*
 
@@ -48,7 +48,8 @@ type_factor : type_variable
 			| type_factor_list
 			| type_factor_enclosed_type_expr
 
-type_factor_enclosed_type_expr : LPAREN type_expr RPAREN
+type_factor_enclosed_type_expr : LPAREN _type_expr_no_constraints RPAREN
+_type_expr_no_constraints : type_schema? _type_expr
 
 type_factor_tuple : type_factor_unit_type | type_factor_nonunit_tuple
 type_factor_unit_type : LPAREN RPAREN
@@ -57,8 +58,30 @@ type_factor_nonunit_tuple : LPAREN type_expr (COMMA type_expr)+ RPAREN
 
 type_factor_list : LBRACKET type_expr RBRACKET
 
+//
+// NB: The third alternative in this rule is completely *misleading*, and is
+// only here to avoid ambiguity (while using LALR algorithm).  Without this
+// rule the simple expression 'Maybe a -> a' would fail to parse.  This is
+// because after seeing 'Maybe a' the only options would be a FATARROW or a
+// COMMA.  This makes the Concrete Syntax Tree a little confusing:
+//
+// The tree for 'Maybe a -> a' looks like:
+//
+//  type_expr
+//   type_constraints
+//     type_constraint
+//       type_cons      Maybe
+//       type_variable  a
+//     ->
+//   type_term
+//     type_factor
+//       type_variable  a
+//
+// But we can fix that while creating the AST.
+//
 type_constraints : type_constraints_list FATARROW
                  | type_constraint FATARROW
+				 | type_constraint ARROW
 
 type_constraint : type_cons type_variable+
 type_constraints_list : type_constraint (COMMA type_constraint)+
