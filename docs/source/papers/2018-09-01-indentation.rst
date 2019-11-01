@@ -78,8 +78,11 @@ with ``let`` alone, the ``in`` keyword is enough to disambiguate.
 Decision
 ========
 
-.. role:: deleted
+Before using Lark
+-----------------
 
+.. note:: This subsection is out-dated since version 0.3.0, where we
+   introduced a parser based on Lark.
 
 1) Keep the ``where`` as it is.   To disambiguate you'll need parenthesis::
 

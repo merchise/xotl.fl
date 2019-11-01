@@ -7,4 +7,4 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"

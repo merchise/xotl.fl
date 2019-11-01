@@ -1,3 +1,6 @@
+Not released.  The following only accounts for a summary of work done, but
+probably obsolete.
+
 - The parser is now complete.  New features:
 
   - Comments.  Comments always introduce a NEWLINE, so they are not allowed in

@@ -17,6 +17,7 @@
 
    xotl.fl/*
    history
+   roadmap
    references
 
 .. toctree::

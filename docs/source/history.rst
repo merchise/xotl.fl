@@ -5,6 +5,12 @@
 Beta releases (0.x series)
 ==========================
 
+Unreleased.  Release 0.3.0
+--------------------------
+
+.. include:: history/changes-0.3.0.rst
+
+
 Unreleased.  Release 0.2.0
 --------------------------
 
