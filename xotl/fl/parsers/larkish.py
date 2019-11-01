@@ -7,18 +7,42 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import os.path
-from typing import Iterable
+from collections import deque
+from typing import Iterable, Deque
 
 from lark import Lark, Transformer, Token
 from lark.indenter import Indenter
 
 
 class LexerHelper:
-    def __init__(self):
-        pass
+    BLOCK_END_type = "_END"
+    BLOCK_BEGIN_types = ("KEYWORD_WHERE",)
+
+    def _process(self, stream: Iterable[Token]) -> Iterable[Token]:
+        stack: Deque[Token] = deque([])
+        last_line = 0
+        for token in stream:
+            if token.type == "_INDENTATION":
+                last_column = len(token.value.split("\n")[-1])
+                while stack and last_column <= stack[-1].column:
+                    tk = stack.pop()
+                    yield Token.new_borrow_pos(self.BLOCK_END_type, tk.value, token)
+
+            if token.type in self.BLOCK_BEGIN_types:
+                stack.append(token)
+                yield token
+            else:
+                yield token
+            last_line = token.end_line or token.line
+        while stack:
+            token = stack.pop()
+            t = Token.new_borrow_pos(self.BLOCK_END_type, token.value, token)
+            t.line = last_line + 1
+            yield t
 
     def process(self, stream: Iterable[Token]) -> Iterable[Token]:
-        for token in stream:
+        for token in self._process(stream):
+            print(token, token.type)
             yield token
 
 

@@ -20,7 +20,7 @@ COMMENT : /--[-]*[^\n]*/
 PADDING : " "+
 %ignore PADDING
 
-_INDENTATION : /\r?\n\s+/
+_INDENTATION : /(\r?\n\s*)+\s*/
 
 
 // *** Type language ***
@@ -124,6 +124,7 @@ _expr_factor : literal
 			| enclosed_operator
 			| lambda_expr
 			| letexpr
+			| where_expr
 
 // NB: Since I can't express the right associativity of application, I just
 // create a *chain* of factors which can't be applications themselves.
@@ -177,18 +178,24 @@ _st_operator : infixl_operator_2
              | infixr_operator_9
              | COMMA
 
-// Let expressions
+// Let and where expressions
 letexpr : KEYWORD_LET local_definitions _INDENTATION? KEYWORD_IN _expr
+
+// The _END terminal is a virtual token issued by the LexerHelper to account
+// for indentation changes.
+%declare _END
+where_expr : _expr KEYWORD_WHERE _INDENTATION? _equations _END
+
 
 local_definitions : _local_definition (_INDENTATION _local_definition)*
 _local_definition : nametype_decl | _valuedef
 _valuedef : equation
 
+_equations : equation (_INDENTATION equation)*
 equation : identifier patterns? EQ _expr
          | enclosed_operator patterns? EQ _expr
 
 nametype_decl : identifier DOUBLECOLON type_expr
-
 
 // ** Patterns **
 
