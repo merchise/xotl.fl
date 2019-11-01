@@ -7,12 +7,18 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
-from xotl.fl import parse
+from textwrap import dedent
+
 from xotl.fl.ast.adt import DataCons, DataType
 from xotl.fl.ast.expressions import Identifier, Let, build_application, build_lambda
 from xotl.fl.ast.pattern import ConsPattern, Equation
 from xotl.fl.ast.types import Type, TypeScheme
 from xotl.fl.parsers.expressions import parse as parse_expression
+from xotl.fl.parsers.larkish import program_parser
+
+
+def parse(source):
+    return program_parser.parse(dedent(source).strip())
 
 
 def test_simple_one_definition():
@@ -252,7 +258,13 @@ def test_instance_basic_type():
 
 
 def test_parse_deriving_single_typeclass():
-    parse("data Bool = True | False deriving Eq")
+    parse(
+        """
+        data Bool = True
+                  | False
+          deriving Eq
+        """
+    )
 
 
 def test_parse_deriving_several_typeclasses():

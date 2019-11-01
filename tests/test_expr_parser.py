@@ -7,6 +7,8 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
+from textwrap import dedent
+
 from hypothesis import strategies as s, given, example, assume
 
 from ply import lex
@@ -24,7 +26,7 @@ from xotl.fl.ast.expressions import (
 from xotl.fl.ast.pattern import Equation, ConcreteLet, ConsPattern
 
 from xotl.fl.parsers import string_repr, ParserError
-from xotl.fl.parsers.expressions import parse
+from xotl.fl.parsers.larkish import expr_parser
 
 from xotl.fl.builtins import (
     NumberType,
@@ -35,6 +37,10 @@ from xotl.fl.builtins import (
     DateTimeType,
     DateIntervalType,
 )
+
+
+def parse(source):
+    return expr_parser.parse(dedent(source).strip())
 
 
 def test_trivially_malformed():

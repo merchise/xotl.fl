@@ -16,7 +16,12 @@ from lark.indenter import Indenter
 
 class LexerHelper:
     BLOCK_END_type = "_END"
-    BLOCK_BEGIN_types = ("KEYWORD_WHERE",)
+    BLOCK_BEGIN_types = (
+        "KEYWORD_WHERE",
+        "KEYWORD_DATA",
+        "KEYWORD_CLASS",
+        "KEYWORD_INSTANCE",
+    )
 
     def _process(self, stream: Iterable[Token]) -> Iterable[Token]:
         stack: Deque[Token] = deque([])
@@ -59,6 +64,14 @@ expr_parser = Lark.open(
     lexer="standard",
     propagate_positions=True,
     start="expr",
+    debug=True,
+    postlex=LexerHelper(),
+)
+program_parser = Lark.open(
+    os.path.join(os.path.dirname(__file__), "grammar.lark"),
+    lexer="standard",
+    propagate_positions=True,
+    start="program",
     debug=True,
     postlex=LexerHelper(),
 )

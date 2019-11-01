@@ -7,6 +7,7 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
+from textwrap import dedent
 
 from xotl.fl.ast.types import (
     TypeVariable as T,
@@ -23,7 +24,7 @@ from xotl.fl.utils import tvarsupply
 
 
 def parse(source):
-    return type_expr_parser.parse(source)
+    return type_expr_parser.parse(dedent(source).strip())
 
 
 # The id function type

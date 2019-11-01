@@ -10,7 +10,7 @@
 // date-related tokens instead of the operator '<' followed by identifier
 // 'from'.
 
-COMMENT : /--[-]*[^\n]*/
+COMMENT : /(\r?\n\s*)+\s*--[-]*[^\n]*/
 %ignore COMMENT
 
 
@@ -22,6 +22,11 @@ PADDING : " "+
 
 _INDENTATION : /(\r?\n\s*)+\s*/
 
+
+// A program is just a collection of at least one definition.
+program : definition (_INDENTATION definition)*  _INDENTATION?
+definition : _local_definition
+           | datatype_definition
 
 // *** Type language ***
 //
@@ -43,9 +48,9 @@ type_cons : UPPER_IDENTIFIER
 
 type_factor : type_variable
             | type_cons
-			| type_factor_tuple
-			| type_factor_list
-			| type_factor_enclosed_type_expr
+            | type_factor_tuple
+            | type_factor_list
+            | type_factor_enclosed_type_expr
 
 type_factor_enclosed_type_expr : _LPAREN _type_expr_no_constraints _RPAREN
 _type_expr_no_constraints : type_schema? _type_expr
@@ -58,6 +63,27 @@ type_constraints : type_constraints_list FATARROW
 
 type_constraint : type_cons type_variable+
 type_constraints_list : type_constraint (_comma type_constraint)+
+
+
+// Data types (ADTs)
+
+datatype_definition : KEYWORD_DATA _datatype_lhs EQ _datatype_rhs _END
+_datatype_lhs : UPPER_IDENTIFIER cons_params?
+_datatype_rhs : _INDENTATION? data_cons (_INDENTATION? PIPE data_cons)* _datatype_deriving?
+_datatype_deriving : _INDENTATION? KEYWORD_DERIVING _LPAREN _derivations_list _RPAREN
+                   | _INDENTATION? KEYWORD_DERIVING UPPER_IDENTIFIER
+
+cons_params : LOWER_IDENTIFIER+
+
+data_cons : cons_arg OPERATOR cons_arg+
+          | UPPER_IDENTIFIER cons_arg*
+
+cons_arg : type_variable | type_cons | _cons_arg_factor
+_cons_arg_factor : _LPAREN _type_expr _RPAREN
+                 | _LBRACKET _type_expr _RBRACKET
+
+
+_derivations_list : UPPER_IDENTIFIER (_comma UPPER_IDENTIFIER)*
 
 
 // *** Basic expressions ***
@@ -92,7 +118,7 @@ infixr_operator_2 : COLON
 infixl_operator_2 : OPERATOR
                   | ARROW
                   | ATSYM
-				  | FATARROW
+                  | FATARROW
 
 // This level marks the start of the standard arithmetic operators.  + and -
 // have less precedence than others.
@@ -121,15 +147,15 @@ _expr_factor : literal
             | _enclosed_expr
             | simple_list_expr
             | simple_tuple_expr
-			| enclosed_operator
-			| lambda_expr
-			| letexpr
-			| where_expr
+            | enclosed_operator
+            | lambda_expr
+            | letexpr
+            | where_expr
 
 // NB: Since I can't express the right associativity of application, I just
 // create a *chain* of factors which can't be applications themselves.
 expr_factor : _expr_factor
-			| application
+            | application
 application : _expr_factor _expr_factor+
 
 lambda_expr : BACKSLASH patterns ARROW _expr
@@ -157,12 +183,12 @@ _items : _expr (_comma _expr)* _comma?
 
 literal : number | concrete_number | string
         | char | date | datetime
- 		| date_interval | datetime_interval
+        | date_interval | datetime_interval
 
 number : BASE10_INTEGER | BASE16_INTEGER | BASE8_INTEGER | BASE2_INTEGER
 concrete_number : number ANNOTATION string
- 				| number ANNOTATION char
- 				| number ANNOTATION identifier
+                | number ANNOTATION char
+                | number ANNOTATION identifier
 string : STRING
 char : CHAR
 date : DATE
@@ -196,6 +222,7 @@ equation : identifier patterns? EQ _expr
          | enclosed_operator patterns? EQ _expr
 
 nametype_decl : identifier DOUBLECOLON type_expr
+
 
 // ** Patterns **
 
@@ -271,8 +298,8 @@ STRING.100 : "\"" _STRING_ESC_INNER "\""
 
 _CHAR_INNER : "\\" /[nrt]/
             | "\\'" | "\\\\"
-			| /./
-			| "\\" /[xuXU]\d+/
+            | /./
+            | "\\" /[xuXU]\d+/
 CHAR.100 : "'" _CHAR_INNER "'"
 
 

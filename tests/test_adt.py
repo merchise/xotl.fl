@@ -7,7 +7,13 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
-from xotl.fl import parse
+from xotl.fl.parsers.larkish import program_parser
+
+
+def parse(source):
+    result = program_parser.parse(source)
+    print(result)
+    return result
 
 
 def test_non_existential_variables():
