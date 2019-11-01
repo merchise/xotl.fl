@@ -123,6 +123,7 @@ _expr_factor : literal
             | simple_tuple_expr
 			| enclosed_operator
 			| lambda_expr
+			| letexpr
 
 // NB: Since I can't express the right associativity of application, I just
 // create a *chain* of factors which can't be applications themselves.
@@ -176,6 +177,17 @@ _st_operator : infixl_operator_2
              | infixr_operator_9
              | COMMA
 
+// Let expressions
+letexpr : KEYWORD_LET local_definitions _INDENTATION? KEYWORD_IN _expr
+
+local_definitions : _local_definition (_INDENTATION _local_definition)*
+_local_definition : nametype_decl | _valuedef
+_valuedef : equation
+
+equation : identifier patterns? EQ _expr
+         | enclosed_operator patterns? EQ _expr
+
+nametype_decl : identifier DOUBLECOLON type_expr
 
 
 // ** Patterns **
