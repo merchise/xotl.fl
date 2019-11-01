@@ -20,8 +20,7 @@ COMMENT : /--[-]*[^\n]*/
 PADDING : " "+
 %ignore PADDING
 
-
-_indentation : /\n\s+/
+_INDENTATION : /\r?\n\s+/
 
 
 // *** Type language ***
@@ -33,8 +32,8 @@ type_expr : type_schema? type_constraints? _type_expr
 _type_expr : type_function_expr | type_term
 
 type_schema : KEYWORD_FORALL identifier identifier* "."
-type_function_expr : type_term (ARROW _indentation? _type_function_expr)+
-_type_function_expr : type_term (ARROW _indentation? _type_function_expr)*
+type_function_expr : type_term (ARROW _INDENTATION? _type_function_expr)+
+_type_function_expr : type_term (ARROW _INDENTATION? _type_function_expr)*
 
 type_term : type_app_expression | type_factor
 type_app_expression : type_factor type_factor+
@@ -48,21 +47,141 @@ type_factor : type_variable
 			| type_factor_list
 			| type_factor_enclosed_type_expr
 
-type_factor_enclosed_type_expr : LPAREN _type_expr_no_constraints RPAREN
+type_factor_enclosed_type_expr : _LPAREN _type_expr_no_constraints _RPAREN
 _type_expr_no_constraints : type_schema? _type_expr
 
-type_factor_tuple : type_factor_unit_type | type_factor_nonunit_tuple
-type_factor_unit_type : LPAREN RPAREN
-type_factor_nonunit_tuple : LPAREN type_expr (COMMA type_expr)+ RPAREN
-                          | LPAREN type_expr COMMA RPAREN
-
-type_factor_list : LBRACKET type_expr RBRACKET
+type_factor_tuple : _LPAREN type_expr ((_comma type_expr)* | _comma) _RPAREN
+type_factor_list : _LBRACKET type_expr _RBRACKET
 
 type_constraints : type_constraints_list FATARROW
                  | type_constraint FATARROW
 
 type_constraint : type_cons type_variable+
-type_constraints_list : type_constraint (COMMA type_constraint)+
+type_constraints_list : type_constraint (_comma type_constraint)+
+
+
+// *** Basic expressions ***
+//
+// The number of each of the expr_termN below correlates to the precedence of
+// the operator, level 9 is the one with highest precedence.  The application
+// of terms is NOT an explicit operator.  No level share the right or left
+// associativity.
+//
+// To avoid large one-child branches in the tree only the alternatives with
+// several children are not "_anonymous".
+
+expr : _expr
+_expr : _expr_term0
+
+_expr_term0 : expr_term0 | _expr_term1
+expr_term0 : expr infixl_operator_0 _expr_term0
+infixl_operator_0 : TICK_OPERATOR
+
+
+// The list cons operator (COLON) has less precedence than other operators,
+// but higher than the `tick` operator.
+_expr_term1 : expr_term1 | _expr_term2
+expr_term1 : _expr_term2 infixr_operator_2 _expr_term1
+
+// This level of custom operators.  We need to include '->' and '@' because
+// they are tokens used elsewhere, but allow them as operators.
+_expr_term2 : expr_term2 | _expr_term6
+expr_term2 : _expr_term2 infixl_operator_2 _expr_term6
+
+infixr_operator_2 : COLON
+infixl_operator_2 : OPERATOR
+                  | ARROW
+                  | ATSYM
+				  | FATARROW
+
+// This level marks the start of the standard arithmetic operators.  + and -
+// have less precedence than others.
+_expr_term6 : expr_term6 | _expr_term7
+expr_term6 : _expr_term6 infixl_operator_6 _expr_term7
+infixl_operator_6 : PLUS
+                  | MINUS
+
+_expr_term7 : expr_term7 | _expr_term9
+expr_term7 : _expr_term7 infixl_operator_7 _expr_term9
+infixl_operator_7 : STAR
+                  | SLASH
+                  | DOUBLESLASH
+                  | PERCENT
+
+// The composition operator has the highest of precedence: 'a . f >>= g' is
+// the same as '(a . f) >>= g'.
+_expr_term9 : expr_term9 | _expr_factor | application
+expr_term9 : _expr_factor infixr_operator_9 _expr_term9
+           | application  infixr_operator_9 _expr_term9
+
+infixr_operator_9 : DOT_OPERATOR
+
+_expr_factor : literal
+            | expr_identifier
+            | _enclosed_expr
+            | simple_list_expr
+            | simple_tuple_expr
+			| enclosed_operator
+			| lambda_expr
+
+// NB: Since I can't express the right associativity of application, I just
+// create a *chain* of factors which can't be applications themselves.
+expr_factor : _expr_factor
+			| application
+application : _expr_factor _expr_factor+
+
+lambda_expr : BACKSLASH patterns ARROW _expr
+expr_identifier : UNDER_IDENTIFIER | LOWER_IDENTIFIER
+
+
+// Enclosed expressions leave no trace in the tree other than a possibly
+// *nested* application:
+//
+//  'a (b c)':
+//
+//   application
+//    expr_identifier   a
+//    application
+//      expr_identifier f
+//      expr_identifier h
+//
+// This is ok.  Also this means that "a (f)" returns the same tree "a f" does.
+_enclosed_expr : _LPAREN _expr _RPAREN
+
+
+simple_list_expr : _LBRACKET _items? _RBRACKET
+simple_tuple_expr : _LPAREN _expr _comma _items? _RPAREN
+_items : _expr (_comma _expr)* _comma?
+
+literal : number | concrete_number | string
+        | char | date | datetime
+ 		| date_interval | datetime_interval
+
+number : BASE10_INTEGER | BASE16_INTEGER | BASE8_INTEGER | BASE2_INTEGER
+concrete_number : number ANNOTATION string
+ 				| number ANNOTATION char
+ 				| number ANNOTATION identifier
+string : STRING
+char : CHAR
+date : DATE
+datetime : DATETIME
+date_interval : DATE_INTERVAL
+datetime_interval : DATETIME_INTERVAL
+
+enclosed_operator : _LPAREN _st_operator _RPAREN
+_st_operator : infixl_operator_2
+             | infixr_operator_2
+             | infixl_operator_6
+             | infixl_operator_7
+             | infixr_operator_9
+             | COMMA
+
+
+
+// ** Patterns **
+
+patterns : pattern+
+pattern : expr_identifier
 
 
 // *** Keywords ***
@@ -89,9 +208,10 @@ BACKSLASH : "\\"
 PERCENT : "%"
 EQ : "="
 PIPE : "|"
-COMMA : ","
 ATSYM : "@"
 COLON : ":"
+_comma : ","
+COMMA: ","
 
 
 // Avoid capturing operators formed by several symbols as several instances of
@@ -100,6 +220,7 @@ DOUBLESLASH.20 : "//"
 ARROW.20 : "->"
 DOUBLECOLON.20 : "::"
 FATARROW.20 : "=>"
+ANNOTATION.20 : /(?<=[0-9a-fA-F_])@(?=[\'"A-Za-z])/
 OPERATOR.10 : /[\/\.\-\+\*<>\$%\^&!@\#=\\\|,:]+/
 
 
@@ -124,9 +245,16 @@ DATE_INTERVAL.150 : /<from[ \t]+\d{4,}-\d\d-\d\d[ \t]+to[ \t]+\d{4,}-\d\d-\d\d>/
 
 
 // Strings and chars
+_STRING_INNER: /.*?/
+_STRING_ESC_INNER: _STRING_INNER /(?<!\\)(\\\\)*?/
 
-STRING.100 : /"[^\n"]|(?<=\\)")*"/
-CHAR.100 : /'(\\[ntr\\']|\\[xXuU][a-d\d]+|[^\n'])'/
+STRING.100 : "\"" _STRING_ESC_INNER "\""
+
+_CHAR_INNER : "\\" /[nrt]/
+            | "\\'" | "\\\\"
+			| /./
+			| "\\" /[xuXU]\d+/
+CHAR.100 : "'" _CHAR_INNER "'"
 
 
 // Identifiers and grouping structures
@@ -137,16 +265,14 @@ UNDER_IDENTIFIER.80 : /_[\w_]*/
 identifier : UPPER_IDENTIFIER | LOWER_IDENTIFIER | UNDER_IDENTIFIER
 
 
-LPAREN : "("
-RPAREN : ")"
+_LPAREN : "("
+_RPAREN : ")"
 
-LBRACKET : "["
-RBRACKET : "]"
+_LBRACKET : "["
+_RBRACKET : "]"
 
-LBRACE : "{"
-RBRACE : "}"
-
-
+_LBRACE : "{"
+_RBRACE : "}"
 
 // Local Variables:
 // mode: bnf
