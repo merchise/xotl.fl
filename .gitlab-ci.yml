@@ -43,6 +43,7 @@ run tests with Python 3.6:
   only:
     - master
     - merge_requests
+    - tags
 
 run tests with Python 3.7:
   <<: *run_tox_tests
@@ -51,6 +52,17 @@ run tests with Python 3.7:
   only:
     - master
     - merge_requests
+    - tags
+
+
+run tests with Python 3.8:
+  <<: *run_tox_tests
+  variables:
+    PYTHON: "3.8"
+  only:
+    - master
+    - merge_requests
+    - tags
 
 run static checks:
   <<: *run_tox_staticcheck
