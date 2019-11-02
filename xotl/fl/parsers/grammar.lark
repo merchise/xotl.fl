@@ -25,10 +25,10 @@ _INDENTATION : /(\r?\n\s*)+\s*/
 
 // A program is just a collection of at least one definition.
 program : definition (_INDENTATION definition)*  _INDENTATION?
-definition : _local_definition
-           | datatype_definition
-           | typeclass
-           | instance
+?definition : _local_definition
+            | datatype_definition
+            | typeclass
+            | instance
 
 // *** Type language ***
 //
@@ -230,8 +230,7 @@ where_expr : _expr KEYWORD_WHERE _INDENTATION? _equations _END
 
 
 local_definitions : _local_definition (_INDENTATION _local_definition)*
-_local_definition : nametype_decl | _valuedef
-_valuedef : equation
+_local_definition : nametype_decl | equation
 
 _equations : equation (_INDENTATION equation)*
 equation : name patterns? EQ _expr
