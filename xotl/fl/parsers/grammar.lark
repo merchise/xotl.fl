@@ -55,7 +55,7 @@ type_factor : type_variable
             | type_factor_list
             | type_factor_enclosed_type_expr
 
-type_factor_enclosed_type_expr : _LPAREN _type_expr_no_constraints _RPAREN
+type_factor_enclosed_type_expr : _LPAREN _INDENTATION? _type_expr_no_constraints _INDENTATION?  _RPAREN
 _type_expr_no_constraints : type_schema? _type_expr
 
 type_factor_tuple : _LPAREN type_expr ((_comma type_expr)* | _comma) _RPAREN
