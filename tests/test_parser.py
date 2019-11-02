@@ -228,8 +228,30 @@ def test_local_definitions():
     )
 
 
-# The syntax of typeclasses is being tested with the builtins.fl program.  But
-# it doens't have explicit instances, so we test here
+def test_parse_typeclass():
+    parse(
+        """
+        class Eq a where
+          (==) :: a -> a -> Bool
+          (==) a b = not (a /= b)
+
+          (/=) :: a -> a -> Bool
+          (/=) a b = not (a == b)
+
+        class Eq a => Ord a where
+          (<) :: a -> a -> Bool
+          (<) a b = not (a >= b)
+
+          (>) :: a -> a -> Bool
+          (>) a b = not (a <= b)
+
+          (<=) :: a -> a -> Bool
+          (<=) a b = a < b `or` a == b
+
+          (>=) :: a -> a -> Bool
+          (>=) a b = a > b `or` a == b
+        """
+    )
 
 
 def test_valid_instance():

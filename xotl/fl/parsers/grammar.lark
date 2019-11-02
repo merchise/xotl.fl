@@ -27,6 +27,8 @@ _INDENTATION : /(\r?\n\s*)+\s*/
 program : definition (_INDENTATION definition)*  _INDENTATION?
 definition : _local_definition
            | datatype_definition
+           | typeclass
+           | instance
 
 // *** Type language ***
 //
@@ -34,6 +36,7 @@ definition : _local_definition
 // 'type_expr' non-terminal is the starting point of the type expressions
 // sub-language.
 type_expr : type_schema? type_constraints? _type_expr
+
 _type_expr : type_function_expr | type_term
 
 type_schema : KEYWORD_FORALL identifier identifier* "."
@@ -65,7 +68,7 @@ type_constraint : type_cons type_variable+
 type_constraints_list : type_constraint (_comma type_constraint)+
 
 
-// Data types (ADTs)
+// *** Data types (ADTs) ***
 
 datatype_definition : KEYWORD_DATA _datatype_lhs EQ _datatype_rhs _END
 _datatype_lhs : UPPER_IDENTIFIER cons_params?
@@ -85,6 +88,21 @@ _cons_arg_factor : _LPAREN _type_expr _RPAREN
 
 _derivations_list : UPPER_IDENTIFIER (_comma UPPER_IDENTIFIER)*
 
+
+// *** Type classes ***
+
+// NB: We need the _END right after the WHERE because the indentation is given
+// by the CLASS keyword.
+typeclass : KEYWORD_CLASS _typeclass_def KEYWORD_WHERE _END _INDENTATION local_definitions _END
+_typeclass_def : simple_type_constraint
+               | _simple_type_constraints FATARROW simple_type_constraint
+
+simple_type_constraint : UPPER_IDENTIFIER type_variable
+_simple_type_constraints : simple_type_constraint (_comma simple_type_constraint)*
+
+// Instances
+instance : KEYWORD_INSTANCE _instance_def KEYWORD_WHERE _END _INDENTATION local_definitions _END
+_instance_def : type_constraints? _type_expr
 
 // *** Basic expressions ***
 //
@@ -222,6 +240,7 @@ equation : identifier patterns? EQ _expr
          | enclosed_operator patterns? EQ _expr
 
 nametype_decl : identifier DOUBLECOLON type_expr
+              | enclosed_operator DOUBLECOLON type_expr
 
 
 // ** Patterns **
