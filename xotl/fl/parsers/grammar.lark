@@ -43,7 +43,7 @@ type_schema : KEYWORD_FORALL LOWER_IDENTIFIER LOWER_IDENTIFIER* "."
 type_function_expr : type_term (ARROW _INDENTATION? _type_function_expr)+
 _type_function_expr : type_term (ARROW _INDENTATION? _type_function_expr)*
 
-type_term : type_app_expression | type_factor
+?type_term : type_app_expression | type_factor
 type_app_expression : type_factor type_factor+
 
 type_variable : LOWER_IDENTIFIER
@@ -54,12 +54,16 @@ type_factor : type_variable
             | type_factor_tuple
             | type_factor_list
             | type_factor_enclosed_type_expr
+            | type_factor_record
 
 type_factor_enclosed_type_expr : _LPAREN _INDENTATION? _type_expr_no_constraints _INDENTATION?  _RPAREN
 _type_expr_no_constraints : type_schema? _type_expr
 
 type_factor_tuple : _LPAREN type_expr ((_comma type_expr)* | _comma) _RPAREN
 type_factor_list : _LBRACKET type_expr _RBRACKET
+type_factor_record : _LBRACE _INDENTATION? _record_type_item (_comma _INDENTATION? _record_type_item)* _INDENTATION? _RBRACE
+
+_record_type_item : LOWER_IDENTIFIER COLON type_expr
 
 type_constraints : type_constraints_list FATARROW
                  | type_constraint FATARROW
@@ -168,6 +172,7 @@ _expr_factor : literal
             | lambda_expr
             | letexpr
             | where_expr
+            | record_value
 
 // NB: Since I can't express the right associativity of application, I just
 // create a *chain* of factors which can't be applications themselves.
@@ -219,6 +224,9 @@ _st_operator : infixl_operator_2
              | infixl_operator_7
              | infixr_operator_9
              | COMMA
+
+record_value : _LBRACE _INDENTATION? _record_value_item (_comma _INDENTATION? _record_value_item)* _INDENTATION? _RBRACE
+_record_value_item : LOWER_IDENTIFIER COLON _expr
 
 // Let and where expressions
 letexpr : KEYWORD_LET local_definitions _INDENTATION? KEYWORD_IN _expr

@@ -101,6 +101,11 @@ def test_valid_constraints():
     )
 
 
+def test_type_record_types():
+    parse("{name: String, birthdate: Date}")
+    parse("{\nname: String, \n birthdate: Date\n}")
+
+
 def test_invalid_constraints():
 
     with pytest.raises(TypeError):

@@ -521,3 +521,7 @@ def test_regression_two_strings():
         parse(r'"\"')
     with pytest.raises(ParserError):
         parse(r'"\\\"')
+
+
+def test_parse_record_values():
+    parse('{name: "John D", age: 20 + 21}')
