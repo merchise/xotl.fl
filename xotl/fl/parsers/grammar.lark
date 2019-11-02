@@ -161,7 +161,7 @@ expr_term9 : _expr_factor infixr_operator_9 _expr_term9
 infixr_operator_9 : DOT_OPERATOR
 
 _expr_factor : literal
-            | expr_identifier
+            | identifier
             | _enclosed_expr
             | simple_list_expr
             | simple_tuple_expr
@@ -177,7 +177,6 @@ expr_factor : _expr_factor
 application : _expr_factor _expr_factor+
 
 lambda_expr : BACKSLASH patterns ARROW _expr
-expr_identifier : UNDER_IDENTIFIER | LOWER_IDENTIFIER
 
 
 // Enclosed expressions leave no trace in the tree other than a possibly
@@ -186,10 +185,10 @@ expr_identifier : UNDER_IDENTIFIER | LOWER_IDENTIFIER
 //  'a (b c)':
 //
 //   application
-//    expr_identifier   a
+//    identifier   a
 //    application
-//      expr_identifier f
-//      expr_identifier h
+//      identifier f
+//      identifier h
 //
 // This is ok.  Also this means that "a (f)" returns the same tree "a f" does.
 _enclosed_expr : _LPAREN _expr _RPAREN
