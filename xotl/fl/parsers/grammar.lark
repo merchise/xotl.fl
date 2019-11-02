@@ -245,8 +245,26 @@ nametype_decl : identifier DOUBLECOLON type_expr
 
 // ** Patterns **
 
-patterns : pattern+
-pattern : expr_identifier
+patterns : _pattern+
+_pattern : _pattern_name? pattern
+_pattern_name : LOWER_IDENTIFIER ATSYM
+_annon_pattern : identifier
+               | literal
+               | list_pattern
+               | list_cons_pattern
+               | tuple_pattern
+               | cons_pattern
+               | _LPAREN _annon_pattern _RPAREN
+
+pattern : _annon_pattern
+
+list_pattern : _LBRACKET _pattern_items? _RBRACKET
+_pattern_items : pattern (_comma pattern)* _comma?
+tuple_pattern : _LPAREN pattern _comma _pattern_items? _RPAREN
+
+cons_pattern : identifier patterns?
+list_cons_pattern : _annon_pattern (COLON _annon_pattern)+
+
 
 
 // *** Keywords ***
