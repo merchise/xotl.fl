@@ -39,7 +39,7 @@ type_expr : type_schema? type_constraints? _type_expr
 
 _type_expr : type_function_expr | type_term
 
-type_schema : KEYWORD_FORALL identifier identifier* "."
+type_schema : KEYWORD_FORALL LOWER_IDENTIFIER LOWER_IDENTIFIER* "."
 type_function_expr : type_term (ARROW _INDENTATION? _type_function_expr)+
 _type_function_expr : type_term (ARROW _INDENTATION? _type_function_expr)*
 
@@ -84,7 +84,6 @@ data_cons : cons_arg OPERATOR cons_arg+
 cons_arg : type_variable | type_cons | _cons_arg_factor
 _cons_arg_factor : _LPAREN _type_expr _RPAREN
                  | _LBRACKET _type_expr _RBRACKET
-
 
 _derivations_list : UPPER_IDENTIFIER (_comma UPPER_IDENTIFIER)*
 
@@ -235,11 +234,9 @@ _local_definition : nametype_decl | _valuedef
 _valuedef : equation
 
 _equations : equation (_INDENTATION equation)*
-equation : identifier patterns? EQ _expr
-         | enclosed_operator patterns? EQ _expr
-
-nametype_decl : identifier DOUBLECOLON type_expr
-              | enclosed_operator DOUBLECOLON type_expr
+equation : name patterns? EQ _expr
+nametype_decl : name DOUBLECOLON type_expr
+name : LOWER_IDENTIFIER | enclosed_operator
 
 
 // ** Patterns **
@@ -359,4 +356,5 @@ _RBRACE : "}"
 // Local Variables:
 // mode: bnf
 // comment-start: "//"
+// indent-tabs-mode: nil
 // End:
