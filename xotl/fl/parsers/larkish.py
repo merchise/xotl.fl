@@ -15,6 +15,14 @@ from lark.indenter import Indenter
 
 
 class LexerHelper:
+    """Provides functions the lexer alone cannot do.
+
+    Introduces an _END token at points where the lexer already saw a
+    block-beginning token (BLOCK_BEGIN_types) and reaches a token that leaves
+    the indentation mark of the block.
+
+    """
+
     BLOCK_END_type = "_END"
     BLOCK_BEGIN_types = (
         "KEYWORD_WHERE",
@@ -27,7 +35,7 @@ class LexerHelper:
         stack: Deque[Token] = deque([])
         last_line = 0
         for token in stream:
-            if token.type == "_INDENTATION":
+            if token.type == "_NL":
                 last_column = len(token.value.split("\n")[-1])
                 while stack and last_column <= stack[-1].column:
                     tk = stack.pop()

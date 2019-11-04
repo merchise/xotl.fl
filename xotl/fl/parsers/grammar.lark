@@ -20,11 +20,11 @@ COMMENT : /(\r?\n\s*)+\s*--[-]*[^\n]*/
 PADDING : " "+
 %ignore PADDING
 
-_INDENTATION : /(\r?\n\s*)+\s*/
+_NL : /(\r?\n\s*)+\s*/
 
 
 // A program is just a collection of at least one definition.
-program : definition (_INDENTATION definition)*  _INDENTATION?
+program : definition (_NL definition)*  _NL?
 ?definition : _local_definition
             | datatype_definition
             | typeclass
@@ -40,8 +40,8 @@ type_expr : type_schema? type_constraints? _type_expr
 _type_expr : type_function_expr | type_term
 
 type_schema : KEYWORD_FORALL LOWER_IDENTIFIER LOWER_IDENTIFIER* "."
-type_function_expr : type_term (ARROW _INDENTATION? _type_function_expr)+
-_type_function_expr : type_term (ARROW _INDENTATION? _type_function_expr)*
+type_function_expr : type_term (ARROW _NL? _type_function_expr)+
+_type_function_expr : type_term (ARROW _NL? _type_function_expr)*
 
 ?type_term : type_app_expression | type_factor
 type_app_expression : type_factor type_factor+
@@ -56,12 +56,12 @@ type_factor : type_variable
             | type_factor_enclosed_type_expr
             | type_factor_record
 
-type_factor_enclosed_type_expr : _LPAREN _INDENTATION? _type_expr_no_constraints _INDENTATION?  _RPAREN
+type_factor_enclosed_type_expr : _LPAREN _NL? _type_expr_no_constraints _NL?  _RPAREN
 _type_expr_no_constraints : type_schema? _type_expr
 
 type_factor_tuple : _LPAREN type_expr ((_comma type_expr)* | _comma) _RPAREN
 type_factor_list : _LBRACKET type_expr _RBRACKET
-type_factor_record : _LBRACE _INDENTATION? _record_type_item (_comma _INDENTATION? _record_type_item)* _INDENTATION? _RBRACE
+type_factor_record : _LBRACE _NL? _record_type_item (_comma _NL? _record_type_item)* _NL? _RBRACE
 
 _record_type_item : LOWER_IDENTIFIER COLON type_expr
 
@@ -76,9 +76,9 @@ type_constraints_list : type_constraint (_comma type_constraint)+
 
 datatype_definition : KEYWORD_DATA _datatype_lhs EQ _datatype_rhs _END
 _datatype_lhs : UPPER_IDENTIFIER cons_params?
-_datatype_rhs : _INDENTATION? data_cons (_INDENTATION? PIPE data_cons)* _datatype_deriving?
-_datatype_deriving : _INDENTATION? KEYWORD_DERIVING _LPAREN _derivations_list _RPAREN
-                   | _INDENTATION? KEYWORD_DERIVING UPPER_IDENTIFIER
+_datatype_rhs : _NL? data_cons (_NL? PIPE data_cons)* _datatype_deriving?
+_datatype_deriving : _NL? KEYWORD_DERIVING _LPAREN _derivations_list _RPAREN
+                   | _NL? KEYWORD_DERIVING UPPER_IDENTIFIER
 
 cons_params : LOWER_IDENTIFIER+
 
@@ -96,7 +96,7 @@ _derivations_list : UPPER_IDENTIFIER (_comma UPPER_IDENTIFIER)*
 
 // NB: We need the _END right after the WHERE because the indentation is given
 // by the CLASS keyword.
-typeclass : KEYWORD_CLASS _typeclass_def KEYWORD_WHERE _END _INDENTATION local_definitions _END
+typeclass : KEYWORD_CLASS _typeclass_def KEYWORD_WHERE _END _NL local_definitions _END
 _typeclass_def : simple_type_constraint
                | _simple_type_constraints FATARROW simple_type_constraint
 
@@ -104,7 +104,7 @@ simple_type_constraint : UPPER_IDENTIFIER type_variable
 _simple_type_constraints : simple_type_constraint (_comma simple_type_constraint)*
 
 // Instances
-instance : KEYWORD_INSTANCE _instance_def KEYWORD_WHERE _END _INDENTATION local_definitions _END
+instance : KEYWORD_INSTANCE _instance_def KEYWORD_WHERE _END _NL local_definitions _END
 _instance_def : type_constraints? _type_expr
 
 // *** Basic expressions ***
@@ -225,22 +225,22 @@ _st_operator : infixl_operator_2
              | infixr_operator_9
              | COMMA
 
-record_value : _LBRACE _INDENTATION? _record_value_item (_comma _INDENTATION? _record_value_item)* _INDENTATION? _RBRACE
+record_value : _LBRACE _NL? _record_value_item (_comma _NL? _record_value_item)* _NL? _RBRACE
 _record_value_item : LOWER_IDENTIFIER COLON _expr
 
 // Let and where expressions
-letexpr : KEYWORD_LET local_definitions _INDENTATION? KEYWORD_IN _expr
+letexpr : KEYWORD_LET local_definitions _NL? KEYWORD_IN _expr
 
 // The _END terminal is a virtual token issued by the LexerHelper to account
 // for indentation changes.
 %declare _END
-where_expr : _expr KEYWORD_WHERE _INDENTATION? _equations _END
+where_expr : _expr KEYWORD_WHERE _NL? _equations _END
 
 
-local_definitions : _local_definition (_INDENTATION _local_definition)*
+local_definitions : _local_definition (_NL _local_definition)*
 _local_definition : nametype_decl | equation
 
-_equations : equation (_INDENTATION equation)*
+_equations : equation (_NL equation)*
 equation : name patterns? EQ _expr
 nametype_decl : name DOUBLECOLON type_expr
 name : LOWER_IDENTIFIER | enclosed_operator
