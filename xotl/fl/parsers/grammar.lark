@@ -96,16 +96,30 @@ _derivations_list : UPPER_IDENTIFIER (_comma UPPER_IDENTIFIER)*
 
 // NB: We need the _END right after the WHERE because the indentation is given
 // by the CLASS keyword.
-typeclass : KEYWORD_CLASS _typeclass_def KEYWORD_WHERE _END _NL local_definitions _END
+typeclass : _normally_indented_typeclass | _funny_typeclass
+_normally_indented_typeclass : KEYWORD_CLASS _typeclass_def KEYWORD_WHERE _END _NL local_definitions _END
 _typeclass_def : simple_type_constraint
                | _simple_type_constraints FATARROW simple_type_constraint
+
+// This *funny* type class is to allow the rather odd-looking:
+//
+//    class X where
+//              local_definitions...
+//
+// where the local definitions are in the indentation scope of the 'where'
+// instead of the 'class'.
+ _funny_typeclass : KEYWORD_CLASS _typeclass_def KEYWORD_WHERE _NL local_definitions _END _END
+
 
 simple_type_constraint : UPPER_IDENTIFIER type_variable
 _simple_type_constraints : simple_type_constraint (_comma simple_type_constraint)*
 
 // Instances
-instance : KEYWORD_INSTANCE _instance_def KEYWORD_WHERE _END _NL local_definitions _END
+instance : _normally_indented_instance | _funny_instance
+_normally_indented_instance : KEYWORD_INSTANCE _instance_def KEYWORD_WHERE _END _NL local_definitions _END
 _instance_def : type_constraints? _type_expr
+
+_funny_instance : KEYWORD_INSTANCE _instance_def KEYWORD_WHERE _NL local_definitions _END _END
 
 // *** Basic expressions ***
 //

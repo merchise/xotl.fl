@@ -251,6 +251,28 @@ def test_parse_typeclass():
           (>=) :: a -> a -> Bool
           (>=) a b = a > b `or` a == b
         """
+    ) == parse(
+        """
+        class Eq a where
+                      (==) :: a -> a -> Bool
+                      (==) a b = not (a /= b)
+
+                      (/=) :: a -> a -> Bool
+                      (/=) a b = not (a == b)
+
+        class Eq a => Ord a where
+                              (<) :: a -> a -> Bool
+                              (<) a b = not (a >= b)
+
+                              (>) :: a -> a -> Bool
+                              (>) a b = not (a <= b)
+
+                              (<=) :: a -> a -> Bool
+                              (<=) a b = a < b `or` a == b
+
+                              (>=) :: a -> a -> Bool
+                              (>=) a b = a > b `or` a == b
+        """
     )
 
 
@@ -265,6 +287,17 @@ def test_valid_instance():
            (==) (Left a) (Left b)   = a == b
            (==) (Right a) (Right b) = a == b
            (==) _         _         = False
+        """
+    ) == parse(
+        """
+        instance Eq a => Eq [a] where
+                                  (==) [] []     = True
+                                  (==) x:xs y:ys = x == y `and` xs == ys
+
+        instance Eq a, Eq b => Eq (Either a b) where
+                                                   (==) (Left a) (Left b)   = a == b
+                                                   (==) (Right a) (Right b) = a == b
+                                                   (==) _         _         = False
         """
     )
 
