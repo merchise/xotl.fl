@@ -333,3 +333,30 @@ def test_adt_operators():
              deriving Eq
         """
     )
+
+
+def test_parse_comments():
+    assert (
+        parse(
+            """-- A comment here
+            --- another
+            data Qual t = [Pred] :=> t
+                 -- and here
+            -- and here again
+                 deriving Eq
+
+            --- funny comment
+            fn x = x -- this is not a comment
+
+            --- And we end with a comment"""
+        )
+        == parse(
+            """
+            data Qual t = [Pred] :=> t
+                 deriving Eq
+
+            fn x = x   -- this is not a comment
+
+            """
+        )
+    )

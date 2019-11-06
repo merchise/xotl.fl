@@ -10,7 +10,12 @@
 // date-related tokens instead of the operator '<' followed by identifier
 // 'from'.
 
-COMMENT : /(\r?\n\s*)+\s*--[-]*[^\n]*/
+// NB: Comment has to have higher priority than OPERATOR, so that the initial
+// -- is not confused with an operator.
+//
+// Notice that comments require a NL at the end but don't consume it, so _NL
+// is likely to be issued after a comment.
+COMMENT.11 : /(\r?\n[\r?\n\s]*|^)--[-]*[^\n]*(?=\r?\n|$)/
 %ignore COMMENT
 
 
@@ -24,7 +29,7 @@ _NL : /(\r?\n\s*)+\s*/
 
 
 // A program is just a collection of at least one definition.
-program : definition (_NL definition)*  _NL?
+program : _NL* definition (_NL+ definition)*  _NL*
 ?definition : _local_definition
             | datatype_definition
             | typeclass
