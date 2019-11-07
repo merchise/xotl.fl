@@ -16,6 +16,7 @@ from xotl.fl.ast.types import (
     FunctionTypeCons as F,
     TypeCons as C,
     ListTypeCons,
+    TupleTypeCons,
     ConstrainedType,
     TypeConstraint,
     Type,
@@ -23,6 +24,9 @@ from xotl.fl.ast.types import (
 from xotl.fl.parsers.larkish import type_expr_parser, ASTBuilder
 
 from xotl.fl.utils import tvarsupply
+
+from hypothesis import given, strategies, assume
+from xotl.fl.testing.strategies.lark import from_lark
 
 
 def parse(source):
@@ -83,6 +87,26 @@ def test_parse_of_listtypes():
         parse("(a -> b)"), F(ListTypeCons(T("a")), ListTypeCons(T("b")))
     )
     assert P("[a -> b]") == ListTypeCons(F(T("a"), T("b")))
+
+
+@given(
+    strategies.lists(
+        from_lark(type_expr_parser, start="type_factor"), min_size=2, max_size=10
+    )
+)
+def test_parse_of_tuple_types(types):
+    P = parse
+    types = [t for t in types if "--" not in t]
+    tuple_type = P(f"({', '.join(types)})")
+    subtypes = tuple(P(t) for t in types)
+    assert tuple_type == TupleTypeCons(*subtypes)
+
+
+@given(from_lark(type_expr_parser, start="type_factor"))
+def test_parse_of_tuple_types_with_a_single_item(type_):
+    P = parse
+    assume("--" not in type_)
+    assert P(f"({type_}, )") == TupleTypeCons(P(type_))
 
 
 def test_parse_application():

@@ -234,6 +234,15 @@ class TypeScheme(Type):
         return cls.from_typeexpr(type_, generics=generics)
 
 
+@dataclass
+class TypeRecord(Type):
+    fields: Mapping[str, Type]
+
+    def __str__(self):
+        items = ", ".join(f"{name}: {type_!s}" for name, type_ in fields.items())
+        return f"{{{items}}}"
+
+
 # This should not be confounded with the Constrained Type Scheme of
 # [Jones1994].  Instead this is the Type Scheme with a qualified type given
 # by the `constraints`.

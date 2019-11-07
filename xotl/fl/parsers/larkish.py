@@ -8,6 +8,7 @@
 #
 import os.path
 from collections import deque
+from dataclasses import dataclass
 from typing import Iterable, Deque
 from lark import Lark, Transformer, Token, v_args, Tree
 
@@ -18,8 +19,10 @@ from xotl.fl.ast.types import (
     TypeConstraint,
     TypeSchema,
     ListTypeCons,
+    TupleTypeCons,
     ConstrainedType,
     TypeConstraint,
+    TypeRecord,
 )
 
 
@@ -151,6 +154,38 @@ class ASTBuilder(Transformer):
         else:
             partial_schema.type_ = type_
             return partial_schema
+
+    @v_args(inline=True)
+    def type_factor_list(self, type_expr):
+        return ListTypeCons(type_expr)
+
+    @v_args(inline=True)
+    def type_factor_tuple(self, *types):
+        assert all(isinstance(t, Type) for t in types)
+        return TupleTypeCons(*types)
+
+    @v_args(tree=True)
+    def type_factor_record(self, tree):
+        fields = tree.children
+        assert all(isinstance(f, record_type_item) for f in fields)
+        if len({f.name for f in fields}) != len(fields):
+            raise ValueError(
+                f"Duplicated fields in record type at line {tree.line}, "
+                f"column {tree.column} in {tree!r}"
+            )
+        return TypeRecord({f.name: f.type_ for f in fields})
+
+    @v_args(inline=True)
+    def record_type_item(self, name, _colon, type_):
+        assert isinstance(name, Token)
+        assert isinstance(type_, Type)
+        return record_type_item(name.value, type_)
+
+
+@dataclass
+class record_type_item:
+    name: str
+    type_: Type
 
 
 type_expr_parser = Lark.open(
