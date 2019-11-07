@@ -119,10 +119,10 @@ def test_parse_application():
 
 def test_valid_constraints():
     assert parse("Eq a => a -> a -> Bool") == ConstrainedType(
-        ("a",), parse("a -> a -> Bool"), [TypeConstraint("Eq", T("a"))]
+        (), parse("a -> a -> Bool"), [TypeConstraint("Eq", T("a"))]
     )
     assert parse("Eq a, Ord a => a -> a -> Bool") == ConstrainedType(
-        ("a",),
+        (),
         parse("a -> a -> Bool"),
         [TypeConstraint("Eq", T("a")), TypeConstraint("Ord", T("a"))],
     )
