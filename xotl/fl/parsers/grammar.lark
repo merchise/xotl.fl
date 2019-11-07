@@ -48,7 +48,7 @@ type_function_expr : type_term (ARROW _NL? _type_function_expr)+
 _type_function_expr : type_term (ARROW _NL? _type_function_expr)*
 
 ?type_term : type_app_expression | type_factor
-type_app_expression : type_factor type_factor+
+type_app_expression : (type_variable|type_cons) type_factor+
 
 type_variable : LOWER_IDENTIFIER
 type_cons : UPPER_IDENTIFIER
