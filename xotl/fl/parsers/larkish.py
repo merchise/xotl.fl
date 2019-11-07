@@ -9,9 +9,18 @@
 import os.path
 from collections import deque
 from typing import Iterable, Deque
+from lark import Lark, Transformer, Token, v_args, Tree
 
-from lark import Lark, Transformer, Token
-from lark.indenter import Indenter
+from xotl.fl.ast.types import (
+    Type,
+    TypeVariable,
+    TypeCons,
+    TypeConstraint,
+    TypeSchema,
+    ListTypeCons,
+    ConstrainedType,
+    TypeConstraint,
+)
 
 
 class LexerHelper:
@@ -57,6 +66,93 @@ class LexerHelper:
         for token in self._process(stream):
             print(token, token.type)
             yield token
+
+
+class ASTBuilder(Transformer):
+    @v_args(tree=True)
+    def type_variable(self, tree):
+        token: Token = tree.children[0]
+        return TypeVariable(token.value)
+
+    @v_args(tree=True)
+    def type_cons(self, tree):
+        token: Token = tree.children[0]
+        return TypeCons(token.value)
+
+    @v_args(tree=True)
+    def type_app_expression(self, tree):
+        f, *factors = tree.children
+        if isinstance(f, TypeVariable):
+            f = TypeCons(f.name)
+        assert isinstance(f, TypeCons)
+        return TypeCons(f.cons, f.subtypes + tuple(factors), binary=f.binary)
+
+    @v_args(tree=True)
+    def type_function_expr(self, tree):
+        # The type_function_expr is written as 'type_term (_arrow _NL?
+        # _type_function_expr)+'; so we get a list [type, ARROW, type, ARROW, type, ...].
+        assert all(
+            isinstance(t, Type) or (isinstance(t, Token) and t.type == "ARROW")
+            for t in tree.children
+        )
+        types = list(t for t in tree.children if isinstance(t, Type))
+        types.reverse()  # reverse to get right-associativity
+        t1, t2, *rest = types
+        result = t2 >> t1
+        for t in rest:
+            result = t >> result
+        return result
+
+    @v_args(inline=True)
+    def type_factor_enclosed_type_expr(self, _lparen, result, _rparen):
+        return result
+
+    @v_args(tree=True)
+    def type_constraint(self, tree):
+        name, var = tree.children
+        assert isinstance(name, Token) and name.type == "UPPER_IDENTIFIER"
+        assert isinstance(var, TypeVariable)
+        return TypeConstraint(name, var)
+
+    @v_args(tree=True)
+    def type_expr_no_constraints(self, tree):
+        schema, expr = tree.children
+        assert isinstance(schema, TypeSchema) and schema.type_ is None  # type: ignore
+        assert isinstance(expr, Type)
+        schema.type_ = expr
+        return schema
+
+    @v_args(meta=True)
+    def type_constraints(self, children, meta):
+        *types, _fatarrow = children
+        assert isinstance(_fatarrow, Token) and _fatarrow.type == "FATARROW"
+        assert all(isinstance(t, TypeConstraint) for t in types)
+        return types
+
+    @v_args(tree=True)
+    def type_expr_no_schema(self, tree):
+        constraints, type_expr = tree.children
+        return ConstrainedType((), type_expr, constraints)
+
+    @v_args(meta=True)
+    def type_schema(self, children, meta):
+        forall, *identifiers = children
+        assert isinstance(forall, Token) and forall.type == "KEYWORD_FORALL"
+        assert all(
+            isinstance(i, Token) and i.type == "LOWER_IDENTIFIER" for i in identifiers
+        )
+        # NB: Return a partially built TypeSchema with a type.
+        return TypeSchema((i.value for i in identifiers), None)  # type: ignore
+
+    @v_args(tree=True)
+    def type_expr(self, tree):
+        partial_schema, type_ = tree.children
+        if isinstance(type_, ConstrainedType):
+            type_.generics = partial_schema.generics
+            return type_
+        else:
+            partial_schema.type_ = type_
+            return partial_schema
 
 
 type_expr_parser = Lark.open(

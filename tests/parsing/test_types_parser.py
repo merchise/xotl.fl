@@ -7,6 +7,8 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
+import lark
+
 from textwrap import dedent
 
 from xotl.fl.ast.types import (
@@ -16,15 +18,16 @@ from xotl.fl.ast.types import (
     ListTypeCons,
     ConstrainedType,
     TypeConstraint,
+    Type,
 )
-from xotl.fl.parsers.larkish import type_expr_parser
-from xotl.fl.parsers import ParserError
+from xotl.fl.parsers.larkish import type_expr_parser, ASTBuilder
 
 from xotl.fl.utils import tvarsupply
 
 
 def parse(source):
-    return type_expr_parser.parse(dedent(source).strip())
+    builder = ASTBuilder()
+    return builder.transform(type_expr_parser.parse(dedent(source).strip()))
 
 
 # The id function type
@@ -86,8 +89,8 @@ def test_parse_application():
     assert parse("a (f b)") == C("a", [C("f", [T("b")])])
     assert parse("A (B b) (C c)") == C("A", [C("B", [T("b")]), C("C", [T("c")])])
 
-    # Is this ok?
-    assert parse("(f b) a") == parse("f b a")
+    with pytest.raises(lark.exceptions.UnexpectedToken):
+        assert parse("(f b) a") == parse("f b a")
 
 
 def test_valid_constraints():
@@ -108,8 +111,8 @@ def test_type_record_types():
 
 def test_invalid_constraints():
 
-    with pytest.raises(TypeError):
+    with pytest.raises(Exception):  # VisitError, but I don't like it.
         parse("Eq c => a")
 
-    with pytest.raises(ParserError):
+    with pytest.raises(lark.exceptions.UnexpectedToken):
         parse("Eq a, Ord a -> a => Bool")
