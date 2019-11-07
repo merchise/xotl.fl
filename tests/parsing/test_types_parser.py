@@ -29,6 +29,14 @@ from hypothesis import given, strategies, assume
 from xotl.fl.testing.strategies.lark import from_lark
 
 
+# COMMENT is explicitly set to the a single space, because our COMMENT regex
+# allows for it to be generated at arbitrary points (the usage of ^ and $
+# implies it doesn't generate the proper newlines).
+type_factors = from_lark(
+    type_expr_parser, start="type_factor", explicit={"COMMENT": strategies.just(" ")}
+)
+
+
 def parse(source):
     builder = ASTBuilder()
     return builder.transform(type_expr_parser.parse(dedent(source).strip()))
@@ -89,11 +97,7 @@ def test_parse_of_listtypes():
     assert P("[a -> b]") == ListTypeCons(F(T("a"), T("b")))
 
 
-@given(
-    strategies.lists(
-        from_lark(type_expr_parser, start="type_factor"), min_size=2, max_size=10
-    )
-)
+@given(strategies.lists(type_factors, min_size=2, max_size=10))
 def test_parse_of_tuple_types(types):
     P = parse
     types = [t for t in types if "--" not in t]
@@ -102,7 +106,7 @@ def test_parse_of_tuple_types(types):
     assert tuple_type == TupleTypeCons(*subtypes)
 
 
-@given(from_lark(type_expr_parser, start="type_factor"))
+@given(type_factors)
 def test_parse_of_tuple_types_with_a_single_item(type_):
     P = parse
     assume("--" not in type_)
