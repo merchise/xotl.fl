@@ -64,7 +64,8 @@ type_factor : type_variable
 type_factor_enclosed_type_expr : _LPAREN _NL? _type_expr_no_constraints _NL?  _RPAREN
 _type_expr_no_constraints : type_schema? _type_expr
 
-type_factor_tuple : _LPAREN type_expr ((_comma type_expr)* | _comma) _RPAREN
+type_factor_tuple : _LPAREN type_expr _comma _RPAREN
+                  | _LPAREN type_expr (_comma type_expr)+ _comma? _RPAREN
 type_factor_list : _LBRACKET type_expr _RBRACKET
 type_factor_record : _LBRACE _NL? _record_type_item (_comma _NL? _record_type_item)* _NL? _RBRACE
 
