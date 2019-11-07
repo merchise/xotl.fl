@@ -63,9 +63,7 @@ class LexerHelper:
             yield t
 
     def process(self, stream: Iterable[Token]) -> Iterable[Token]:
-        for token in self._process(stream):
-            print(token, token.type)
-            yield token
+        yield from self._process(stream)
 
 
 class ASTBuilder(Transformer):
