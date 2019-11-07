@@ -40,8 +40,7 @@ program : _NL* definition (_NL+ definition)*  _NL*
 // The type language allows to express type-related "expressions".  The
 // 'type_expr' non-terminal is the starting point of the type expressions
 // sub-language.
-type_expr : type_schema? type_constraints? _type_expr
-
+?type_expr : type_schema? type_constraints? _type_expr
 _type_expr : type_function_expr | type_term
 
 type_schema : KEYWORD_FORALL LOWER_IDENTIFIER LOWER_IDENTIFIER* "."
@@ -54,15 +53,15 @@ type_app_expression : type_factor type_factor+
 type_variable : LOWER_IDENTIFIER
 type_cons : UPPER_IDENTIFIER
 
-type_factor : type_variable
-            | type_cons
-            | type_factor_tuple
-            | type_factor_list
-            | type_factor_enclosed_type_expr
-            | type_factor_record
+?type_factor : type_variable
+             | type_cons
+             | type_factor_tuple
+             | type_factor_list
+             | _type_factor_enclosed_type_expr
+             | type_factor_record
 
-type_factor_enclosed_type_expr : _LPAREN _NL? _type_expr_no_constraints _NL?  _RPAREN
-_type_expr_no_constraints : type_schema? _type_expr
+_type_factor_enclosed_type_expr : _LPAREN _NL? type_expr_no_constraints _NL?  _RPAREN
+?type_expr_no_constraints : type_schema? _type_expr
 
 type_factor_tuple : _LPAREN type_expr _comma _RPAREN
                   | _LPAREN type_expr (_comma type_expr)+ _comma? _RPAREN
