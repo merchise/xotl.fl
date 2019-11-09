@@ -263,7 +263,7 @@ _local_definition : nametype_decl | equation
 _equations : equation (_NL equation)*
 equation : name patterns? EQ _expr
 nametype_decl : name DOUBLECOLON type_expr
-name : LOWER_IDENTIFIER | enclosed_operator
+name : LOWER_IDENTIFIER | UNDER_IDENTIFIER | enclosed_operator
 
 
 // ** Patterns **
