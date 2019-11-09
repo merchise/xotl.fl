@@ -207,10 +207,11 @@ safe_tail _:xs = Just xs
 append :: a -> [a] -> [a]
 append x ls = ls ++ [x]
 
+-- Compute the length of a list.
 length :: [a] -> Number
 length = _length 0 where
-                   _length r []   = r
-                   _length r x:xs = _length (r + 1) xs
+                    _length r []   = r
+                    _length r x:xs = _length (r + 1) xs
 
 
 -- The count produces an infinite stream of numbers starting at `x`.

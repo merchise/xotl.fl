@@ -45,11 +45,13 @@ class LexerHelper:
 
     def _process(self, stream: Iterable[Token]) -> Iterable[Token]:
         stack: Deque[Token] = deque([])
+
         last_line = 0
         for token in stream:
             if token.type == "_NL":
-                last_column = len(token.value.split("\n")[-1])
-                while stack and last_column <= stack[-1].column:
+                # +1 because columns in lark start at 1.
+                column = len(token.value.split("\n")[-1]) + 1
+                while stack and column <= stack[-1].column:
                     tk = stack.pop()
                     yield Token.new_borrow_pos(self.BLOCK_END_type, tk.value, token)
 
