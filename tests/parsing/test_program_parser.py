@@ -360,3 +360,12 @@ def test_parse_comments():
             """
         )
     )
+
+
+def test_parse_builtins_program():
+    import pkg_resources
+
+    fname = pkg_resources.resource_filename("xotl.fl", "builtins.fl")
+    with open(fname, "r", encoding="utf-8") as f:
+        source = f.read()
+    parse(source)
