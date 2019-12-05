@@ -14,6 +14,9 @@
 id :: a -> a
 id x = x
 
+const :: a -> (b -> a)
+const x _ = x
+
 map :: (a -> b) -> [a] -> [b]
 map f []   = []
 map f x:xs = f x : map f xs

@@ -11,7 +11,7 @@ from textwrap import dedent
 
 from hypothesis import strategies as s, given, example, assume
 
-from ply import lex
+from lark.exceptions import LarkError
 
 from xotl.fl import tokenize
 from xotl.fl.ast.expressions import (
@@ -25,8 +25,8 @@ from xotl.fl.ast.expressions import (
 )
 from xotl.fl.ast.pattern import Equation, ConcreteLet, ConsPattern
 
-from xotl.fl.parsers import string_repr, ParserError
-from xotl.fl.parsers.larkish import expr_parser
+from xotl.fl.parsers import string_repr
+from xotl.fl.parsers.larkish import expr_parser, ASTBuilder
 
 from xotl.fl.builtins import (
     NumberType,
@@ -40,11 +40,12 @@ from xotl.fl.builtins import (
 
 
 def parse(source):
-    return expr_parser.parse(dedent(source).strip())
+    builder = ASTBuilder()
+    return builder.transform(expr_parser.parse(dedent(source).strip()))
 
 
 def test_trivially_malformed():
-    with pytest.raises(ParserError):
+    with pytest.raises(LarkError):
         parse("")
 
 
@@ -133,7 +134,7 @@ def test_wfe_float_literals(n):
     assert parse("_1e+10") == Application(
         Application(Identifier("+"), Identifier("_1e")), Literal(10, NumberType)
     )
-    with pytest.raises(lex.LexError):
+    with pytest.raises(LarkError):
         tokenize("_0.1")
 
 
@@ -348,7 +349,7 @@ def test_date_literals(d):
     code = f"<{d!s}>"
     try:
         res = parse(code)
-    except (lex.LexError, ParserError):
+    except LarkError:
         raise AssertionError(f"Unexpected parsing error: {code}")
     assert res == Literal(d, DateType)
 
@@ -376,7 +377,7 @@ def test_datetime_literals(d):
     code = f"<{d!s}>"
     try:
         res = parse(code)
-    except (lex.LexError, ParserError):
+    except LarkError:
         raise AssertionError(f"Unexpected parsing error: {code}")
     assert res == Literal(d, DateTimeType)
 
@@ -468,7 +469,7 @@ def test_list_cons_precedence():
     assert parse("a `f` b : xs") == parse("a `f` (b:xs)")
 
     # A custom operator <+:+>
-    assert parse("a <+:+> b : xs", debug=True) == parse("(a <+:+> b):xs")
+    assert parse("a <+:+> b : xs") == parse("(a <+:+> b):xs")
 
 
 def test_comma_as_an_operator():
@@ -515,11 +516,11 @@ def test_regression_two_strings():
     parse('""')  # The empty string
     parse(r'"\""')
     parse(r'"\\"')
-    with pytest.raises(ParserError):
+    with pytest.raises(LarkError):
         parse(r'"\\""')
-    with pytest.raises(ParserError):
+    with pytest.raises(LarkError):
         parse(r'"\"')
-    with pytest.raises(ParserError):
+    with pytest.raises(LarkError):
         parse(r'"\\\"')
 
 

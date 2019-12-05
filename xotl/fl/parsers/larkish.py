@@ -25,6 +25,15 @@ from xotl.fl.ast.types import (
     TypeRecord,
 )
 
+from xotl.fl.ast.expressions import (
+    Identifier,
+    Literal,
+    build_list_expr,
+    build_application,
+)
+
+from xotl.fl.builtins import NumberType
+
 
 class LexerHelper:
     """Provides functions the lexer alone cannot do.
@@ -182,6 +191,38 @@ class ASTBuilder(Transformer):
         assert isinstance(name, Token)
         assert isinstance(type_, Type)
         return record_type_item(name.value, type_)
+
+    @v_args(tree=True)
+    def simple_list_expr(self, tree):
+        return build_list_expr(*tree.children)
+
+    @v_args(tree=True)
+    def application(self, tree):
+        return build_application(*tree.children)
+
+    # We use the following for all expr_termN rules.
+    @v_args(inline=True)
+    def _arith_exprs(self, term1, operator, term2):
+        return build_application(operator, term1, term2)
+
+    expr_term0 = expr_term1 = expr_term2 = expr_term6 = _arith_exprs
+    expr_term7 = expr_term9 = _arith_exprs
+
+    @v_args(inline=True)
+    def _operator(self, token):
+        return Identifier(token.value)
+
+    infixr_operator_2 = infixl_operator_6 = _operator
+    infixl_operator_7 = infixr_operator_9 = _operator
+    enclosed_operator = _operator
+
+    @v_args(inline=True)
+    def identifier(self, token):
+        return Identifier(token.value)
+
+    @v_args(inline=True)
+    def number(self, token):
+        return Literal(eval(token.value), NumberType)
 
 
 @dataclass

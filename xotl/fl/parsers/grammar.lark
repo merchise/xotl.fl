@@ -137,23 +137,23 @@ _funny_instance : KEYWORD_INSTANCE _instance_def KEYWORD_WHERE _NL local_definit
 // To avoid large one-child branches in the tree only the alternatives with
 // several children are not "_anonymous".
 
-expr : _expr
-_expr : _expr_term0
+?expr : _expr
+_expr : expr_term0
 
-_expr_term0 : expr_term0 | _expr_term1
-expr_term0 : expr infixl_operator_0 _expr_term0
+?expr_term0 : expr infixl_operator_0 expr_term0
+            | expr_term1
 infixl_operator_0 : TICK_OPERATOR
 
 
 // The list cons operator (COLON) has less precedence than other operators,
 // but higher than the `tick` operator.
-_expr_term1 : expr_term1 | _expr_term2
-expr_term1 : _expr_term2 infixr_operator_2 _expr_term1
+?expr_term1 : expr_term2 infixr_operator_2 expr_term1
+            | expr_term2
 
 // This level of custom operators.  We need to include '->' and '@' because
 // they are tokens used elsewhere, but allow them as operators.
-_expr_term2 : expr_term2 | _expr_term6
-expr_term2 : _expr_term2 infixl_operator_2 _expr_term6
+?expr_term2 : expr_term2 infixl_operator_2 expr_term6
+            | expr_term6
 
 infixr_operator_2 : COLON
 infixl_operator_2 : OPERATOR
@@ -163,13 +163,13 @@ infixl_operator_2 : OPERATOR
 
 // This level marks the start of the standard arithmetic operators.  + and -
 // have less precedence than others.
-_expr_term6 : expr_term6 | _expr_term7
-expr_term6 : _expr_term6 infixl_operator_6 _expr_term7
+?expr_term6 : expr_term6 infixl_operator_6 expr_term7
+            | expr_term7
 infixl_operator_6 : PLUS
                   | MINUS
 
-_expr_term7 : expr_term7 | _expr_term9
-expr_term7 : _expr_term7 infixl_operator_7 _expr_term9
+?expr_term7 : expr_term7 infixl_operator_7 expr_term9
+            | expr_term9
 infixl_operator_7 : STAR
                   | SLASH
                   | DOUBLESLASH
@@ -177,9 +177,12 @@ infixl_operator_7 : STAR
 
 // The composition operator has the highest of precedence: 'a . f >>= g' is
 // the same as '(a . f) >>= g'.
-_expr_term9 : expr_term9 | _expr_factor | application
-expr_term9 : _expr_factor infixr_operator_9 _expr_term9
-           | application  infixr_operator_9 _expr_term9
+//
+// Also since 'application' is not a factor we must include it explicitly
+?expr_term9 : _expr_factor infixr_operator_9 expr_term9
+            | _expr_factor
+            | application infixr_operator_9 expr_term9
+            | application
 
 infixr_operator_9 : DOT_OPERATOR
 
@@ -222,7 +225,7 @@ simple_list_expr : _LBRACKET _items? _RBRACKET
 simple_tuple_expr : _LPAREN _expr _comma _items? _RPAREN
 _items : _expr (_comma _expr)* _comma?
 
-literal : number | concrete_number | string
+?literal : number | concrete_number | string
         | char | date | datetime
         | date_interval | datetime_interval
 
