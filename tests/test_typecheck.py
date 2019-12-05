@@ -8,6 +8,8 @@
 #
 import pytest
 
+from hypothesis import given, settings
+
 from xotl.fl.builtins import (
     NumberType,
     CharType,
@@ -19,6 +21,15 @@ from xotl.fl.builtins import (
 from xotl.fl.parsers.expressions import parse as parse_expression
 from xotl.fl.ast.types import Type, TypeScheme, find_tvars
 from xotl.fl.typecheck import typecheck, sidentity, unify, EMPTY_TYPE_ENV
+
+from xotl.fl.testing.strategies.trees import welltyped_expressions
+from xotl.fl.testing.strategies.tools import TestTypingEnvironment
+
+
+@settings(max_examples=20)
+@given(welltyped_expressions)
+def test_generation_of_welltyped_expressions(expr):
+    typecheck(expr, TestTypingEnvironment())
 
 
 def test_from_literals():
