@@ -170,7 +170,7 @@ publish_pypi:
       cp -r docs/build/html/* public/
   artifacts:
     paths:
-      - $CI_PROJECT_NAME-$CI_COMMIT_SHA.tar.bz2
+      - docs/build
       - public
     expire_in: 4 days
 
@@ -212,6 +212,7 @@ publish in our rtd:
 
 pages:
   <<: *build-documentation
+  needs: []
   only:
     - master
 
