@@ -174,7 +174,8 @@ publish_pypi:
   stage: build
   script:
     - |
-      apk add make git
+      apt-get update
+      apt-get install -y --no-install-recommends git make
       pip install -e .
       pip install sphinx sphinx-rtd-theme
       make -C docs/ html
