@@ -9,7 +9,7 @@ stages:
   - clean up
 
 check code smells:
-  image: python:3.6-alpine
+  image: python:3.6
   script:
     - pip install tox
     - tox -e system-lint
@@ -20,7 +20,7 @@ check code smells:
     - merge_requests
 
 .run_tox_tests: &run_tox_tests
-  image: python:$PYTHON-alpine
+  image: python:$PYTHON
   stage: test
   script:
     - pip install tox
@@ -34,7 +34,7 @@ check code smells:
     - tox -e 3.6-staticcheck
 
 .run_tox_doctest: &run_tox_doctest
-  image: python:3.6-alpine
+  image: python:3.6
   stage: test
   script:
     - pip install tox
@@ -98,7 +98,7 @@ run coverage tests:
 
 
 check signature of tag:
-  image: python:3.6-alpine
+  image: alpine
   stage: check
   script:
     - apk add --virtual .build-deps \
@@ -170,7 +170,7 @@ publish_pypi:
 
 
 .build-doc: &build-documentation
-  image: python:3.6-alpine
+  image: python:3.6
   stage: build
   script:
     - |
