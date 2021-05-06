@@ -9,8 +9,9 @@ stages:
   - clean up
 
 check code smells:
-  image: registry.merchise.org/merchise/python-dev:3.6-alpine
+  image: python:3.6-alpine
   script:
+    - pip install tox
     - tox -e system-lint
   stage: pre-check
   allow_failure: true
@@ -19,21 +20,24 @@ check code smells:
     - merge_requests
 
 .run_tox_tests: &run_tox_tests
-  image: registry.merchise.org/merchise/python-dev:$PYTHON-alpine
+  image: python:$PYTHON-alpine
   stage: test
   script:
+    - pip install tox
     - tox -e system-unit
 
 .run_tox_staticcheck: &run_tox_staticcheck
-  image: registry.merchise.org/merchise/python-dev:3.6-alpine
+  image: python:3.6
   stage: pre-check
   script:
+    - pip install tox
     - tox -e 3.6-staticcheck
 
 .run_tox_doctest: &run_tox_doctest
-  image: registry.merchise.org/merchise/python-dev:3.6-alpine
+  image: python:3.6-alpine
   stage: test
   script:
+    - pip install tox
     - tox -e 3.6-doctest
 
 
@@ -80,9 +84,10 @@ run doctests:
 
 
 run coverage tests:
-  image: registry.merchise.org/merchise/python-dev:3.6-alpine
+  image: python:3.6
   stage: test
   script:
+    - pip install tox
     - tox -e 3.6-coverage
   allow_failure: true
   only:
@@ -91,16 +96,20 @@ run coverage tests:
 
 
 check signature of tag:
-  image: registry.merchise.org/merchise/python-dev:3.6-alpine
+  image: python:3.6-alpine
   stage: check
   script:
+    - apk add --virtual .build-deps \
+      --repository http://dl-cdn.alpinelinux.org/alpine/v3.11/community \
+      --repository http://dl-cdn.alpinelinux.org/alpine/v3.11/main \
+      git gnupg
     - gpg --recv-key $GNUPG_KEY
     - git verify-tag $CI_COMMIT_REF_NAME
   only:
     - tags
 
 build source distribution:
-  image: registry.merchise.org/merchise/python-dev:3.6-alpine
+  image: python:3.6-alpine
   stage: build
   script:
     - rm -f dist/*
@@ -112,7 +121,7 @@ build source distribution:
     - tags
 
 build binary distribution:
-  image: registry.merchise.org/merchise/python-dev:3.6-alpine
+  image: python:3.6-alpine
   stage: build
   script:
     - pip install wheel
@@ -142,9 +151,10 @@ publish_locally:
 
 
 publish_pypi:
-  image: registry.merchise.org/merchise/python-dev:3.6-alpine
+  image: python:3.6
   stage: publish
   script:
+    - pip install twine
     - twine upload -u "$PYPI_USERNAME" -p "$PYPI_PASSWORD" dist/*
   only:
     - tags
