@@ -9,7 +9,7 @@ stages:
   - clean up
 
 check code smells:
-  image: python:3.6
+  image: python:3.9
   script:
     - pip install tox
     - tox -e system-lint
@@ -27,26 +27,18 @@ check code smells:
     - tox -e system-unit
 
 .run_tox_staticcheck: &run_tox_staticcheck
-  image: python:3.6
+  image: python:3.9
   stage: pre-check
   script:
     - pip install tox
-    - tox -e 3.6-staticcheck
+    - tox -e system-staticcheck
 
 .run_tox_doctest: &run_tox_doctest
-  image: python:3.6
+  image: python:3.9
   stage: test
   script:
     - pip install tox
-    - tox -e 3.6-doctest
-
-run tests with Python 3.6:
-  <<: *run_tox_tests
-  variables:
-    PYTHON: "3.6"
-  only:
-    - master
-    - merge_requests
+    - tox -e system-doctest
 
 run tests with Python 3.7:
   <<: *run_tox_tests
@@ -86,11 +78,11 @@ run doctests:
 
 
 run coverage tests:
-  image: python:3.6
+  image: python:3.9
   stage: test
   script:
     - pip install tox
-    - tox -e 3.6-coverage
+    - tox -e system-coverage
   allow_failure: true
   only:
     - master
@@ -111,7 +103,7 @@ check signature of tag:
     - tags
 
 build source distribution:
-  image: python:3.6-alpine
+  image: python:3.9-alpine
   stage: build
   script:
     - rm -f dist/*
@@ -123,7 +115,7 @@ build source distribution:
     - tags
 
 build binary distribution:
-  image: python:3.6-alpine
+  image: python:3.9-alpine
   stage: build
   script:
     - pip install wheel
@@ -153,7 +145,7 @@ publish_locally:
 
 
 publish_pypi:
-  image: python:3.6
+  image: python:3.9
   stage: publish
   script:
     - pip install twine
@@ -170,7 +162,7 @@ publish_pypi:
 
 
 .build-doc: &build-documentation
-  image: python:3.6
+  image: python:3.9
   stage: build
   script:
     - |
