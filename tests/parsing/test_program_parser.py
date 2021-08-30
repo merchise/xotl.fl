@@ -96,7 +96,7 @@ def test_datatype_simple2():
 
 
 def test_simple_if_program():
-    parse(
+    assert parse(
         """
         if :: Bool -> a -> a -> a
         if True x _  = x
@@ -229,7 +229,7 @@ def test_local_definitions():
 
 
 def test_parse_typeclass():
-    parse(
+    assert parse(
         """
         class Eq a where
           (==) :: a -> a -> Bool
@@ -277,7 +277,7 @@ def test_parse_typeclass():
 
 
 def test_valid_instance():
-    parse(
+    assert parse(
         """
         instance Eq a => Eq [a] where
            (==) [] []     = True
