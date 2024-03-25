@@ -17,4 +17,4 @@ dist/
 .coverage
 .python-version
 .venv
-xotl/fl/_version.py
+src/xotl/fl/_version.py
