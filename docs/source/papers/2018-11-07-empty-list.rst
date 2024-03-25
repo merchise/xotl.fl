@@ -28,7 +28,11 @@ Furthermore, if we were to create a program::
    reverse Nil = Nil
    reverse (Cons x xs) = append (reverse xs) (Cons x Nil)
 
+   append:: List a -> a -> List a
+   append Nil x = Cons x Nil
+   append (Cons h xs) x = Cons h (append xs x)
+
 Our Nil is a data constructor with no argument (i.e an identifier) and it's
 type scheme is ``forall a. List a``.
 
-So why, ``[]`` should be different than ``Nil``?
+So why ``[]`` should be different than ``Nil``?
