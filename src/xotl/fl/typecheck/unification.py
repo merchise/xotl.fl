@@ -7,10 +7,11 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 from typing import Iterable, Tuple
+
 from xotl.fl.ast.types import Type, TypeCons, TypeVariable, find_tvars
 
-from .subst import delta, sidentity, scompose, subtype, Substitution
 from .exceptions import UnificationError
+from .subst import Substitution, delta, scompose, sidentity, subtype
 
 
 def unify(e1: Type, e2: Type, *, phi: Substitution = sidentity) -> Substitution:

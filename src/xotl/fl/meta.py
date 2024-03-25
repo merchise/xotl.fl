@@ -6,9 +6,8 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-"""Definitions shared by all layers.
+"""Definitions shared by all layers."""
 
-"""
 from typing import Union
 
 

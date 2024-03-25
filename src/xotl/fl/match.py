@@ -9,17 +9,15 @@
 from dataclasses import dataclass
 from typing import Iterable, Tuple
 
-from xotl.fl.meta import Symbol
 from xotl.fl.ast.base import AST
+from xotl.fl.ast.expressions import Application, Identifier, Lambda, Literal
 from xotl.fl.ast.pattern import ConsPattern, Equation, Pattern
-from xotl.fl.ast.expressions import Application, Identifier, Literal, Lambda
+from xotl.fl.meta import Symbol
 from xotl.fl.utils import namesupply
 
 
 class FunctionDefinition:
-    """A single function definition (as a sequence of equations).
-
-    """
+    """A single function definition (as a sequence of equations)."""
 
     def __init__(self, eqs: Iterable[Equation]) -> None:
         equations: Tuple[Equation, ...] = tuple(eqs)
@@ -29,9 +27,7 @@ class FunctionDefinition:
         first, *rest = equations
         arity = len(first.patterns)
         if any(len(eq.patterns) != arity for eq in rest):
-            raise ArityError(
-                "Function definition with different parameters count", equations
-            )
+            raise ArityError("Function definition with different parameters count", equations)
         self.name = name
         self.equations = equations
         self.arity = arity
@@ -43,10 +39,8 @@ class FunctionDefinition:
         return FunctionDefinition(self.equations + tuple(items))
 
     def compile(self) -> AST:
-        """Return the compiled form of the function definition.
-
-        """
-        from xotl.fl.ast.expressions import build_lambda, build_application
+        """Return the compiled form of the function definition."""
+        from xotl.fl.ast.expressions import build_application, build_lambda
 
         # This is similar to the function `match` in 5.2 of [PeytonJones1987];
         # but I want to avoid *enlarging* simple functions needlessly.
@@ -79,21 +73,15 @@ class FunctionDefinition:
                                 dfn,
                             )
                         else:
-                            for i, param in reversed(
-                                list(enumerate(pattern.params, 1))
-                            ):
+                            for i, param in reversed(list(enumerate(pattern.params, 1))):
                                 if isinstance(param, str):
                                     dfn = build_application(
-                                        Identifier(
-                                            Extract(pattern.cons, i)
-                                        ),  # type: ignore
+                                        Identifier(Extract(pattern.cons, i)),  # type: ignore
                                         Identifier(var),
                                         Lambda(param, dfn),
                                     )
                                 else:
-                                    raise NotImplementedError(
-                                        f"Nested patterns {param}"
-                                    )
+                                    raise NotImplementedError(f"Nested patterns {param}")
                     else:
                         assert False
                 body = build_lambda(vars, build_application(MATCH_OPERATOR, dfn, body))
@@ -115,6 +103,7 @@ NO_MATCH_ERROR = Identifier(":NO_MATCH_ERROR:")
 @dataclass(frozen=True)
 class Match(Symbol):
     'A symbol for the pattern matching "match" function.'
+
     name: str
 
     def __str__(self):
@@ -127,6 +116,7 @@ class Match(Symbol):
 @dataclass(frozen=True)
 class Extract(Symbol):
     'A symbol for the pattern matching "extract" function.'
+
     name: str
     arg: int
 
@@ -140,6 +130,7 @@ class Extract(Symbol):
 @dataclass(frozen=True)
 class Select(Symbol):
     'A symbol for the pattern matching "select" function.'
+
     arg: int
 
     def __str__(self):

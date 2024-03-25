@@ -7,18 +7,17 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 """Algebraic Data Types."""
-from typing import Sequence, Iterator, Tuple
-from collections import ChainMap
 
-from xotl.tools.objects import memoized_property
-from xotl.fl.meta import Symbolic
+from collections import ChainMap
+from typing import Iterator, Sequence, Tuple
+
 from xotl.fl.ast.types import Type, TypeCons, TypeEnvironment, TypeScheme
+from xotl.fl.meta import Symbolic
+from xotl.tools.objects import memoized_property
 
 
 class DataCons:
-    """The syntactical notion a data constructor in the type language.
-
-    """
+    """The syntactical notion a data constructor in the type language."""
 
     def __init__(self, cons: str, args: Sequence[Type]) -> None:
         self.name = cons
@@ -173,10 +172,7 @@ class DataType:
                 result = FunctionTypeCons(arg, result)
             return result
 
-        return {
-            dc.name: TypeScheme.from_typeexpr(_implied_type(dc))
-            for dc in self.dataconses
-        }
+        return {dc.name: TypeScheme.from_typeexpr(_implied_type(dc)) for dc in self.dataconses}
 
     @property
     def pattern_matching_env(self) -> TypeEnvironment:
@@ -239,8 +235,8 @@ class DataType:
         .. note:: The names of those special functions are not strings.
 
         """
-        from xotl.fl.match import Match, Extract
         from xotl.fl.ast.types import FunctionTypeCons as F
+        from xotl.fl.match import Extract, Match
 
         def _implied_funs(dc: DataCons) -> Iterator[Tuple[Symbolic, TypeScheme]]:
             scheme = TypeScheme.from_typeexpr

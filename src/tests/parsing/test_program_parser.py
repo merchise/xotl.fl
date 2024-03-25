@@ -6,9 +6,9 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-import pytest
 from textwrap import dedent
 
+import pytest
 from xotl.fl.ast.adt import DataCons, DataType
 from xotl.fl.ast.expressions import Identifier, Let, build_application, build_lambda
 from xotl.fl.ast.pattern import ConsPattern, Equation
@@ -37,25 +37,20 @@ def test_simple_functions_definition():
 
 
 def test_typedecls():
-    assert (
-        parse(
-            """
+    assert parse(
+        """
             id :: a -> a
             const :: a -> b -> a
             """
-        )
-        == [
-            {"id": TypeScheme.from_str("a -> a")},
-            {"const": TypeScheme.from_str("a -> b -> a")},
-        ]
-    )
+    ) == [
+        {"id": TypeScheme.from_str("a -> a")},
+        {"const": TypeScheme.from_str("a -> b -> a")},
+    ]
 
 
 def test_datatype_simple():
     assert parse("data Then a = Then a") == [
-        DataType(
-            "Then", Type.from_str("Then a"), [DataCons("Then", [Type.from_str("a")])]
-        )
+        DataType("Then", Type.from_str("Then a"), [DataCons("Then", [Type.from_str("a")])])
     ]
 
 
@@ -73,26 +68,23 @@ def test_datatype_tree():
 
 
 def test_datatype_simple2():
-    assert (
-        parse(
-            """
+    assert parse(
+        """
             data Then a = Then a
             data Else a = Else a
             """
-        )
-        == [
-            DataType(
-                "Then",
-                Type.from_str("Then a"),
-                [DataCons("Then", [Type.from_str("a")])],
-            ),
-            DataType(
-                "Else",
-                Type.from_str("Else a"),
-                [DataCons("Else", [Type.from_str("a")])],
-            ),
-        ]
-    )
+    ) == [
+        DataType(
+            "Then",
+            Type.from_str("Then a"),
+            [DataCons("Then", [Type.from_str("a")])],
+        ),
+        DataType(
+            "Else",
+            Type.from_str("Else a"),
+            [DataCons("Else", [Type.from_str("a")])],
+        ),
+    ]
 
 
 def test_simple_if_program():
@@ -135,16 +127,13 @@ def test_if_program():
 
 @pytest.mark.xfail(reason="Failing to split equations")
 def test_large_definitions():
-    assert (
-        parse(
-            """
+    assert parse(
+        """
             name =
                let id x = x in id
             """,
-            debug=True,
-        )
-        == parse("name = let id x = x in id")
-    )
+        debug=True,
+    ) == parse("name = let id x = x in id")
 
 
 def test_defs_operators():
@@ -196,36 +185,25 @@ def test_matching_lists():
 def test_local_definitions():
     # Taken from the paper 'Practical type inference for arbitrary-rank types'
     # by Peyton Jones, Simon et al.
-    assert (
-        parse(
-            """
+    assert parse(
+        """
             foo :: ([Bool], [Char])
             foo = let f :: (forall a. [a] -> [a]) -> ([Bool], [Char])
                       f x = (x [True, False], x ['a', 'b'])
             in f reverse
             """
-        )
-        == [
-            {"foo": TypeScheme.from_str("([Bool], [Char])")},
-            Equation(
-                "foo",
-                [],
-                Let(
-                    {
-                        "f": build_lambda(
-                            ["x"], parse_expression("(x [True, False], x ['a', 'b'])")
-                        )
-                    },
-                    build_application("f", Identifier("reverse")),
-                    {
-                        "f": TypeScheme.from_str(
-                            "(forall a. [a] -> [a]) -> ([Bool], [Char])"
-                        )
-                    },
-                ),
+    ) == [
+        {"foo": TypeScheme.from_str("([Bool], [Char])")},
+        Equation(
+            "foo",
+            [],
+            Let(
+                {"f": build_lambda(["x"], parse_expression("(x [True, False], x ['a', 'b'])"))},
+                build_application("f", Identifier("reverse")),
+                {"f": TypeScheme.from_str("(forall a. [a] -> [a]) -> ([Bool], [Char])")},
             ),
-        ]
-    )
+        ),
+    ]
 
 
 def test_parse_typeclass():
@@ -336,9 +314,8 @@ def test_adt_operators():
 
 
 def test_parse_comments():
-    assert (
-        parse(
-            """-- A comment here
+    assert parse(
+        """-- A comment here
             --- another
             data Qual t = [Pred] :=> t
                  -- and here
@@ -349,16 +326,14 @@ def test_parse_comments():
             fn x = x -- this is not a comment
 
             --- And we end with a comment"""
-        )
-        == parse(
-            """
+    ) == parse(
+        """
             data Qual t = [Pred] :=> t
                  deriving Eq
 
             fn x = x   -- this is not a comment
 
             """
-        )
     )
 
 

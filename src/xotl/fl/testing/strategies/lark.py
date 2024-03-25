@@ -25,15 +25,14 @@
 #
 
 import attr
-import lark
-from lark.grammar import NonTerminal, Terminal
-
 import hypothesis._strategies as st
+import lark
 from hypothesis.errors import InvalidArgument
 from hypothesis.internal.compat import getfullargspec, string_types
 from hypothesis.internal.conjecture.utils import calc_label_from_name
 from hypothesis.internal.validation import check_type
 from hypothesis.searchstrategy import SearchStrategy
+from lark.grammar import NonTerminal, Terminal
 
 if False:
     from typing import Dict, Text  # noqa
@@ -103,12 +102,9 @@ class LarkStrategy(SearchStrategy):
         self.ignored_symbols = tuple(self.names_to_symbols[n] for n in ignore_names)
 
         self.terminal_strategies = {
-            t.name: st.from_regex(t.pattern.to_regexp(), fullmatch=True)
-            for t in terminals
+            t.name: st.from_regex(t.pattern.to_regexp(), fullmatch=True) for t in terminals
         }
-        unknown_explicit = set(explicit) - get_terminal_names(
-            terminals, rules, ignore_names
-        )
+        unknown_explicit = set(explicit) - get_terminal_names(terminals, rules, ignore_names)
         if unknown_explicit:
             raise InvalidArgument(
                 "The following arguments were passed as explicit_strategies, "
@@ -125,9 +121,7 @@ class LarkStrategy(SearchStrategy):
         for v in nonterminals.values():
             v.sort(key=len)
 
-        self.nonterminal_strategies = {
-            k: st.sampled_from(v) for k, v in nonterminals.items()
-        }
+        self.nonterminal_strategies = {k: st.sampled_from(v) for k, v in nonterminals.items()}
 
         self.__rule_labels = {}
 
@@ -135,15 +129,13 @@ class LarkStrategy(SearchStrategy):
         state = DrawState()
         start = data.draw(self.start)
         self.draw_symbol(data, start, state)
-        return u" ".join(state.result)
+        return " ".join(state.result)
 
     def rule_label(self, name):
         try:
             return self.__rule_labels[name]
         except KeyError:
-            return self.__rule_labels.setdefault(
-                name, calc_label_from_name("LARK:%s" % (name,))
-            )
+            return self.__rule_labels.setdefault(name, calc_label_from_name("LARK:%s" % (name,)))
 
     def draw_symbol(self, data, symbol, draw_state):
         if isinstance(symbol, Terminal):
@@ -153,8 +145,7 @@ class LarkStrategy(SearchStrategy):
                 raise InvalidArgument(
                     "Undefined terminal %r. Generation does not currently support "
                     "use of %%declare unless you pass `explicit`, a dict of "
-                    'names-to-strategies, such as `{%r: st.just("")}`'
-                    % (symbol.name, symbol.name)
+                    'names-to-strategies, such as `{%r: st.just("")}`' % (symbol.name, symbol.name)
                 )
             draw_state.result.append(data.draw(strategy))
         else:
@@ -220,7 +211,6 @@ def from_lark(
     else:
         check_type(dict, explicit, "explicit")
         explicit = {
-            k: v.map(check_explicit("explicit[%r]=%r" % (k, v)))
-            for k, v in explicit.items()
+            k: v.map(check_explicit("explicit[%r]=%r" % (k, v))) for k, v in explicit.items()
         }
     return LarkStrategy(grammar, start, explicit)

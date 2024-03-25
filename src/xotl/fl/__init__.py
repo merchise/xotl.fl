@@ -45,7 +45,7 @@ def parse(program_source: str, *, debug: bool = False):
         <equation lhead (Cons a _) = Identifier('a')>]
 
     '''
-    from xotl.fl.parsers import program_parser, lexer
+    from xotl.fl.parsers import lexer, program_parser
 
     defs = program_parser.parse(program_source, lexer=lexer, debug=debug)
     # Here we try to perform sanity checks and also *group* otherwise

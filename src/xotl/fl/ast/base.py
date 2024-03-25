@@ -18,9 +18,7 @@ class ILC:
 
 
 class AST:
-    """A AST node in the language.
-
-    """
+    """A AST node in the language."""
 
     def translate(self) -> ILC:  # pragma: no cover
         ...

@@ -7,9 +7,7 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 import pytest
-
 from xotl.fl.graphs import Graph
-
 
 graph = Graph()
 graph.add_many(1, {2, 3})
@@ -41,7 +39,7 @@ def test_topo_dag():
     newgraph = Graph()
     for name, scc in sccs.items():
         for node in scc:
-            links = {index[l] for l in graph[node] if l not in scc}
+            links = {index[it] for it in graph[node] if it not in scc}
             newgraph.add_many(name, links)
     # The DAG should be:
     #

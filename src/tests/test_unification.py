@@ -6,18 +6,17 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-import pytest
 from functools import partial
+
+import pytest
+from xotl.fl.ast.types import TypeCons as C
+from xotl.fl.ast.types import TypeVariable as T
+from xotl.fl.parsers.types import parse
+from xotl.fl.typecheck.subst import delta, scompose, subtype
+from xotl.fl.typecheck.unification import UnificationError, unify
 from xotl.tools.fp.tools import compose
 
-from xotl.fl.ast.types import TypeVariable as T, TypeCons as C
-from xotl.fl.typecheck.subst import scompose, subtype, delta
-from xotl.fl.typecheck.unification import unify, UnificationError
-
-from xotl.fl.parsers.types import parse
-
-
-I = parse("a -> a")
+I = parse("a -> a")  # noqa
 # The K combinator: a -> b -> a
 K = parse("a -> b -> a")
 # The S combinator: Lx Ly Lz. x z (y z)

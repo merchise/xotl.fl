@@ -6,20 +6,19 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Tuple, Sequence, Union
 from dataclasses import dataclass
+from typing import Sequence, Tuple, Union
 
 from xotl.fl.ast.base import AST
+from xotl.fl.ast.pattern import Equation
 from xotl.fl.ast.types import (
+    ConstrainedType,
+    SimpleType,
     TypeConstraint,
     TypeEnvironment,
     TypeScheme,
-    ConstrainedType,
-    SimpleType,
     find_tvars,
 )
-from xotl.fl.ast.pattern import Equation
-
 
 Definition = Union[Equation, TypeEnvironment]
 Definitions = Sequence[Definition]
@@ -67,17 +66,13 @@ class TypeClass(AST):
         }
 
     @classmethod
-    def _check_qual(
-        cls, constraints: Sequence[TypeConstraint], newclass: TypeConstraint
-    ) -> None:
+    def _check_qual(cls, constraints: Sequence[TypeConstraint], newclass: TypeConstraint) -> None:
         """Check that all type variables in constraints match the class_'s."""
         if constraints:
             # TypeConstraint admits only one variable, so all constraints must
             # share the same one.  That's why we can use set's intersection
             # operator.
-            tvars = set.intersection(
-                {newclass.type_}, *({tc.type_} for tc in constraints)
-            )
+            tvars = set.intersection({newclass.type_}, *({tc.type_} for tc in constraints))
             if not tvars:
                 tcs = ", ".join(map(str, constraints))
                 raise TypeError(f"Constraints don't match: {tcs} => {newclass}")
@@ -132,10 +127,7 @@ class Instance(AST):
             if constraints:
                 tcs = ", ".join(map(str, constraints))
                 raise TypeError(
-                    "Unconstrained instance type variables: "
-                    f"{tcs} => {class_} {type_}"
+                    "Unconstrained instance type variables: " f"{tcs} => {class_} {type_}"
                 )
             else:
-                raise TypeError(
-                    "Unconstrained instance type variables: " f"{class_} {type_}"
-                )
+                raise TypeError("Unconstrained instance type variables: " f"{class_} {type_}")

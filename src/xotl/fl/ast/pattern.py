@@ -6,30 +6,20 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-"""Pattern Matching.
+"""Pattern Matching."""
 
-"""
-from typing import (
-    Iterator,
-    List,
-    Mapping,
-    MutableMapping,
-    Union,
-    Sequence,
-    Tuple,
-    Type as Class,
-)
 from dataclasses import dataclass
 from itertools import groupby
+from typing import Iterator, List, Mapping, MutableMapping, Sequence, Tuple
+from typing import Type as Class
+from typing import Union
 
-from xotl.tools.objects import memoized_property
-from xotl.tools.fp.tools import fst, snd
-
-from xotl.fl.ast.base import AST, ILC
-from xotl.fl.ast.types import TypeEnvironment
-from xotl.fl.ast.expressions import Literal, _LetExpr, Let, Letrec, find_free_names
 from xotl.fl.ast.adt import DataCons
-
+from xotl.fl.ast.base import AST, ILC
+from xotl.fl.ast.expressions import Let, Letrec, Literal, _LetExpr, find_free_names
+from xotl.fl.ast.types import TypeEnvironment
+from xotl.tools.fp.tools import fst, snd
+from xotl.tools.objects import memoized_property
 
 # Patterns and Equations.  In the final AST, an expression like:
 #
@@ -58,9 +48,7 @@ Pattern = Union[str, Literal, "ConsPattern", "NamedPattern"]
 
 
 class ConsPattern(AST):
-    """The syntactical notion of a pattern.
-
-    """
+    """The syntactical notion of a pattern."""
 
     def __init__(self, cons: str, params: Sequence[Pattern] = None) -> None:
         self.cons: str = cons
@@ -128,9 +116,7 @@ class NamedPattern(AST):
 
 
 class Equation(AST):
-    """The syntactical notion of an equation.
-
-    """
+    """The syntactical notion of an equation."""
 
     def __init__(self, name: str, patterns: Sequence[Pattern], body: AST) -> None:
         self.name = name
@@ -186,9 +172,7 @@ ValueDefinitions = Mapping[str, List[Equation]]
 
 @dataclass(init=False, unsafe_hash=True)
 class ConcreteLet(AST):
-    """The concrete representation of a let/where expression.
-
-    """
+    """The concrete representation of a let/where expression."""
 
     definitions: Tuple[LocalDefinition, ...]  # noqa
     body: AST
@@ -302,10 +286,7 @@ class ConcreteLet(AST):
             dag.get_topological_order(reverse=True, with_score=True), key=snd
         ):
             component = _ComponentNode.union(*(comp for comp, _ in collapsable))
-            defs = {
-                node.name: FunctionDefinition(node.equations)
-                for node in component.nodes
-            }
+            defs = {node.name: FunctionDefinition(node.equations) for node in component.nodes}
             compiled = {name: dfn.compile() for name, dfn in defs.items()}
             if component.recursive:
                 klass: Class[_LetExpr] = Letrec
@@ -314,11 +295,7 @@ class ConcreteLet(AST):
             body = klass(
                 compiled,
                 body,
-                {
-                    k: v
-                    for k, v in self.local_environment.items()
-                    if k in component.names
-                },
+                {k: v for k, v in self.local_environment.items() if k in component.names},
             )
         return body
 
@@ -330,8 +307,8 @@ class _LetGraphNode:
 
     @property
     def dependencies(self):
-        from operator import or_
         from functools import reduce
+        from operator import or_
 
         return reduce(or_, (set(find_free_names(eq)) for eq in self.equations), set())
 
@@ -346,8 +323,8 @@ class _ComponentNode:
 
     @property
     def dependencies(self):
-        from operator import or_
         from functools import reduce
+        from operator import or_
 
         return reduce(or_, (node.dependencies for node in self.nodes), set())
 
@@ -374,8 +351,8 @@ class _ComponentNode:
             return NotImplemented
 
     def union(self, *others) -> "_ComponentNode":
-        from operator import or_
         from functools import reduce
+        from operator import or_
 
         return reduce(or_, others, self)
 

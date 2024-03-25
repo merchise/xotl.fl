@@ -6,11 +6,10 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Callable
 from typing import Any  # noqa
+from typing import Callable
 
-from xotl.fl.ast.types import Type, TypeCons, TypeVariable, TypeScheme, find_tvars
-
+from xotl.fl.ast.types import Type, TypeCons, TypeScheme, TypeVariable, find_tvars
 
 _STR_PADDING = " " * 4
 
@@ -39,9 +38,7 @@ class Composition:
         import textwrap
 
         if self._composes_deltas:
-            deltas = "\n".join(
-                textwrap.indent(str(dl), _STR_PADDING) for dl in self._deltas
-            )
+            deltas = "\n".join(textwrap.indent(str(dl), _STR_PADDING) for dl in self._deltas)
             return f"Composition of\n{deltas}"
         else:
             f = textwrap.indent(str(self.f), _STR_PADDING)
@@ -51,9 +48,7 @@ class Composition:
     @property
     def _composes_deltas(self):  # pragma: no cover
         first = (
-            isinstance(self.f, delta)
-            or isinstance(self.f, Composition)
-            and self.f._composes_deltas
+            isinstance(self.f, delta) or isinstance(self.f, Composition) and self.f._composes_deltas
         )
         if first:
             second = (
@@ -95,9 +90,7 @@ sidentity = Identity()
 
 
 class delta:
-    """A `delta substitution` from a variable name `vname`.
-
-    """
+    """A `delta substitution` from a variable name `vname`."""
 
     def __init__(self, vname: str, t: Type) -> None:
         self.vname = vname
@@ -114,9 +107,7 @@ class delta:
 
 
 def subtype(phi: Substitution, t: Type) -> Type:
-    """Get the sub-type of `t` by applying the substitution `phi`.
-
-    """
+    """Get the sub-type of `t` by applying the substitution `phi`."""
     # 'subtype(sidentity, t) == t'; and since Type, TypeVariables and TypeCons
     # are treated immutably we should be safe to return the same type.
     if phi is sidentity:
@@ -124,9 +115,7 @@ def subtype(phi: Substitution, t: Type) -> Type:
     elif isinstance(t, TypeVariable):
         return phi(t.name)
     elif isinstance(t, TypeCons):
-        return TypeCons(
-            t.cons, [subtype(phi, subt) for subt in t.subtypes], binary=t.binary
-        )
+        return TypeCons(t.cons, [subtype(phi, subt) for subt in t.subtypes], binary=t.binary)
     elif isinstance(t, TypeScheme):
         psi = Exclude(phi, t)
         return TypeScheme(t.generics, subtype(psi, t.type_))

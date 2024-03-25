@@ -15,14 +15,14 @@ Implementation of Functional Programming Languages'.
           appropriate.
 
 """
-from collections import deque
-from typing import Iterable, Sequence, List, Mapping, Deque, Set, Union
-from itertools import zip_longest
-from dataclasses import dataclass
 
-from xotl.fl.meta import Symbolic
+from collections import deque
+from dataclasses import dataclass
+from itertools import zip_longest
+from typing import Deque, Iterable, List, Mapping, Sequence, Set, Union
 
 from xotl.fl.ast.base import Dual
+from xotl.fl.meta import Symbolic
 
 
 class Type(Dual):
@@ -61,9 +61,7 @@ class Type(Dual):
 
 
 class TypeVariable(Type):
-    """A type variable, which may stand for any type.
-
-    """
+    """A type variable, which may stand for any type."""
 
     def __init__(self, name: str, *, check=True) -> None:
         # `check` is only here to avoid the check when generating internal
@@ -94,13 +92,9 @@ class TypeVariable(Type):
 
 
 class TypeCons(Type):
-    """The syntax for a type constructor expression.
+    """The syntax for a type constructor expression."""
 
-    """
-
-    def __init__(
-        self, constructor: str, subtypes: Iterable[Type] = None, *, binary=False
-    ) -> None:
+    def __init__(self, constructor: str, subtypes: Iterable[Type] = None, *, binary=False) -> None:
         assert not subtypes or all(
             isinstance(t, Type) for t in subtypes
         ), f"Invalid subtypes: {subtypes!r}"
@@ -169,9 +163,7 @@ class TypeScheme(Type):
 
     @property
     def nongenerics(self) -> List[str]:
-        return [
-            tv.name for tv in find_tvars(self.type_) if tv.name not in self.generics
-        ]
+        return [tv.name for tv in find_tvars(self.type_) if tv.name not in self.generics]
 
     def __eq__(self, other):
         if isinstance(other, TypeScheme):
@@ -196,9 +188,7 @@ class TypeScheme(Type):
         return f"<TypeScheme: {self!s}>"
 
     @classmethod
-    def from_typeexpr(
-        cls, type_: Type, *, generics: Sequence[str] = None
-    ) -> "TypeScheme":
+    def from_typeexpr(cls, type_: Type, *, generics: Sequence[str] = None) -> "TypeScheme":
         """Create a type scheme from a type expression assuming all type
         variables are generic.
 
@@ -239,7 +229,7 @@ class TypeRecord(Type):
     fields: Mapping[str, Type]
 
     def __str__(self):
-        items = ", ".join(f"{name}: {type_!s}" for name, type_ in fields.items())
+        items = ", ".join(f"{name}: {type_!s}" for name, type_ in self.fields.items())
         return f"{{{items}}}"
 
 
@@ -255,9 +245,7 @@ class ConstrainedType(TypeScheme):
     ) -> None:
         constraints = tuple(constraints or [])
         assert all(isinstance(c.type_, TypeVariable) for c in constraints)
-        constrained = {
-            c.type_.name for c in constraints if isinstance(c.type_, TypeVariable)
-        }
+        constrained = {c.type_.name for c in constraints if isinstance(c.type_, TypeVariable)}
         names = set(tv.name for tv in find_tvars(t))
         if constrained - names:
             raise TypeError(f"Constraint not applied: {constrained - names} in {t}")

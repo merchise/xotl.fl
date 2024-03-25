@@ -9,46 +9,42 @@
 import re
 from typing import List
 
-from xotl.tools.objects import setdefaultattr
-from xotl.tools.future.datetime import TimeSpan
-
 from ply import lex, yacc
-
-from xotl.fl.ast.types import (
-    TypeVariable,
-    TypeCons,
-    ListTypeCons,
-    TypeScheme,
-    FunctionTypeCons,
-    TupleTypeCons,
-    TypeConstraint,
-    ConstrainedType,
-    is_simple_type,
-)
-from xotl.fl.ast.types import TypeEnvironment  # noqa
+from xotl.fl.ast.adt import DataCons, DataType
 from xotl.fl.ast.expressions import (
+    Application,
     Identifier,
     Literal,
-    Application,
-    build_lambda,
-    build_tuple,
     build_application,
+    build_lambda,
     build_list_expr,
+    build_tuple,
 )
-from xotl.fl.ast.adt import DataType, DataCons
-from xotl.fl.ast.pattern import ConcreteLet
-from xotl.fl.ast.pattern import NamedPattern, ConsPattern, Equation
-from xotl.fl.ast.typeclasses import TypeClass, Instance
-
+from xotl.fl.ast.pattern import ConcreteLet, ConsPattern, Equation, NamedPattern
+from xotl.fl.ast.typeclasses import Instance, TypeClass
+from xotl.fl.ast.types import TypeEnvironment  # noqa
+from xotl.fl.ast.types import (
+    ConstrainedType,
+    FunctionTypeCons,
+    ListTypeCons,
+    TupleTypeCons,
+    TypeCons,
+    TypeConstraint,
+    TypeScheme,
+    TypeVariable,
+    is_simple_type,
+)
 from xotl.fl.builtins import (
-    StringType,
     CharType,
-    NumberType,
-    UnitType,
-    DateType,
-    DateTimeType,
     DateIntervalType,
+    DateTimeType,
+    DateType,
+    NumberType,
+    StringType,
+    UnitType,
 )
+from xotl.tools.future.datetime import TimeSpan
+from xotl.tools.objects import setdefaultattr
 
 
 class ParserError(Exception):
@@ -584,66 +580,60 @@ def p_standalone_definitions(prod):
 
 def p_literals(prod):
     """literal : number
-             | concrete_number
-             | string
-             | char
-             | date
-             | datetime
-             | date_interval
-             | datetime_interval
+    | concrete_number
+    | string
+    | char
+    | date
+    | datetime
+    | date_interval
+    | datetime_interval
     """
     prod[0] = prod[1]
 
 
 def p_tuple_expr(prod):
-    """simple_tuple_expr : LPAREN _list_items RPAREN
-    """
+    """simple_tuple_expr : LPAREN _list_items RPAREN"""
     exprs = prod[2]
     prod[0] = build_tuple(*exprs)
 
 
 def p_list_expr(prod):
-    """simple_list_expr : LBRACKET _list_items RBRACKET
-    """
+    """simple_list_expr : LBRACKET _list_items RBRACKET"""
     lst = prod[2]
     prod[0] = build_list_expr(*lst)
 
 
 def p_list_items(prod):
     """_list_items : expr _list_items_cont
-       _list_items_cont : COMMA expr _list_items_cont
+    _list_items_cont : COMMA expr _list_items_cont
     """
     _collect_item(prod)
 
 
 def p_list_items_empty(prod):
     """_list_items : empty
-       _list_items_cont : empty
+    _list_items_cont : empty
     """
     prod[0] = []
 
 
 def p_date(prod):
-    """date : DATE
-    """
+    """date : DATE"""
     prod[0] = Literal(prod[1], DateType)
 
 
 def p_datetime(prod):
-    """datetime : DATETIME
-    """
+    """datetime : DATETIME"""
     prod[0] = Literal(prod[1], DateTimeType)
 
 
 def p_date_interval(prod):
-    """date_interval : DATE_INTERVAL
-    """
+    """date_interval : DATE_INTERVAL"""
     prod[0] = Literal(prod[1], DateIntervalType)
 
 
 def p_datetime_interval(prod):
-    """datetime_interval : DATETIME_INTERVAL
-    """
+    """datetime_interval : DATETIME_INTERVAL"""
     prod[0] = prod[1]
 
 
@@ -658,16 +648,14 @@ def p_string(prod):
 
 
 def p_variable(prod):
-    """identifier : _identifier
-
-    """
+    """identifier : _identifier"""
     prod[0] = Identifier(prod[1])
 
 
 def p_bare_identifier(prod):
     """_identifier : UNDER_IDENTIFIER
-                   | UPPER_IDENTIFIER
-                   | LOWER_IDENTIFIER
+    | UPPER_IDENTIFIER
+    | LOWER_IDENTIFIER
 
     """
     prod[0] = prod[1]
@@ -680,14 +668,13 @@ def p_paren_expr(prod):
 
 def p_application_after_paren(prod):
     """expr_factor : enclosed_expr expr_factor
-                   | expr_factor enclosed_expr
+    | expr_factor enclosed_expr
     """
     prod[0] = Application(prod[1], prod[2])
 
 
 def p_operators_as_expressios(prod):
-    """enclosed_expr : _enclosed_operator
-    """
+    """enclosed_expr : _enclosed_operator"""
     prod[0] = Identifier(prod[1])
 
 
@@ -734,9 +721,9 @@ def p_operator(prod):
 
 def p_integer(prod):
     """number : BASE10_INTEGER
-              | BASE16_INTEGER
-              | BASE8_INTEGER
-              | BASE2_INTEGER
+    | BASE16_INTEGER
+    | BASE8_INTEGER
+    | BASE2_INTEGER
     """
     value = prod[1]
     value = value.replace("_", "")  # We separators anywhere: 1000 = 10_00
@@ -771,8 +758,8 @@ def p_float(prod):
 
 def p_concrete_number(prod):
     """concrete_number :  number ANNOTATION string
-                        | number ANNOTATION char
-                        | number ANNOTATION identifier
+    | number ANNOTATION char
+    | number ANNOTATION identifier
     """
     number = prod[1]
     assert isinstance(number, Literal)
@@ -781,13 +768,12 @@ def p_concrete_number(prod):
 
 
 def p_empty(prod):
-    """empty : """
+    """empty :"""
     pass
 
 
 def p_lambda_definition(prod):
-    """lambda_expr : BACKSLASH patterns ARROW expr
-    """
+    """lambda_expr : BACKSLASH patterns ARROW expr"""
     params = prod[2]
     assert params
     prod[0] = build_lambda(params, prod[4])
@@ -809,14 +795,13 @@ def p_pattern(prod):
 
 def p_var_pattern(prod):
     """simple_pattern : LOWER_IDENTIFIER
-       simple_pattern : UNDER_IDENTIFIER
+    simple_pattern : UNDER_IDENTIFIER
     """
     prod[0] = prod[1]
 
 
 def p_possibly_named_pattern(prod):
-    """possibly_named_pattern : _pattern_name simple_pattern
-    """
+    """possibly_named_pattern : _pattern_name simple_pattern"""
     name = prod[1]
     pattern = prod[2]
     if name:
@@ -826,26 +811,23 @@ def p_possibly_named_pattern(prod):
 
 
 def p_pattern_name(prod):
-    """_pattern_name : LOWER_IDENTIFIER ATSYM
-    """
+    """_pattern_name : LOWER_IDENTIFIER ATSYM"""
     prod[0] = prod[1]
 
 
 def p_no_pattern_name(prod):
-    """_pattern_name : empty
-    """
+    """_pattern_name : empty"""
     prod[0] = None
 
 
 def p_simplecons_pattern(prod):
-    """simple_pattern : UPPER_IDENTIFIER
-    """
+    """simple_pattern : UPPER_IDENTIFIER"""
     prod[0] = ConsPattern(prod[1])
 
 
 def p_list_cons_for_param(prod):
     """list_cons_pattern : pattern COLON pattern
-       list_cons_pattern : simple_pattern COLON simple_pattern
+    list_cons_pattern : simple_pattern COLON simple_pattern
     """
     prod[0] = ConsPattern(":", [prod[1], prod[3]])
 
@@ -880,8 +862,7 @@ def p_unit_value_as_pattern(prod):
 
 
 def p_tuple_cons_pattern(prod):
-    """tuple_cons_pattern : LPAREN patterns_comma_sep RPAREN
-    """
+    """tuple_cons_pattern : LPAREN patterns_comma_sep RPAREN"""
     items = prod[2]
     assert len(items) > 1
     prod[0] = ConsPattern("," * (len(items) - 1), items)
@@ -889,29 +870,29 @@ def p_tuple_cons_pattern(prod):
 
 def p_patterns(prod):
     """patterns : pattern _patterns
-       patterns : simple_pattern _patterns
-       patterns_comma_sep : pattern _patterns_comma
-       patterns_comma_sep : simple_pattern _patterns_comma
-       _patterns : SPACE pattern _patterns
-       _patterns : SPACE simple_pattern _patterns
-       _patterns_comma : COMMA pattern _patterns_comma_trail
-       _patterns_comma : COMMA simple_pattern _patterns_comma_trail
-       _patterns_comma_trail : COMMA pattern _patterns_comma_trail
-       _patterns_comma_trail : COMMA simple_pattern _patterns_comma_trail
+    patterns : simple_pattern _patterns
+    patterns_comma_sep : pattern _patterns_comma
+    patterns_comma_sep : simple_pattern _patterns_comma
+    _patterns : SPACE pattern _patterns
+    _patterns : SPACE simple_pattern _patterns
+    _patterns_comma : COMMA pattern _patterns_comma_trail
+    _patterns_comma : COMMA simple_pattern _patterns_comma_trail
+    _patterns_comma_trail : COMMA pattern _patterns_comma_trail
+    _patterns_comma_trail : COMMA simple_pattern _patterns_comma_trail
     """
     _collect_item(prod)
 
 
 def p_patterns_empty(prod):
     """_patterns : empty
-       _patterns_comma_trail : empty
+    _patterns_comma_trail : empty
     """
     prod[0] = []
 
 
 def p_equation(prod):
     """equation : _identifier _patterns EQ expr
-       equation : _enclosed_operator _patterns EQ expr
+    equation : _enclosed_operator _patterns EQ expr
     """
     prod[0] = Equation(prod[1], prod[2], prod[4])
 
@@ -921,8 +902,7 @@ class Equations(list):
 
 
 def p_equation_set(prod):
-    """equations : equation _equation_set
-    """
+    """equations : equation _equation_set"""
     _collect_item(prod)
     prod[0] = Equations(prod[0])
 
@@ -966,7 +946,7 @@ def p_error(prod):
 
 def p_type_expr(prod):
     """type_expr : type_scheme type_function_expr
-                 | type_scheme type_term"""
+    | type_scheme type_term"""
     scheme, type_ = prod[1], prod[2]
     if scheme:
         prod[0] = TypeScheme(scheme, type_)
@@ -997,7 +977,7 @@ def p_last_type_scheme_generic(prod):
 
 def p_type_function_expr(prod):
     """type_function_expr : type_term ARROW _maybe_padding type_function_expr
-                          | type_term
+    | type_term
     """
     count = len(prod)
     if count > 2:
@@ -1008,7 +988,7 @@ def p_type_function_expr(prod):
 
 def p_type_term(prod):
     """type_term : type_app_expression
-                 | type_factor"""
+    | type_factor"""
     prod[0] = prod[1]
 
 
@@ -1026,7 +1006,7 @@ def p_type_application_expr(prod):
 
 def p_type_application_args(prod):
     """_app_args : SPACE type_factor _app_args
-       _app_args_non_empty : SPACE type_factor _app_args
+    _app_args_non_empty : SPACE type_factor _app_args
     """
     _collect_item(prod)
 
@@ -1048,7 +1028,7 @@ def p_type_cons(prod):
 
 def p_type_factor_identifier(prod):
     """type_factor : type_variable
-                   | type_cons
+    | type_cons
 
     """
     prod[0] = prod[1]
@@ -1067,14 +1047,13 @@ def p_type_factor_unit_type(prod):
 
 def p_type_expr_list(prod):
     """_type_expr_list : type_expr COMMA _type_expr_list_trail
-       _type_expr_list_trail : type_expr COMMA _type_expr_list_trail
+    _type_expr_list_trail : type_expr COMMA _type_expr_list_trail
     """
     _collect_fst_item(prod)
 
 
 def p_type_expr_list_last_item(prod):
-    """_type_expr_list_trail : type_expr
-    """
+    """_type_expr_list_trail : type_expr"""
     prod[0] = [prod[1]]
 
 
@@ -1116,16 +1095,13 @@ def p_type_factor_bracket(prod):
 # On the other hand, 'Num a => forall a. a -> a'; fails with Constraint not
 # applied: {'a'}; but I find that reasonable.
 def p_constrained_type_expr(prod):
-    """constrained_type_expr : _constrained_type_expr_bare
-
-    """
+    """constrained_type_expr : _constrained_type_expr_bare"""
     constraints, type_ = prod[1]
     prod[0] = ConstrainedType.from_typeexpr(type_, constraints)
 
 
 def p_constrained_type_expr_bare(prod):
-    """_constrained_type_expr_bare : type_constraints FATARROW type_expr
-    """
+    """_constrained_type_expr_bare : type_constraints FATARROW type_expr"""
 
     def isvalid(constraint):
         return (
@@ -1138,21 +1114,17 @@ def p_constrained_type_expr_bare(prod):
     invalid = next((c for c in lst if not isvalid(c)), None)
     if invalid:
         raise ParserError(f"Invalid constraint '{invalid!s}'")
-    constraints: List[TypeConstraint] = [
-        TypeConstraint(c.cons, c.subtypes[0]) for c in lst
-    ]
+    constraints: List[TypeConstraint] = [TypeConstraint(c.cons, c.subtypes[0]) for c in lst]
     prod[0] = (constraints, prod[3])
 
 
 def p_maybe_constrained_type_expr_no_constraint(prod):
-    """_maybe_constrained_type_expr : type_expr
-    """
+    """_maybe_constrained_type_expr : type_expr"""
     prod[0] = ([], prod[1])
 
 
 def p_maybe_constrained_type_expr_constrained(prod):
-    """_maybe_constrained_type_expr : _constrained_type_expr_bare
-    """
+    """_maybe_constrained_type_expr : _constrained_type_expr_bare"""
     prod[0] = prod[1]
 
 
@@ -1174,14 +1146,13 @@ def p_instance(prod):
 
 
 def p_type_constraint(prod):
-    """type_constraints : _type_expr_list_trail
-    """
+    """type_constraints : _type_expr_list_trail"""
     prod[0] = prod[1]
 
 
 def p_maybe_padding(prod):
     """_maybe_padding : PADDING
-                      | empty
+    | empty
     """
     pass
 
@@ -1189,26 +1160,23 @@ def p_maybe_padding(prod):
 # The lexer does a lot to prevent NEWLINE at the beginning of the code, but it
 # can't help us at the end.
 def p_program(prod):
-    """program : definitions _trailing_new_lines
-    """
+    """program : definitions _trailing_new_lines"""
     prod[0] = prod[1]
 
 
 def p_trailing_new_lines(prod):
     """_trailing_new_lines : empty
-       _trailing_new_lines : NEWLINE _trailing_new_lines
+    _trailing_new_lines : NEWLINE _trailing_new_lines
     """
 
 
 def p_definitions(prod):
-    """definitions : definition _definition_set
-    """
+    """definitions : definition _definition_set"""
     _collect_item(prod)
 
 
 def p_definition_set(prod):
-    """_definition_set : newlines definition _definition_set
-    """
+    """_definition_set : newlines definition _definition_set"""
     _collect_item(prod)
 
 
@@ -1218,16 +1186,16 @@ def p_newlines(prod):
 
 def p_definition_set2(prod):
     """_definition_set : empty
-       _definition_set : newlines
+    _definition_set : newlines
     """
     prod[0] = []
 
 
 def p_definition(prod):
     """definition : local_definition
-                  | datatype_definition
-                  | typeclass
-                  | instance
+    | datatype_definition
+    | typeclass
+    | instance
     """
     prod[0] = prod[1]
 
@@ -1241,20 +1209,17 @@ def p_local_definition(prod):
 
 
 def p_local_definitions(prod):
-    """local_definitions : local_definition _local_definition_set
-    """
+    """local_definitions : local_definition _local_definition_set"""
     _collect_item(prod)
 
 
 def p_local_definition_set(prod):
-    """_local_definition_set : PADDING definition _local_definition_set
-    """
+    """_local_definition_set : PADDING definition _local_definition_set"""
     _collect_item(prod)
 
 
 def p_local_definition_set_empty(prod):
-    """_local_definition_set : empty
-    """
+    """_local_definition_set : empty"""
     prod[0] = []
 
 
@@ -1267,45 +1232,39 @@ def p_typeclass(prod):
 
 
 def p_typeclass_def(prod):
-    """_typeclass_def : simple_type_constraint
-    """
+    """_typeclass_def : simple_type_constraint"""
     prod[0] = None, prod[1]
 
 
 def p_typeclass_def_with_constraints(prod):
-    """_typeclass_def : simple_type_constraints FATARROW simple_type_constraint
-    """
+    """_typeclass_def : simple_type_constraints FATARROW simple_type_constraint"""
     prod[0] = prod[1], prod[3]
 
 
 def p_type_constraint_def(prod):
-    """simple_type_constraint : UPPER_IDENTIFIER SPACE type_variable
-    """
+    """simple_type_constraint : UPPER_IDENTIFIER SPACE type_variable"""
     prod[0] = TypeConstraint(prod[1], prod[3])
 
 
 def p_type_constraints(prod):
     """simple_type_constraints : simple_type_constraint _simple_type_constraints
-       _simple_type_constraints : COMMA simple_type_constraint _simple_type_constraints
+    _simple_type_constraints : COMMA simple_type_constraint _simple_type_constraints
     """
     _collect_item(prod)
 
 
 def p_type_constraints_empty(prod):
-    """_simple_type_constraints : empty
-    """
+    """_simple_type_constraints : empty"""
     prod[0] = []
 
 
 def p_valuedef(prod):
-    """valuedef : equation
-    """
+    """valuedef : equation"""
     prod[0] = prod[1]
 
 
 def p_nametype_decl(prod):
-    """nametype_decl : _identifier DOUBLE_COLON st_type_expr
-    """
+    """nametype_decl : _identifier DOUBLE_COLON st_type_expr"""
     name = prod[1]
     type_ = prod[3]
     scheme = TypeScheme.from_typeexpr(type_)
@@ -1313,8 +1272,7 @@ def p_nametype_decl(prod):
 
 
 def p_nametype_decl_operators(prod):
-    """nametype_decl : LPAREN _st_operator RPAREN DOUBLE_COLON st_type_expr
-    """
+    """nametype_decl : LPAREN _st_operator RPAREN DOUBLE_COLON st_type_expr"""
     name = prod[2]
     type_ = prod[5]
     scheme = TypeScheme.from_typeexpr(type_)
@@ -1322,9 +1280,8 @@ def p_nametype_decl_operators(prod):
 
 
 def p_datatype_definition(prod):
-    """datatype_definition : _datatype_lhs EQ _data_rhs
-    """
-    name, args, type_ = prod[1]
+    """datatype_definition : _datatype_lhs EQ _data_rhs"""
+    name, _args, type_ = prod[1]
     rhs = prod[3]
     # The very last item of the rhs maybe a list of strings (the derivations)
     if isinstance(rhs[-1], list):
@@ -1335,8 +1292,7 @@ def p_datatype_definition(prod):
 
 
 def p_datatype_lhs(prod):
-    """_datatype_lhs : KEYWORD_DATA SPACE UPPER_IDENTIFIER _cons_params
-    """
+    """_datatype_lhs : KEYWORD_DATA SPACE UPPER_IDENTIFIER _cons_params"""
     name = prod[3]
     args = prod[4]
     type_ = TypeCons(name, [TypeVariable(n) for n in args])
@@ -1344,20 +1300,18 @@ def p_datatype_lhs(prod):
 
 
 def p_datatype_cons_params(prod):
-    """_cons_params : SPACE LOWER_IDENTIFIER _cons_params
-    """
+    """_cons_params : SPACE LOWER_IDENTIFIER _cons_params"""
     _collect_item(prod)
 
 
 def p_datatype_cons_params_empty(prod):
-    """_cons_params : empty
-    """
+    """_cons_params : empty"""
     prod[0] = []
 
 
 def p_datatype_body(prod):
     """_data_rhs : data_cons _data_conses
-       _data_conses : _maybe_padding PIPE data_cons _data_conses
+    _data_conses : _maybe_padding PIPE data_cons _data_conses
     """
     _collect_item(prod)
 
@@ -1398,47 +1352,42 @@ def p_bare_data_cons_operator(prod):
 
 
 def p_data_cons_args(prod):
-    """_cons_args : SPACE cons_arg _cons_args
-    """
+    """_cons_args : SPACE cons_arg _cons_args"""
     _collect_item(prod)
 
 
 def p_data_cons_args_empty(prod):
-    """_cons_args : empty
-    """
+    """_cons_args : empty"""
     prod[0] = []
 
 
 def p_cons_arg(prod):
     """cons_arg : type_variable
-       cons_arg : type_cons
-       cons_arg : _cons_arg_factor
+    cons_arg : type_cons
+    cons_arg : _cons_arg_factor
     """
     prod[0] = prod[1]
 
 
 def p_cons_arg_factor(prod):
-    """_cons_arg_factor : LPAREN type_expr RPAREN
-    """
+    """_cons_arg_factor : LPAREN type_expr RPAREN"""
     prod[0] = prod[2]
 
 
 def p_cons_arg_factor_list(prod):
-    """_cons_arg_factor : LBRACKET type_expr RBRACKET
-    """
+    """_cons_arg_factor : LBRACKET type_expr RBRACKET"""
     prod[0] = ListTypeCons(prod[2])
 
 
 def p_derivations_list(prod):
     """_derivations_list : UPPER_IDENTIFIER _derivations_list_trail
-       _derivations_list_trail : COMMA UPPER_IDENTIFIER _derivations_list_trail
+    _derivations_list_trail : COMMA UPPER_IDENTIFIER _derivations_list_trail
     """
     _collect_item(prod)
 
 
 def p_derivations_list_trail_empty(prod):
-    """_derivations_list_trail : empty
-    """
+    """_derivations_list_trail : empty"""
     prod[0] = []
 
 

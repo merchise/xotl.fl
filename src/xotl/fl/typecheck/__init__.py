@@ -6,37 +6,24 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-"""Implements a type checker (Damas-Hindley-Milner) with extensions.
+"""Implements a type checker (Damas-Hindley-Milner) with extensions."""
 
-"""
-from typing import Iterable, List, Mapping, Tuple, Sequence
 from collections import ChainMap
 from dataclasses import dataclass
+from typing import Iterable, List, Mapping, Sequence, Tuple
 
-from xotl.fl.meta import Symbolic
 from xotl.fl.ast.base import AST
-from xotl.fl.ast.types import (
-    Type,
-    TypeVariable,
-    FunctionTypeCons as FuncCons,
-    TypeScheme,
-    find_tvars,
-)
-from xotl.fl.ast.expressions import (
-    Identifier,
-    Literal,
-    Lambda,
-    Application,
-    Let,
-    Letrec,
-)
-from xotl.fl.ast.typeclasses import TypeClass, Instance
+from xotl.fl.ast.expressions import Application, Identifier, Lambda, Let, Letrec, Literal
 from xotl.fl.ast.pattern import ConcreteLet
+from xotl.fl.ast.typeclasses import Instance, TypeClass
+from xotl.fl.ast.types import FunctionTypeCons as FuncCons
+from xotl.fl.ast.types import Type, TypeScheme, TypeVariable, find_tvars
+from xotl.fl.meta import Symbolic
 from xotl.fl.utils import TVarSupply
 
-from .subst import sidentity, scompose, subscheme, subtype, Substitution
-from .unification import unify, unify_exprs
 from .exceptions import UnificationError
+from .subst import Substitution, scompose, sidentity, subscheme, subtype
+from .unification import unify, unify_exprs
 
 
 @dataclass
@@ -279,9 +266,7 @@ def _add_decls(
 
     def genbar(unknowns, names, type_, name):
         if not _generalize_over or name in _generalize_over:
-            schvars = list(
-                {tv.name for tv in find_tvars(type_) if tv.name not in unknowns}
-            )
+            schvars = list({tv.name for tv in find_tvars(type_) if tv.name not in unknowns})
             alist: List[Tuple[str, TypeVariable]] = list(zip(schvars, ns))
             restype = subtype(build_substitution(alist), type_)
             return TypeScheme([v.name for _, v in alist], restype)
@@ -313,9 +298,7 @@ def typecheck_letrec(env: TypeEnvironment, ns, exp: Letrec) -> TCResult:
     #
     exprs: Sequence[AST] = tuple(exp.values())
     names: Sequence[Symbolic] = tuple(exp.keys())
-    nbvs = {
-        name: TypeScheme.from_typeexpr(var, generics=[]) for name, var in zip(names, ns)
-    }
+    nbvs = {name: TypeScheme.from_typeexpr(var, generics=[]) for name, var in zip(names, ns)}
     phi, ts = tcl(ChainMap(nbvs, env), ns, exprs)
 
     # At this point `phi` is the substitution that makes all the bindings in
@@ -331,9 +314,7 @@ def typecheck_letrec(env: TypeEnvironment, ns, exp: Letrec) -> TCResult:
     local = exp.localenv or {}
     if local:
         typepairs = [
-            (newinstance(ns, local[name]), ts[i])
-            for i, name in enumerate(names)
-            if name in local
+            (newinstance(ns, local[name]), ts[i]) for i, name in enumerate(names) if name in local
         ]
         phi = unify_exprs(typepairs, p=phi)
         ts = [subtype(phi, t) for t in ts]
@@ -350,9 +331,7 @@ def typecheck_letrec(env: TypeEnvironment, ns, exp: Letrec) -> TCResult:
     ts = [sch.type_ for _, sch in nbvs1.items()]
     psi1, t = typecheck(
         exp.body,
-        _add_decls(
-            sub_typeenv(psi, gamma), ns, names, ts, _generalize_over=local.keys()
-        ),
+        _add_decls(sub_typeenv(psi, gamma), ns, names, ts, _generalize_over=local.keys()),
         ns,
     )
     return scompose(psi1, psi), t

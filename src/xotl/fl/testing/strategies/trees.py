@@ -22,31 +22,21 @@ instances of Application which may or may not be well-typed.
 __ https://github.com/HypothesisWorks/hypothesis/issues/1804#issuecomment-552047942
 
 """
-from datetime import timedelta
+
 from hypothesis import strategies as st
 from hypothesis.strategies import SearchStrategy
-
 from xotl.fl.ast.base import AST
 from xotl.fl.ast.expressions import (
     Application,
-    Literal,
     Identifier,
-    build_lambda,
+    Literal,
     build_application,
+    build_lambda,
 )
-from xotl.fl.builtins import (
-    CharType,
-    DateType,
-    DateTimeType,
-    DateIntervalType,
-    DateTimeIntervalType,
-    NumberType,
-    StringType,
-)
+from xotl.fl.builtins import CharType, DateTimeType, DateType, NumberType, StringType
 from xotl.fl.utils import namesupply
 
 from .tools import builds
-
 
 welltyped_expressions: SearchStrategy[AST] = st.deferred(
     lambda: identifiers | literals | welltyped_applications
@@ -58,15 +48,9 @@ UPPER_IDENTIFIERS = st.from_regex(r"[A-Z][\w_]*")
 UNDER_IDENTIFIERS = st.from_regex(r"_[\w_]*")
 _idenfifiers = LOWER_IDENTIFIERS | UPPER_IDENTIFIERS | UNDER_IDENTIFIERS
 
-lower_identifiers: SearchStrategy[Identifier] = st.builds(
-    Identifier, name=LOWER_IDENTIFIERS
-)
-upper_identifiers: SearchStrategy[Identifier] = st.builds(
-    Identifier, name=UPPER_IDENTIFIERS
-)
-under_identifiers: SearchStrategy[Identifier] = st.builds(
-    Identifier, name=UNDER_IDENTIFIERS
-)
+lower_identifiers: SearchStrategy[Identifier] = st.builds(Identifier, name=LOWER_IDENTIFIERS)
+upper_identifiers: SearchStrategy[Identifier] = st.builds(Identifier, name=UPPER_IDENTIFIERS)
+under_identifiers: SearchStrategy[Identifier] = st.builds(Identifier, name=UNDER_IDENTIFIERS)
 identifiers: SearchStrategy[Identifier] = lower_identifiers
 
 
@@ -78,22 +62,14 @@ literals: SearchStrategy[Literal] = st.deferred(
 )
 
 _numbers = st.integers() | st.floats(allow_infinity=False, allow_nan=False)
-numbers: SearchStrategy[Literal] = st.builds(
-    Literal, value=_numbers, type_=st.just(NumberType)
-)
+numbers: SearchStrategy[Literal] = st.builds(Literal, value=_numbers, type_=st.just(NumberType))
 concrete_numbers: SearchStrategy[Literal] = st.builds(
     Literal, value=_numbers, type_=st.just(NumberType), annotation=_idenfifiers
 )
 
-strings: SearchStrategy[Literal] = st.builds(
-    Literal, value=st.text(), type_=st.just(StringType)
-)
-chars: SearchStrategy[Literal] = st.builds(
-    Literal, value=st.characters(), type_=st.just(CharType)
-)
-dates: SearchStrategy[Literal] = st.builds(
-    Literal, value=st.dates(), type_=st.just(DateType)
-)
+strings: SearchStrategy[Literal] = st.builds(Literal, value=st.text(), type_=st.just(StringType))
+chars: SearchStrategy[Literal] = st.builds(Literal, value=st.characters(), type_=st.just(CharType))
+dates: SearchStrategy[Literal] = st.builds(Literal, value=st.dates(), type_=st.just(DateType))
 datetimes: SearchStrategy[Literal] = st.builds(
     Literal, value=st.datetimes(), type_=st.just(DateTimeType)
 )

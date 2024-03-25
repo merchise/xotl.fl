@@ -6,9 +6,9 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import Sequence, Iterator
-from xotl.fl.ast.types import TypeVariable
+from typing import Iterator, Sequence
 
+from xotl.fl.ast.types import TypeVariable
 
 NameSupply = Iterator[str]
 TVarSupply = Iterator[TypeVariable]
@@ -29,9 +29,7 @@ class namesupply:
 
     """
 
-    def __init__(
-        self, prefix="a", exclude: Sequence[str] = None, *, limit: int = None
-    ) -> None:
+    def __init__(self, prefix="a", exclude: Sequence[str] = None, *, limit: int = None) -> None:
         self.prefix = prefix
         self.exclude = exclude
         self.limit = limit
@@ -67,9 +65,7 @@ class tvarsupply:
 
     """
 
-    def __init__(
-        self, prefix="a", exclude: Sequence[str] = None, *, limit: int = None
-    ) -> None:
+    def __init__(self, prefix="a", exclude: Sequence[str] = None, *, limit: int = None) -> None:
         self.ns = iter(namesupply(prefix, exclude, limit=limit))
 
     def __iter__(self):

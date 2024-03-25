@@ -6,22 +6,19 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-"""The *type* objects of builtins types.
+"""The *type* objects of builtins types."""
 
-"""
 import re
-from xotl.tools.modules import moduleproperty
 
-from xotl.fl.ast.types import (
-    Type,
-    TypeScheme,
-    TypeCons,
+from xotl.fl.ast.types import (  # We need to import here because the AST imports the builtins UnitType
     ListTypeCons,
     TupleTypeCons,
-    # We need to import here because the AST imports the builtins UnitType
+    Type,
+    TypeCons,
     TypeEnvironment,
+    TypeScheme,
 )
-
+from xotl.tools.modules import moduleproperty
 
 # This is the type of all numbers in our language.  The expression language
 # will assign this type to every literal that matches a number; we don't
@@ -74,8 +71,7 @@ class BuiltinEnvDict(dict):
 
     def __init__(self, d=None, **kw):
         from xotl.fl.ast.types import TypeScheme
-        from xotl.fl.match import NO_MATCH_ERROR, MATCH_OPERATOR
-        from xotl.fl.match import Match, Extract
+        from xotl.fl.match import MATCH_OPERATOR, NO_MATCH_ERROR, Extract, Match
 
         if not d:
             d = {}
@@ -103,9 +99,9 @@ class BuiltinEnvDict(dict):
         super().__init__(init, **kw)
 
     def __missing__(self, key) -> TypeScheme:
-        from xotl.fl.utils import tvarsupply
-        from xotl.fl.match import MatchLiteral, Extract
         from xotl.fl.ast.types import TypeVariable
+        from xotl.fl.match import Extract, MatchLiteral
+        from xotl.fl.utils import tvarsupply
 
         # Constructors of tuples are not fixed, since now you can have (1, 2,
         # 3..., 10000); that's a long tuple with a single constructor
@@ -125,9 +121,7 @@ class BuiltinEnvDict(dict):
             type_ = self[key.name].type_
             assert isinstance(type_, TypeCons)
             res = TypeVariable(".r", check=False)
-            return TypeScheme.from_typeexpr(
-                type_ >> ((type_.subtypes[key.arg - 1] >> res) >> res)
-            )
+            return TypeScheme.from_typeexpr(type_ >> ((type_.subtypes[key.arg - 1] >> res) >> res))
         elif isinstance(key, MatchLiteral):
             # The match has type 'a -> (a -> r) -> r'; where a is the type of
             # the literal.  We must ensure to generate a new variable not free

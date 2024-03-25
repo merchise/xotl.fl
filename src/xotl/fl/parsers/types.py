@@ -7,6 +7,7 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 """Parse type expressions."""
+
 from xotl.fl.ast.types import Type
 
 
@@ -21,6 +22,6 @@ def parse(code: str, debug=False, tracking=False) -> Type:
        TypeCons('->', (TypeVariable('a'), TypeVariable('b')))
 
     """
-    from xotl.fl.parsers import type_parser, lexer
+    from xotl.fl.parsers import lexer, type_parser
 
     return type_parser.parse(code, lexer=lexer, debug=debug, tracking=tracking)

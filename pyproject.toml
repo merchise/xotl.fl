@@ -41,7 +41,7 @@ managed = true
 dev-dependencies = [
     "hypothesis~=6.91.0",
     "pytz>=2023.3.post1",
-    "ruff==0.3.2",
+    "ruff==0.3.3",
     "isort~=5.13.2",
     "pytest~=7.4.4",
     "pytest-cov~=4.1.0",
@@ -62,7 +62,7 @@ src_paths = ["xotl/fl"]
 skip_gitignore = true
 
 [tool.ruff]
-required-version = "0.3.2"
+required-version = "0.3.3"
 line-length = 100
 target-version = "py311"
 

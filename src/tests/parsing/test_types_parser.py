@@ -6,28 +6,20 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-import pytest
-import lark
-
 from textwrap import dedent
 
-from xotl.fl.ast.types import (
-    TypeVariable as T,
-    FunctionTypeCons as F,
-    TypeCons as C,
-    ListTypeCons,
-    TupleTypeCons,
-    ConstrainedType,
-    TypeConstraint,
-    Type,
-)
-from xotl.fl.parsers.larkish import type_expr_parser, ASTBuilder
-
-from xotl.fl.utils import tvarsupply
-
-from hypothesis import given, strategies, assume
+import lark
+import pytest
+from hypothesis import assume, given, strategies
+from xotl.fl.ast.types import ConstrainedType
+from xotl.fl.ast.types import FunctionTypeCons as F
+from xotl.fl.ast.types import ListTypeCons, TupleTypeCons
+from xotl.fl.ast.types import TypeCons as C
+from xotl.fl.ast.types import TypeConstraint
+from xotl.fl.ast.types import TypeVariable as T
+from xotl.fl.parsers.larkish import ASTBuilder, type_expr_parser
 from xotl.fl.testing.strategies.lark import from_lark
-
+from xotl.fl.utils import tvarsupply
 
 # COMMENT is explicitly set to the a single space, because our COMMENT regex
 # allows for it to be generated at arbitrary points (the usage of ^ and $
@@ -43,7 +35,7 @@ def parse(source):
 
 
 # The id function type
-I = parse("a -> a")
+I = parse("a -> a")  # noqa
 
 
 def test_i_combinator():
@@ -138,7 +130,6 @@ def test_type_record_types():
 
 
 def test_invalid_constraints():
-
     with pytest.raises(Exception):  # VisitError, but I don't like it.
         parse("Eq c => a")
 

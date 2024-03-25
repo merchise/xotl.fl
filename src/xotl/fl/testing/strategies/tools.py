@@ -6,21 +6,19 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-from typing import MutableMapping, Optional, TypeVar
 
 from hypothesis import strategies as st
 from hypothesis.strategies import SearchStrategy
-
 from xotl.fl.ast.base import AST
-from xotl.fl.ast.types import Type as FLType, TypeCons, TypeVariable, TypeSchema
-from xotl.fl.ast.expressions import Lambda, Identifier
-from xotl.fl.utils import namesupply
+from xotl.fl.ast.expressions import Identifier, Lambda
+from xotl.fl.ast.types import Type as FLType
+from xotl.fl.ast.types import TypeCons, TypeSchema, TypeVariable
 from xotl.fl.builtins import BuiltinEnvDict
+from xotl.fl.utils import namesupply
 
 
 def builds(*args, **kwargs):
-    """A decorator version of strategies.builds
-    """
+    """A decorator version of strategies.builds"""
 
     def decorator(fn):
         return st.builds(fn, *args, **kwargs)
@@ -44,9 +42,7 @@ def from_fltype(fltype: FLType) -> SearchStrategy[AST]:
         #   const a b = b
         #
         _, b = fltype.subtypes
-        return from_fltype(b).flatmap(
-            lambda b: st.just(Lambda(next(anonymous_names), b))
-        )
+        return from_fltype(b).flatmap(lambda b: st.just(Lambda(next(anonymous_names), b)))
     else:
         raise AssertionError(f"Don't know how to generate {fltype}")
 

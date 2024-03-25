@@ -9,29 +9,21 @@
 import os.path
 from collections import deque
 from dataclasses import dataclass
-from typing import Iterable, Deque
-from lark import Lark, Transformer, Token, v_args, Tree
+from typing import Deque, Iterable
 
+from lark import Lark, Token, Transformer, v_args
+from xotl.fl.ast.expressions import Identifier, Literal, build_application, build_list_expr
 from xotl.fl.ast.types import (
-    Type,
-    TypeVariable,
-    TypeCons,
-    TypeConstraint,
-    TypeSchema,
+    ConstrainedType,
     ListTypeCons,
     TupleTypeCons,
-    ConstrainedType,
+    Type,
+    TypeCons,
     TypeConstraint,
     TypeRecord,
+    TypeSchema,
+    TypeVariable,
 )
-
-from xotl.fl.ast.expressions import (
-    Identifier,
-    Literal,
-    build_list_expr,
-    build_application,
-)
-
 from xotl.fl.builtins import NumberType
 
 
@@ -150,9 +142,7 @@ class ASTBuilder(Transformer):
     def type_schema(self, children, meta):
         forall, *identifiers = children
         assert isinstance(forall, Token) and forall.type == "KEYWORD_FORALL"
-        assert all(
-            isinstance(i, Token) and i.type == "LOWER_IDENTIFIER" for i in identifiers
-        )
+        assert all(isinstance(i, Token) and i.type == "LOWER_IDENTIFIER" for i in identifiers)
         # NB: Return a partially built TypeSchema with a type.
         return TypeSchema((i.value for i in identifiers), None)  # type: ignore
 

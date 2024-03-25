@@ -7,6 +7,8 @@
 # This is free software; you can do what the LICENCE file allows you to.
 #
 """The AST of the enriched lambda calculus."""
+
+from collections import deque
 from typing import (
     Any,
     Deque,
@@ -19,15 +21,13 @@ from typing import (
     Sequence,
     Tuple,
 )
-from collections import deque
 
-from xotl.tools.objects import validate_attrs
-from xotl.tools.fp.tools import fst
-
-from xotl.fl.meta import Symbolic
 from xotl.fl.ast.base import AST, ILC, Dual
 from xotl.fl.ast.types import Type, TypeEnvironment
 from xotl.fl.builtins import UnitType
+from xotl.fl.meta import Symbolic
+from xotl.tools.fp.tools import fst
+from xotl.tools.objects import validate_attrs
 
 
 class Identifier(Dual):
@@ -88,9 +88,7 @@ class Literal(Dual):
 
 
 class _Lambda:
-    """A lambda abstraction over a single parameter.
-
-    """
+    """A lambda abstraction over a single parameter."""
 
     def __repr__(self):
         return f"Lambda({self.varname!r}, {self.body!r})"
@@ -166,15 +164,11 @@ class ApplicationLC(_Application, ILC):
 # We assume (as the Book does) that there are no "translation" errors; i.e
 # that you haven't put a Let where you needed a Letrec.
 class _LetExpr:
-    def __init__(
-        self, bindings: Mapping[str, Any], body, localenv: TypeEnvironment = None
-    ) -> None:
+    def __init__(self, bindings: Mapping[str, Any], body, localenv: TypeEnvironment = None) -> None:
         # Sort by names (in a _LetExpr names can't be repeated, repetition for
         # pattern-matching should be translated to a lambda using the MATCH
         # operator).
-        self.bindings: Sequence[Tuple[str, Any]] = tuple(
-            sorted(bindings.items(), key=fst)
-        )
+        self.bindings: Sequence[Tuple[str, Any]] = tuple(sorted(bindings.items(), key=fst))
         self.localenv = localenv or {}  # type: TypeEnvironment
         self.body = body
 
@@ -320,9 +314,8 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[Symboli
        {'+', ':NO_MATCH_ERROR:', ':OR:'}
 
     '''
-    from xotl.fl.match import MATCH_OPERATOR, NO_MATCH_ERROR
-    from xotl.fl.match import Match, Extract, MatchLiteral
     from xotl.fl.ast.pattern import ConcreteLet, Equation
+    from xotl.fl.match import MATCH_OPERATOR, NO_MATCH_ERROR, Extract, Match, MatchLiteral
 
     POPFRAME = None  # remove a binding from the 'stack'
     result: List[Symbolic] = []
@@ -403,9 +396,7 @@ def find_free_names(expr: AST, *, exclude: Sequence[str] = None) -> List[Symboli
             # each equation separately.
             args = tuple(node.bindings)
             fnames = find_free_names(node.body, exclude=exclude)
-            result.extend(
-                name for name in fnames if name not in args if name not in bindings
-            )
+            result.extend(name for name in fnames if name not in args if name not in bindings)
         else:
             assert False, f"Unknown AST node: {node!r}"
     return result
@@ -420,7 +411,7 @@ def replace_free_occurrences(self: AST, substitutions: Mapping[Symbolic, str]) -
       Lambda('id', Application(Identifier('id'), Identifier('id')))
 
     """
-    from xotl.fl.match import NO_MATCH_ERROR, MATCH_OPERATOR
+    from xotl.fl.match import MATCH_OPERATOR, NO_MATCH_ERROR
 
     def replace(expr: AST, bindings: FrozenSet[Symbolic]):
         if isinstance(expr, Identifier):
@@ -431,9 +422,7 @@ def replace_free_occurrences(self: AST, substitutions: Mapping[Symbolic, str]) -
             return expr
         elif isinstance(expr, Literal):
             if isinstance(expr.annotation, AST):
-                return Literal(
-                    expr.value, expr.type_, replace(expr.annotation, bindings)
-                )
+                return Literal(expr.value, expr.type_, replace(expr.annotation, bindings))
             else:
                 return expr
         elif isinstance(expr, Application):

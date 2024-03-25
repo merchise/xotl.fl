@@ -6,37 +6,18 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-import pytest
 from textwrap import dedent
 
-from hypothesis import strategies as s, given, example, assume
-
+import pytest
+from hypothesis import assume, example, given
+from hypothesis import strategies as s
 from lark.exceptions import LarkError
-
 from xotl.fl import tokenize
-from xotl.fl.ast.expressions import (
-    Identifier,
-    Literal,
-    Application,
-    Lambda,
-    Let,
-    Letrec,
-    find_free_names,
-)
-from xotl.fl.ast.pattern import Equation, ConcreteLet, ConsPattern
-
+from xotl.fl.ast.expressions import Application, Identifier, Lambda, Literal, find_free_names
+from xotl.fl.ast.pattern import ConcreteLet, ConsPattern, Equation
+from xotl.fl.builtins import CharType, DateTimeType, DateType, NumberType, StringType, UnitType
 from xotl.fl.parsers import string_repr
-from xotl.fl.parsers.larkish import expr_parser, ASTBuilder
-
-from xotl.fl.builtins import (
-    NumberType,
-    CharType,
-    StringType,
-    UnitType,
-    DateType,
-    DateTimeType,
-    DateIntervalType,
-)
+from xotl.fl.parsers.larkish import ASTBuilder, expr_parser
 
 
 def parse(source):
@@ -234,8 +215,6 @@ def test_basic_letexpr():
 
 def test_nested_let():
     Id = Identifier
-    App = Application
-    L = Lambda
     code = """
     let f1 = x1 x2 x3
         f2 = let g1 = y1 in f1 g1
@@ -362,9 +341,7 @@ def test_date_literals_application(d):
 
     code = f"f <{d!s}> x"
     res = parse(code)
-    assert res == Application(
-        Application(Identifier("f"), Literal(d, DateType)), Identifier("x")
-    )
+    assert res == Application(Application(Identifier("f"), Literal(d, DateType)), Identifier("x"))
 
     # Semantically incorrect but parser must accept it
     code = f"<{d!s}> x"
@@ -457,9 +434,7 @@ def test_list_cons_operator():
         == parse("a:(b:xs)")
         == Application(
             Application(Identifier(":"), Identifier("a")),
-            Application(
-                Application(Identifier(":"), Identifier("b")), Identifier("xs")
-            ),
+            Application(Application(Identifier(":"), Identifier("b")), Identifier("xs")),
         )
     )
 
@@ -494,19 +469,16 @@ def test_pattern_matching_nested():
 
 
 def test_regression_ambigous_tuple_pattern():
-    assert (
-        parse(
-            """let count [] = 0
+    assert parse(
+        """let count [] = 0
                  count (x:xs) = 1 + (count xs)
              in count
             """
-        )
-        == parse(
-            """let count [] = 0
+    ) == parse(
+        """let count [] = 0
                  count x:xs = 1 + (count xs)
              in count
             """
-        )
     )
 
 

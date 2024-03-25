@@ -6,10 +6,10 @@
 #
 # This is free software; you can do what the LICENCE file allows you to.
 #
-"""Implements algorithms for Direct Graphs.
+"""Implements algorithms for Direct Graphs."""
 
-"""
 from collections import deque
+
 from xotl.tools.fp.tools import snd
 
 

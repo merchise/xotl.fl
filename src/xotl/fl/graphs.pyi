@@ -1,5 +1,4 @@
-from typing import AbstractSet, List, MutableMapping, Set, Union, Tuple
-from typing import Generic, TypeVar
+from typing import AbstractSet, Generic, List, MutableMapping, Set, Tuple, TypeVar, Union
 
 T = TypeVar("T")
 
