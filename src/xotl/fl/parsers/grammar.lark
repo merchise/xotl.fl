@@ -382,9 +382,3 @@ _RBRACKET : "]"
 
 _LBRACE : "{"
 _RBRACE : "}"
-
-// Local Variables:
-// mode: bnf
-// comment-start: "//"
-// indent-tabs-mode: nil
-// End:
