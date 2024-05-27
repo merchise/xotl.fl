@@ -1,6 +1,7 @@
 RYE_EXEC ?= rye run
 PYTHON_VERSION ?= 3.12
-PATH := $(HOME)/.rye/shims:$(PATH)
+CARGO_HOME ?= $(HOME)/.cargo
+PATH := $(HOME)/.rye/shims:$(CARGO_HOME)/bin:$(PATH)
 
 SHELL := /bin/bash
 

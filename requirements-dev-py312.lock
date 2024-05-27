@@ -103,7 +103,7 @@ python-dateutil==2.9.0.post0
 pytz==2024.1
 requests==2.31.0
     # via sphinx
-ruff==0.3.3
+ruff==0.4.5
 six==1.16.0
     # via asttokens
     # via python-dateutil
